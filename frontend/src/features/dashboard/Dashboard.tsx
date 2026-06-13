@@ -27,9 +27,7 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchDashboard = async () => {
             try {
-                // For now, we mock the user ID.
-                // Later, this will come from your AuthProvider / Identity Service!
-                const mockUserId = "123e4567-e89b-12d3-a456-426614174000";
+                const mockUserId = "f11e9632-adad-40f6-805b-c30cd2bfd15c";
                 localStorage.setItem("userId", mockUserId);
 
                 const response = await apiClient.get("/bff/dashboard");
