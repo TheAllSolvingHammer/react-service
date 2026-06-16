@@ -10,6 +10,7 @@ export interface Profile {
     skills: string[];
     type?: 'academic' | 'professional'; // Matches the BFF payload
     avatarUrl?: string;
+    isCompleted?: boolean;
 }
 
 export interface Opportunity {

@@ -9,13 +9,15 @@ interface HeaderProps {
     setCurrentTab: (tab: string) => void;
     candidateMode: 'professional' | 'academic';
     setCandidateMode: (mode: 'professional' | 'academic') => void;
+    onLogout?: () => void;
 }
 
 export default function Header({
                                    currentRole,
                                    setCurrentRole,
                                    currentTab,
-                                   setCurrentTab
+                                   setCurrentTab,
+                                   onLogout
                                }: HeaderProps) {
     const {t, i18n} = useTranslation();
 
@@ -77,7 +79,16 @@ export default function Header({
 
                 {/* Right Action Bar */}
                 <div className="flex items-center gap-4">
-
+                    {/* Logout Button */}
+                    {onLogout && (
+                        <Button
+                            variant="ghost"
+                            onClick={onLogout}
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold uppercase tracking-wider text-xs rounded-xl"
+                        >
+                            Изход
+                        </Button>
+                    )}
                     {/* Language Switcher */}
                     <Button
                         variant="ghost"
