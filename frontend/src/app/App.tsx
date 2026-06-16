@@ -21,6 +21,7 @@ export default function App() {
     // Check localStorage initially to survive page refreshes
     const savedToken = localStorage.getItem('jwt_token');
     const savedRole = localStorage.getItem('user_role') as 'candidate' | 'recruiter' | null;
+    const savedUserId = localStorage.getItem('user_id'); // <-- Retrieved the user ID
 
     // Auth State
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!savedToken);
@@ -37,6 +38,7 @@ export default function App() {
 
     // Shared Application State
     const [profile, setProfile] = useState<Profile | null>(null);
+    // @ts-ignore
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [applicants, setApplicants] = useState<Applicant[]>([]);
     const [appliedList, setAppliedList] = useState<any[]>([]);
@@ -48,50 +50,72 @@ export default function App() {
     const handleLogout = () => {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('user_role');
+        localStorage.removeItem('user_id'); // <-- Clear ID on logout
         setIsAuthenticated(false);
         setProfile(null);
     };
 
+    // Main Data Fetching Hook
     useEffect(() => {
-        if (!isAuthenticated) return;
+        if (!isAuthenticated || !savedUserId) return;
 
         setIsLoading(true);
+        setError(null);
 
-        apiClient.get('/api/v1/profiles/me')
+        const profileEndpoint = currentRole === 'recruiter'
+            ? `/api/v1/profiles/institution/${savedUserId}`
+            : `/api/v1/profiles/candidates/${savedUserId}`;
+
+        apiClient.get(profileEndpoint)
             .then((response: { data: any; }) => {
                 const p = response.data;
 
                 setProfile({
                     ...p,
-                    name: p.name || 'Неизвестен Кандидат',
-                    role: p.role || 'Специалист',
+                    id: p.id || savedUserId,
+                    name: p.firstName ? `${p.firstName} ${p.lastName}` : (p.displayName || 'Неизвестен Потребител'),
+                    role: p.headline || p.role || 'Специалист',
                     email: p.email || '',
                     location: p.location || '',
-                    bio: p.bio || '',
+                    bio: p.biography || p.bio || '',
                     skills: Array.isArray(p.skills) ? p.skills : [],
-                    type: p.type || 'professional',
+                    type: currentRole === 'candidate' ? 'professional' : 'institution',
                     isCompleted: p.isCompleted !== undefined ? p.isCompleted : false
                 });
 
-                setCandidateMode(p.mode === 'academic' ? 'academic' : 'professional');
+                // Set academic vs professional mode
+                if (currentRole === 'candidate') {
+                    if (p.candidateType) {
+                        setCandidateMode(p.candidateType === 'ACADEMIC' ? 'academic' : 'professional');
+                    } else {
+                        setCandidateMode(p.mode === 'academic' ? 'academic' : 'professional');
+                    }
+                }
+
                 setIsLoading(false);
             })
             .catch(err => {
                 console.error("Failed to load profile:", err);
                 if (err.response?.status === 404) {
+                    // Profile truly doesn't exist yet (fresh registration). Show the wizard!
                     setProfile({
-                        id: '', name: '', role: '', email: '', location: '', bio: '', skills: [], type: 'professional', isCompleted: false
+                        id: savedUserId,
+                        name: '',
+                        role: '',
+                        email: '',
+                        location: '',
+                        bio: '',
+                        skills: [],
+                        type: currentRole === 'candidate' ? 'professional' : 'institution',
+                        isCompleted: false
                     });
                 } else {
-                    setError("Неуспешна връзка с Profile Service.");
+                    setError("Неуспешна връзка с Profile Service. Моля, проверете конзолата на бекенда.");
                 }
                 setIsLoading(false);
             });
 
-        // Note: You can add additional apiClient.get() calls here later
-        // for /api/v1/opportunities and /api/v1/matching
-
-    }, [isAuthenticated]);
+    }, [isAuthenticated, currentRole, savedUserId]);
 
     const handleUpdateApplicantStatus = (id: string, newStatus: "Ново" | "Интервю" | "Преглед") => {
         setApplicants(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
@@ -191,7 +215,7 @@ export default function App() {
                 setCurrentTab={setCurrentTab}
                 candidateMode={candidateMode}
                 setCandidateMode={setCandidateMode}
-                onLogout={handleLogout} // <-- Passing down the logout function
+                onLogout={handleLogout}
             />
 
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -8,7 +8,7 @@ export interface Profile {
     location: string;
     bio: string;
     skills: string[];
-    type?: 'academic' | 'professional'; // Matches the BFF payload
+    type?: 'academic' | 'professional' | 'institution';
     avatarUrl?: string;
     isCompleted?: boolean;
 }
@@ -20,8 +20,8 @@ export interface Opportunity {
     location?: string;
     description?: string;
     requirements?: string[];
-    matchScore: number; // Required for the AI Match widgets
-    tags: string[];     // Used for the small badges (e.g., "Spring Boot", "On-site")
+    matchScore: number;
+    tags: string[];
     salary?: string;
     postedDate?: string;
 }
@@ -32,7 +32,7 @@ export interface Applicant {
     role: string;
     email: string;
     matchScore: number;
-    status: "Ново" | "Интервю" | "Преглед"; // Strict typing for the recruiter Kanban board
+    status: "Ново" | "Интервю" | "Преглед";
     appliedDate: string;
     skills: string[];
     candidateMode: 'academic' | 'professional';
