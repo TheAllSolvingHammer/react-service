@@ -15,6 +15,11 @@ import ProfileOnboarding from '@/components/pages/ProfileOnboarding';
 
 import apiClient from '@/lib/axios';
 import { Profile, Opportunity, Applicant } from '@/lib/types';
+import { parseApiMode, CandidateMode } from '@/lib/mode';
+import { switchCandidateMode, saveCandidateProfile } from '@/lib/profileApi';
+import { fetchOpportunitiesWithMatches, fetchOpportunityCount } from '@/lib/opportunities';
+import { fetchRecruiterApplicants } from '@/lib/applicants';
+import { resolveSkillNames } from '@/lib/skills';
 import { Sparkles } from 'lucide-react';
 
 export default function App() {
@@ -30,7 +35,8 @@ export default function App() {
     // App Navigation State
     const [currentRole, setCurrentRole] = useState<'candidate' | 'recruiter'>(savedRole || 'candidate');
     const [currentTab, setCurrentTab] = useState<string>('dashboard');
-    const [candidateMode, setCandidateMode] = useState<'professional' | 'academic'>('professional');
+    const [candidateMode, setCandidateMode] = useState<CandidateMode>('professional');
+    const [isSwitchingMode, setIsSwitchingMode] = useState(false);
 
     // Network State
     const [isLoading, setIsLoading] = useState(false);
@@ -38,9 +44,9 @@ export default function App() {
 
     // Shared Application State
     const [profile, setProfile] = useState<Profile | null>(null);
-    // @ts-ignore
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [applicants, setApplicants] = useState<Applicant[]>([]);
+    const [opportunityCount, setOpportunityCount] = useState(0);
     const [appliedList, setAppliedList] = useState<any[]>([]);
 
     const [selectedOpportunityId, setSelectedOpportunityId] = useState<string | null>(null);
@@ -67,29 +73,38 @@ export default function App() {
             : `/api/v1/profiles/candidates/${savedUserId}`;
 
         apiClient.get(profileEndpoint)
-            .then((response: { data: any; }) => {
+            .then(async (response: { data: any; }) => {
                 const p = response.data;
+                const skillIds = p.skillNames
+                    ? Array.from(p.skillNames as Iterable<unknown>).map(String)
+                    : Array.isArray(p.skills)
+                        ? p.skills.map(String)
+                        : [];
+                const skillNames = currentRole === 'candidate'
+                    ? await resolveSkillNames(skillIds)
+                    : [];
 
                 setProfile({
                     ...p,
                     id: p.id || savedUserId,
-                    name: p.firstName ? `${p.firstName} ${p.lastName}` : (p.displayName || 'Неизвестен Потребител'),
+                    userId: savedUserId,
+                    name: p.firstName ? `${p.firstName} ${p.lastName}` : (p.displayName || p.fullName || 'Неизвестен Потребител'),
                     role: p.headline || p.role || 'Специалист',
                     email: p.email || '',
                     location: p.location || '',
                     bio: p.biography || p.bio || '',
-                    skills: Array.isArray(p.skills) ? p.skills : [],
+                    skills: skillNames,
+                    skillIds,
                     type: currentRole === 'candidate' ? 'professional' : 'institution',
+                    candidateType: p.candidateType,
+                    educationType: p.educationType,
+                    birthday: p.birthday,
+                    currentMode: parseApiMode(p.currentMode),
                     isCompleted: p.isCompleted !== undefined ? p.isCompleted : false
                 });
 
-                // Set academic vs professional mode
                 if (currentRole === 'candidate') {
-                    if (p.candidateType) {
-                        setCandidateMode(p.candidateType === 'ACADEMIC' ? 'academic' : 'professional');
-                    } else {
-                        setCandidateMode(p.mode === 'academic' ? 'academic' : 'professional');
-                    }
+                    setCandidateMode(parseApiMode(p.currentMode));
                 }
 
                 setIsLoading(false);
@@ -100,6 +115,7 @@ export default function App() {
                     // Profile truly doesn't exist yet (fresh registration). Show the wizard!
                     setProfile({
                         id: savedUserId,
+                        userId: savedUserId,
                         name: '',
                         role: '',
                         email: '',
@@ -116,6 +132,42 @@ export default function App() {
             });
 
     }, [isAuthenticated, currentRole, savedUserId]);
+
+    useEffect(() => {
+        if (!isAuthenticated || currentRole !== 'candidate' || !profile?.isCompleted || !profile.userId) return;
+
+        fetchOpportunitiesWithMatches(profile.userId)
+            .then(setOpportunities)
+            .catch((err) => console.error('Failed to load opportunities:', err));
+    }, [isAuthenticated, currentRole, profile?.isCompleted, profile?.userId]);
+
+    useEffect(() => {
+        if (!isAuthenticated || currentRole !== 'recruiter' || !profile?.isCompleted) return;
+
+        Promise.all([
+            fetchRecruiterApplicants().then(setApplicants),
+            fetchOpportunityCount().then(setOpportunityCount),
+        ]).catch((err) => console.error('Failed to load recruiter data:', err));
+    }, [isAuthenticated, currentRole, profile?.isCompleted]);
+
+    const handleSwitchMode = async (mode: CandidateMode) => {
+        if (!profile?.id || mode === candidateMode) return;
+
+        const previousMode = candidateMode;
+        setCandidateMode(mode);
+        setIsSwitchingMode(true);
+
+        try {
+            const persistedMode = await switchCandidateMode(profile.id, mode);
+            setCandidateMode(persistedMode);
+            setProfile((prev) => prev ? { ...prev, currentMode: persistedMode } : prev);
+        } catch (err) {
+            console.error('Failed to switch mode:', err);
+            setCandidateMode(previousMode);
+        } finally {
+            setIsSwitchingMode(false);
+        }
+    };
 
     const handleUpdateApplicantStatus = (id: string, newStatus: "Ново" | "Интервю" | "Преглед") => {
         setApplicants(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
@@ -214,23 +266,28 @@ export default function App() {
                 currentTab={currentTab}
                 setCurrentTab={setCurrentTab}
                 candidateMode={candidateMode}
-                setCandidateMode={setCandidateMode}
+                onSwitchMode={handleSwitchMode}
+                isSwitchingMode={isSwitchingMode}
                 onLogout={handleLogout}
             />
 
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {currentRole === 'candidate' && (
                     <>
-                        {currentTab === 'dashboard' && <CandidateDashboard profile={profile} opportunities={opportunities} candidateMode={candidateMode} setCandidateMode={setCandidateMode} setCurrentTab={setCurrentTab} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
-                        {currentTab === 'profile' && <CandidateProfile profile={profile} setProfile={setProfile as any} candidateMode={candidateMode} setCandidateMode={setCandidateMode} />}
-                        {currentTab === 'opportunities' && <CandidateOpportunities opportunities={opportunities} selectedOpportunityId={selectedOpportunityId} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
-                        {currentTab === 'aimatches' && <CandidateAiMatches profile={profile} setProfile={setProfile as any} opportunities={opportunities} />}
+                        {currentTab === 'dashboard' && <CandidateDashboard profile={profile} candidateMode={candidateMode} setCurrentTab={setCurrentTab} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
+                        {currentTab === 'profile' && <CandidateProfile profile={profile} setProfile={setProfile as any} candidateMode={candidateMode} onSwitchMode={handleSwitchMode} isSwitchingMode={isSwitchingMode} onSaveProfile={async (updated) => {
+                            const saved = await saveCandidateProfile(updated);
+                            setProfile(saved);
+                            if (saved.currentMode) setCandidateMode(saved.currentMode);
+                        }} />}
+                        {currentTab === 'opportunities' && <CandidateOpportunities profile={profile} opportunities={opportunities} selectedOpportunityId={selectedOpportunityId} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
+                        {currentTab === 'aimatches' && <CandidateAiMatches profile={profile} candidateMode={candidateMode} opportunities={opportunities} />}
                     </>
                 )}
 
                 {currentRole === 'recruiter' && (
                     <>
-                        {currentTab === 'recruiter_dashboard' && <RecruiterDashboard applicants={applicants} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
+                        {currentTab === 'recruiter_dashboard' && <RecruiterDashboard applicants={applicants} opportunityCount={opportunityCount} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
                         {currentTab === 'recruiter_applicants' && <RecruiterRanking applicants={applicants} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
                         {currentTab === 'recruiter_applicant_detail' && selectedApplicant && <RecruiterCandidateDetail applicant={selectedApplicant} onBack={() => setCurrentTab('recruiter_dashboard')} onUpdateStatus={handleUpdateApplicantStatus} />}
                     </>

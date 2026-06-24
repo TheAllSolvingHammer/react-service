@@ -3,6 +3,20 @@
     "candidate": "Candidate",
     "recruiter": "Recruiter"
   },
+  "nav": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "opportunities": "Positions",
+    "aiMatches": "AI Analysis",
+    "recruiterDashboard": "Dashboard",
+    "pipeline": "Pipeline",
+    "logout": "Log out",
+    "languageToggle": "Change language"
+  },
+  "mode": {
+    "activeView": "Active view",
+    "toggleHint": "Switch how AI and recruiters see your profile"
+  },
   "dashboard": {
     "welcome": "Welcome",
     "candidateDefault": "Candidate",
@@ -27,6 +41,10 @@
     "title": "Profile Management",
     "subtitle": "Customize how employers see you.",
     "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "loadingExperiences": "Loading experiences...",
+    "noExperiences": "No experience entries for this mode yet.",
+    "present": "Present",
     "edit": "Edit",
     "nameLabel": "Name",
     "roleLabel": "Title / Specialty",

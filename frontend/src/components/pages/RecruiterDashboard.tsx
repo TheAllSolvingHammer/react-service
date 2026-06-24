@@ -9,18 +9,29 @@ import {Input} from "@/components/ui/input";
 
 interface RecruiterDashboardProps {
     applicants: Applicant[];
+    opportunityCount: number;
     setCurrentTab: (tab: string) => void;
     setSelectedApplicantId: (id: string | null) => void;
 }
 
 export default function RecruiterDashboard({
                                                applicants,
+                                               opportunityCount,
                                                setCurrentTab,
                                                setSelectedApplicantId
                                            }: RecruiterDashboardProps) {
     const {t} = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedType, setSelectedType] = useState<string>('all');
+
+    const avgMatch = applicants.length
+        ? Math.round(applicants.reduce((sum, app) => sum + app.matchScore, 0) / applicants.length)
+        : 0;
+
+    const topUniversity = useMemo(() => {
+        const academicApplicants = applicants.filter((app) => app.candidateMode === 'academic');
+        return academicApplicants[0]?.role ?? '—';
+    }, [applicants]);
 
     const stats = [
         {
@@ -31,19 +42,19 @@ export default function RecruiterDashboard({
         },
         {
             label: t('recruiterDashboard.activePositions'),
-            value: "8",
+            value: opportunityCount.toString(),
             icon: Briefcase,
             color: "text-professional-emerald bg-professional-emerald/10"
         },
         {
             label: t('recruiterDashboard.topUniversity'),
-            value: "ФМИ (СУ)",
+            value: topUniversity,
             icon: Award,
             color: "text-academic-purple bg-academic-purple/10"
         },
         {
             label: t('recruiterDashboard.avgMatch'),
-            value: "91%",
+            value: applicants.length ? `${avgMatch}%` : '—',
             icon: TrendingUp,
             color: "text-amber-500 bg-amber-500/10"
         }

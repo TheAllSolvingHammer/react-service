@@ -1,14 +1,17 @@
 import {useTranslation} from 'react-i18next';
-import {Globe, LayoutDashboard, ListFilter, Search, Sparkles, User} from 'lucide-react';
+import {Globe, LayoutDashboard, ListFilter, LogOut, Search, Sparkles, User} from 'lucide-react';
 import {Button} from "@/components/ui/button";
+import ModeToggle from '@/components/shared/ModeToggle';
+import {CandidateMode} from '@/lib/mode';
 
 interface HeaderProps {
     currentRole: 'candidate' | 'recruiter';
     setCurrentRole: (role: 'candidate' | 'recruiter') => void;
     currentTab: string;
     setCurrentTab: (tab: string) => void;
-    candidateMode: 'professional' | 'academic';
-    setCandidateMode: (mode: 'professional' | 'academic') => void;
+    candidateMode: CandidateMode;
+    onSwitchMode: (mode: CandidateMode) => void;
+    isSwitchingMode?: boolean;
     onLogout?: () => void;
 }
 
@@ -17,11 +20,13 @@ export default function Header({
                                    setCurrentRole,
                                    currentTab,
                                    setCurrentTab,
+                                   candidateMode,
+                                   onSwitchMode,
+                                   isSwitchingMode,
                                    onLogout
                                }: HeaderProps) {
     const {t, i18n} = useTranslation();
 
-    // Instantly flips the language between English and Bulgarian
     const toggleLanguage = () => {
         const newLang = i18n.language.startsWith('bg') ? 'en' : 'bg';
         i18n.changeLanguage(newLang);
@@ -29,34 +34,32 @@ export default function Header({
 
     const navItems = currentRole === 'candidate'
         ? [
-            {id: 'dashboard', label: 'Табло', icon: LayoutDashboard},
-            {id: 'profile', label: 'Профил', icon: User},
-            {id: 'opportunities', label: 'Позиции', icon: Search},
-            {id: 'aimatches', label: 'AI Анализ', icon: Sparkles},
+            {id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard},
+            {id: 'profile', label: t('nav.profile'), icon: User},
+            {id: 'opportunities', label: t('nav.opportunities'), icon: Search},
+            {id: 'aimatches', label: t('nav.aiMatches'), icon: Sparkles},
         ]
         : [
-            {id: 'recruiter_dashboard', label: 'Дашборд', icon: LayoutDashboard},
-            {id: 'recruiter_applicants', label: 'Пайплайн', icon: ListFilter},
+            {id: 'recruiter_dashboard', label: t('nav.recruiterDashboard'), icon: LayoutDashboard},
+            {id: 'recruiter_applicants', label: t('nav.pipeline'), icon: ListFilter},
         ];
 
     return (
         <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-xl border-b border-[#c6c6cd]/30 shadow-xs">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
 
-                {/* Logo & Brand */}
-                <div className="flex items-center gap-2 cursor-pointer"
+                <div className="flex items-center gap-2 cursor-pointer shrink-0"
                      onClick={() => setCurrentTab(currentRole === 'candidate' ? 'dashboard' : 'recruiter_dashboard')}>
                     <div className="w-8 h-8 bg-brand-blue rounded-xl flex items-center justify-center shadow-inner">
                         <Sparkles className="w-5 h-5 text-white"/>
                     </div>
-                    <span className="text-xl font-display font-black tracking-tight text-grey-dark">
-            Recruit<span className="text-brand-blue">AI</span>
-          </span>
+                    <span className="text-xl font-display font-black tracking-tight text-grey-dark hidden sm:inline">
+                        Recruit<span className="text-brand-blue">AI</span>
+                    </span>
                 </div>
 
-                {/* Main Navigation */}
                 <nav
-                    className="hidden md:flex items-center gap-1 bg-[#f0edef]/50 p-1 rounded-2xl border border-[#c6c6cd]/30">
+                    className="hidden lg:flex items-center gap-1 bg-[#f0edef]/50 p-1 rounded-2xl border border-[#c6c6cd]/30">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = currentTab === item.id;
@@ -77,30 +80,37 @@ export default function Header({
                     })}
                 </nav>
 
-                {/* Right Action Bar */}
-                <div className="flex items-center gap-4">
-                    {/* Logout Button */}
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    {currentRole === 'candidate' && (
+                        <ModeToggle
+                            mode={candidateMode}
+                            onModeChange={onSwitchMode}
+                            isLoading={isSwitchingMode}
+                            compact
+                        />
+                    )}
+
                     {onLogout && (
                         <Button
                             variant="ghost"
                             onClick={onLogout}
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold uppercase tracking-wider text-xs rounded-xl"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold uppercase tracking-wider text-xs rounded-xl gap-1.5 px-2 sm:px-3"
                         >
-                            Изход
+                            <LogOut className="w-4 h-4"/>
+                            <span className="hidden sm:inline">{t('nav.logout')}</span>
                         </Button>
                     )}
-                    {/* Language Switcher */}
+
                     <Button
                         variant="ghost"
                         onClick={toggleLanguage}
                         className="hidden sm:flex items-center gap-2 text-grey-muted hover:text-brand-blue font-bold uppercase tracking-wider text-xs border border-transparent hover:border-[#c6c6cd]/50 hover:bg-[#c6c6cd]/10 rounded-xl"
-                        title="Смяна на езика / Change Language"
+                        title={t('nav.languageToggle')}
                     >
                         <Globe className="w-4 h-4"/>
-                        {i18n.language.startsWith('bg') ? 'EN' : 'БГ'}
+                        {i18n.language.startsWith('bg') ? 'EN' : 'BG'}
                     </Button>
 
-                    {/* Role Switcher */}
                     <div className="flex bg-[#f0edef] p-1 rounded-xl border border-[#c6c6cd]/40">
                         <button
                             onClick={() => {
@@ -129,7 +139,6 @@ export default function Header({
                             {t('roles.recruiter')}
                         </button>
                     </div>
-
                 </div>
             </div>
         </header>

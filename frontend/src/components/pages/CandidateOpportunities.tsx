@@ -1,13 +1,19 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ArrowRight, Briefcase, CheckCircle2, DollarSign, MapPin, Search} from 'lucide-react';
-import {Opportunity} from '@/lib/types';
+import {Opportunity, Profile} from '@/lib/types';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
+import {
+    applyToOpportunity,
+    fetchCandidateApplications,
+    mapApplicationActivity,
+} from '@/lib/applications';
 
 interface CandidateOpportunitiesProps {
+    profile: Profile;
     opportunities: Opportunity[];
     selectedOpportunityId: string | null;
     setSelectedOpportunityId: (id: string | null) => void;
@@ -16,6 +22,7 @@ interface CandidateOpportunitiesProps {
 }
 
 export default function CandidateOpportunities({
+                                                   profile,
                                                    opportunities,
                                                    selectedOpportunityId,
                                                    setSelectedOpportunityId,
@@ -24,23 +31,27 @@ export default function CandidateOpportunities({
                                                }: CandidateOpportunitiesProps) {
     const {t} = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
+    const [isApplying, setIsApplying] = useState(false);
 
     const selectedOpportunity = opportunities.find(o => o.id === selectedOpportunityId) || opportunities[0];
 
-    const handleApply = (opp: Opportunity) => {
-        const exists = appliedList.some(item => item.title === opp.title && item.company === opp.company);
-        if (exists) return;
+    const handleApply = async (opp: Opportunity) => {
+        const candidateUserId = profile.userId ?? profile.id;
+        if (!candidateUserId) return;
 
-        const newApplication = {
-            id: opp.id,
-            title: opp.title,
-            company: opp.company,
-            status: "В процес на преглед", // Status translation can be handled globally later
-            date: "Току-що",
-            logoColor: "bg-brand-blue"
-        };
+        const exists = appliedList.some(item => item.id === opp.id);
+        if (exists || isApplying) return;
 
-        setAppliedList(prev => [newApplication, ...prev]);
+        setIsApplying(true);
+        try {
+            await applyToOpportunity(opp.id, String(candidateUserId));
+            const apps = await fetchCandidateApplications(String(candidateUserId));
+            setAppliedList(apps.map(mapApplicationActivity));
+        } catch (err) {
+            console.error('Failed to apply:', err);
+        } finally {
+            setIsApplying(false);
+        }
     };
 
     const filteredOpportunities = opportunities.filter(opp =>
@@ -83,7 +94,7 @@ export default function CandidateOpportunities({
                     ) : (
                         filteredOpportunities.map((opp) => {
                             const isSelected = selectedOpportunity?.id === opp.id;
-                            const hasApplied = appliedList.some(item => item.title === opp.title && item.company === opp.company);
+                            const hasApplied = appliedList.some(item => item.id === opp.id);
 
                             return (
                                 <Card
@@ -201,7 +212,7 @@ export default function CandidateOpportunities({
 
                                 {/* Apply Action */}
                                 <div className="pt-6 border-t border-[#c6c6cd]/20">
-                                    {appliedList.some(item => item.title === selectedOpportunity.title && item.company === selectedOpportunity.company) ? (
+                                    {appliedList.some(item => item.id === selectedOpportunity.id) ? (
                                         <div
                                             className="w-full bg-professional-emerald/10 border border-professional-emerald/20 p-4 rounded-xl flex flex-col items-center justify-center gap-2 text-professional-emerald">
                                             <CheckCircle2 className="w-6 h-6"/>
@@ -212,9 +223,10 @@ export default function CandidateOpportunities({
                                     ) : (
                                         <Button
                                             onClick={() => handleApply(selectedOpportunity)}
+                                            disabled={isApplying}
                                             className="w-full bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl h-12 text-sm font-bold shadow-sm transition-transform hover:scale-[1.01]"
                                         >
-                                            {t('opportunities.oneClickApply')}
+                                            {isApplying ? t('dashboard.applying', 'Кандидатстване...') : t('opportunities.oneClickApply')}
                                             <ArrowRight className="w-4 h-4 ml-2"/>
                                         </Button>
                                     )}

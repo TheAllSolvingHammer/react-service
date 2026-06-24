@@ -2,15 +2,32 @@
 
 export interface Profile {
     id?: string;
+    userId?: string;
     name: string;
     role: string;
     email: string;
     location: string;
     bio: string;
     skills: string[];
+    skillIds?: string[];
     type?: 'academic' | 'professional' | 'institution';
+    candidateType?: string;
+    educationType?: string;
+    birthday?: string;
+    currentMode?: 'professional' | 'academic';
     avatarUrl?: string;
     isCompleted?: boolean;
+}
+
+export interface Experience {
+    id: string;
+    title: string;
+    organization: string;
+    description?: string;
+    startDate?: string;
+    endDate?: string;
+    currentlyActive?: boolean;
+    mode?: string;
 }
 
 export interface Opportunity {
@@ -24,6 +41,7 @@ export interface Opportunity {
     tags: string[];
     salary?: string;
     postedDate?: string;
+    aiReasoning?: string;
 }
 
 export interface Applicant {

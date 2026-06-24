@@ -1,276 +1,377 @@
-import {useTranslation} from 'react-i18next';
-import {ArrowRight, Briefcase, CheckCircle2, Eye, GraduationCap, History, Sparkles} from 'lucide-react';
-import {Opportunity, Profile} from '@/lib/types';
-import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
-import {Button} from "@/components/ui/button";
-import {Badge} from "@/components/ui/badge";
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+    ArrowRight, Briefcase, CheckCircle2, Eye,
+    History, Sparkles, BrainCircuit,
+    Loader2, Target, TrendingUp, AlertCircle
+} from 'lucide-react';
+import { Profile } from '@/lib/types';
+import { CandidateMode } from '@/lib/mode';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import apiClient from '@/lib/axios';
+import {
+    applyToOpportunity,
+    fetchCandidateApplications,
+    mapApplicationActivity,
+} from '@/lib/applications';
 
 interface CandidateDashboardProps {
     profile: Profile;
-    opportunities: Opportunity[];
-    candidateMode: 'professional' | 'academic';
-    setCandidateMode: (mode: 'professional' | 'academic') => void;
+    candidateMode: CandidateMode;
     setCurrentTab: (tab: string) => void;
     setSelectedOpportunityId: (id: string | null) => void;
-    appliedList: Array<{
-        id: string;
-        title: string;
-        company: string;
-        status: string;
-        date: string;
-        logoColor?: string
-    }>;
-    setAppliedList: React.Dispatch<React.SetStateAction<Array<{
-        id: string;
-        title: string;
-        company: string;
-        status: string;
-        date: string;
-        logoColor?: string
-    }>>>;
+    appliedList: Array<any>;
+    setAppliedList: React.Dispatch<React.SetStateAction<Array<any>>>;
 }
 
 export default function CandidateDashboard({
                                                profile,
-                                               opportunities,
                                                candidateMode,
-                                               setCandidateMode,
                                                setCurrentTab,
                                                setSelectedOpportunityId,
                                                appliedList,
                                                setAppliedList
                                            }: CandidateDashboardProps) {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
-    const handleApplyOneClick = (opp: Opportunity) => {
-        const exists = appliedList.some(item => item.title === opp.title && item.company === opp.company);
-        if (exists) return;
+    const [topMatches, setTopMatches] = useState<any[]>([]);
+    const [isLoadingMatches, setIsLoadingMatches] = useState(true);
+    const [isApplying, setIsApplying] = useState<string | null>(null);
+    const [isAiMatch, setIsAiMatch] = useState(true);
 
-        const newApplication = {
-            id: opp.id,
-            title: opp.title,
-            company: opp.company,
-            status: "В процес на преглед", // You can translate statuses globally later
-            date: "Току-що",
-            logoColor: "bg-brand-blue"
+    // Calculate Profile Completeness
+    const calculateCompleteness = () => {
+        let score = 0;
+        if (profile?.name && !profile.name.includes('Неизвестен')) score += 25;
+        if (profile?.location) score += 25;
+        if (profile?.bio) score += 25;
+        if (profile?.skills && profile.skills.length > 0) score += 25;
+        return score;
+    };
+    const profileScore = calculateCompleteness();
+
+    useEffect(() => {
+        if (!profile?.userId && !profile?.id) return;
+
+        const candidateUserId = profile.userId ?? profile.id;
+
+        const fetchData = async () => {
+            setIsLoadingMatches(true);
+            try {
+                const matchRes = await apiClient.get(`/api/v1/matching/candidate/${candidateUserId}?size=3`);
+                const matches = matchRes.data.content;
+
+                if (matches && matches.length > 0) {
+                    const detailedMatches = await Promise.all(
+                        matches.map(async (m: any) => {
+                            try {
+                                const oppRes = await apiClient.get(`/api/v1/opportunities/get/${m.opportunityId}`);
+                                return {
+                                    ...oppRes.data,
+                                    matchScore: Math.round(m.finalScore),
+                                    aiReasoning: m.aiReasoning,
+                                    company: oppRes.data.location || t('dashboard.unknownCompany', 'Неизвестна Компания')
+                                };
+                            } catch (e) {
+                                return null;
+                            }
+                        })
+                    );
+                    setTopMatches(detailedMatches.filter(m => m !== null));
+                    setIsAiMatch(true);
+                } else {
+                    const fallbackRes = await apiClient.get(`/api/v1/opportunities/getAll?page=0&size=3&sortBy=createdAt&direction=DESC&nameFilter=`);
+                    const latestOpps = fallbackRes.data.content.map((opp: any) => ({
+                        ...opp,
+                        matchScore: null,
+                        aiReasoning: null,
+                        company: opp.location || t('dashboard.unknownCompany', 'Неизвестна Компания')
+                    }));
+                    setTopMatches(latestOpps);
+                    setIsAiMatch(false);
+                }
+
+                // 2. ИЗВЛИЧАНЕ НА КАНДИДАТСТВАНИЯТА (НОВАТА ЛОГИКА)
+                const apps = await fetchCandidateApplications(String(candidateUserId));
+                setAppliedList(apps.map(mapApplicationActivity));
+
+            } catch (err) {
+                console.error("Failed to fetch data", err);
+            } finally {
+                setIsLoadingMatches(false);
+            }
         };
 
-        setAppliedList(prev => [newApplication, ...prev]);
+        fetchData();
+    }, [profile?.id, profile?.userId, candidateMode, t]);
+
+    const handleApplyOneClick = async (opp: any) => {
+        const candidateUserId = profile.userId ?? profile.id;
+        if (!candidateUserId) return;
+
+        const exists = appliedList.some(item => item.id === opp.id);
+        if (exists || isApplying) return;
+
+        setIsApplying(opp.id);
+        try {
+            await applyToOpportunity(String(opp.id), String(candidateUserId));
+            const apps = await fetchCandidateApplications(String(candidateUserId));
+            setAppliedList(apps.map(mapApplicationActivity));
+        } catch (err) {
+            console.error('Failed to apply:', err);
+        } finally {
+            setIsApplying(null);
+        }
     };
 
-    // Safely grab the first name
-    const firstName = profile?.name ? profile.name.split(' ')[0] : t('dashboard.candidateDefault');
+    const firstName = profile?.name?.includes('Неизвестен')
+        ? t('dashboard.candidateDefault', 'Кандидат')
+        : profile?.name?.split(' ')[0];
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-6 animate-fade-in relative">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
             {/* Welcome Section & Mode Toggle */}
-            <header
-                className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 pb-6 border-b border-[#c6c6cd]/30">
-                <div>
+            <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 pb-6 border-b border-[#c6c6cd]/30">
+                <div className="relative">
                     <h1 className="text-4xl font-display font-extrabold text-grey-dark tracking-tight leading-tight">
-                        {t('dashboard.welcome')}, {firstName}!
+                        {t('dashboard.welcome', 'Здравейте')}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-purple-600">{firstName}</span>!
                     </h1>
                     <p className="text-lg text-grey-muted mt-2">
-                        {t('dashboard.profileAttention')} <span
-                        className="font-bold text-brand-blue">3 {t('dashboard.topCompanies')}</span>.
+                        {isAiMatch
+                            ? `${t('dashboard.profileAttention', 'Вашият профил съвпада с')} ${topMatches.length} ${t('dashboard.topCompanies', 'нови позиции днес')}.`
+                            : t('dashboard.noAiAttention', 'Разгледайте най-новите позиции в платформата днес.')}
                     </p>
+                    <div className="mt-3 md:hidden">
+                        <Badge
+                            variant="outline"
+                            className={`text-xs font-bold uppercase tracking-wider ${
+                                candidateMode === 'professional'
+                                    ? 'border-professional-emerald/40 text-professional-emerald bg-professional-emerald/5'
+                                    : 'border-academic-purple/40 text-academic-purple bg-academic-purple/5'
+                            }`}
+                        >
+                            {candidateMode === 'professional'
+                                ? t('dashboard.professional', 'Professional')
+                                : t('dashboard.academic', 'Academic')}
+                        </Badge>
+                    </div>
                 </div>
 
-                {/* Mode Toggle Layout */}
-                <div
-                    className="bg-[#f0edef]/60 p-1.5 rounded-2xl border border-[#c6c6cd]/40 inline-flex items-center shadow-xs self-start md:self-auto backdrop-blur-sm">
-                    <Button
-                        variant={candidateMode === 'professional' ? "default" : "ghost"}
-                        onClick={() => setCandidateMode('professional')}
-                        className={`rounded-xl text-xs font-semibold uppercase tracking-wider transition-all gap-2 h-9 px-4 ${
+                <div className="hidden md:flex flex-col items-end gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-grey-muted">
+                        {t('mode.activeView', 'Active view')}
+                    </span>
+                    <Badge
+                        variant="outline"
+                        className={`text-xs font-bold uppercase tracking-wider ${
                             candidateMode === 'professional'
-                                ? 'bg-white text-professional-emerald shadow-sm border border-[#c6c6cd]/30 hover:bg-white'
-                                : 'text-grey-muted hover:text-professional-emerald hover:bg-transparent'
+                                ? 'border-professional-emerald/40 text-professional-emerald bg-professional-emerald/5'
+                                : 'border-academic-purple/40 text-academic-purple bg-academic-purple/5'
                         }`}
                     >
-                        <Briefcase className="w-4 h-4"/>
-                        {t('dashboard.professional')}
-                    </Button>
-                    <Button
-                        variant={candidateMode === 'academic' ? "default" : "ghost"}
-                        onClick={() => setCandidateMode('academic')}
-                        className={`rounded-xl text-xs font-semibold uppercase tracking-wider transition-all gap-2 h-9 px-4 ${
-                            candidateMode === 'academic'
-                                ? 'bg-white text-academic-purple shadow-sm border border-[#c6c6cd]/30 hover:bg-white'
-                                : 'text-grey-muted hover:text-academic-purple hover:bg-transparent'
-                        }`}
-                    >
-                        <GraduationCap className="w-4 h-4"/>
-                        {t('dashboard.academic')}
-                    </Button>
+                        {candidateMode === 'professional'
+                            ? t('dashboard.professional', 'Professional')
+                            : t('dashboard.academic', 'Academic')}
+                    </Badge>
                 </div>
             </header>
 
-            {/* Bento Grid Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Quick Stats & Profile Completeness Row */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {/* Completeness Card (Takes up 2 columns on medium screens) */}
+                <Card className={`md:col-span-2 rounded-2xl border-0 shadow-sm flex flex-col justify-center p-5 relative overflow-hidden ${profileScore === 100 ? 'bg-gradient-to-r from-professional-emerald/10 to-teal-500/10' : 'bg-white'}`}>
+                    <div className="flex justify-between items-center mb-2 z-10">
+                        <span className="text-sm font-bold text-grey-dark flex items-center gap-2">
+                            <Target className={`w-4 h-4 ${profileScore === 100 ? 'text-professional-emerald' : 'text-brand-blue'}`} />
+                            {t('dashboard.profileCompleteness', 'Завършеност на профила')}
+                        </span>
+                        <span className="text-sm font-black text-brand-blue">{profileScore}%</span>
+                    </div>
+                    <div className="w-full bg-[#f0edef] rounded-full h-2.5 mb-3 z-10">
+                        <div className={`h-2.5 rounded-full transition-all duration-1000 ${profileScore === 100 ? 'bg-professional-emerald' : 'bg-brand-blue'}`} style={{ width: `${profileScore}%` }}></div>
+                    </div>
+                    {profileScore < 100 ? (
+                        <p className="text-xs text-grey-muted z-10">
+                            {t('dashboard.completenessHint', 'Добавете умения и биография, за да получавате по-добри AI препоръки.')}{" "}
+                            <button onClick={() => setCurrentTab('profile')} className="text-brand-blue font-bold hover:underline">Добавете сега</button>
+                        </p>
+                    ) : (
+                        <p className="text-xs text-professional-emerald font-semibold z-10">
+                            {t('dashboard.completenessPerfect', 'Профилът ви е перфектен! AI алгоритъмът работи с пълна сила.')}
+                        </p>
+                    )}
+                </Card>
 
+                {/* Stat 1 */}
+                <Card className="rounded-2xl border-0 shadow-sm bg-white p-5 flex flex-col justify-center gap-1 group hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-grey-muted uppercase tracking-wider">{t('dashboard.statsApps', 'Кандидатствания')}</span>
+                        <div className="w-8 h-8 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                            <Briefcase className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <span className="text-3xl font-black text-grey-dark">{appliedList.length}</span>
+                </Card>
+
+                {/* Stat 2 */}
+                <Card className="rounded-2xl border-0 shadow-sm bg-white p-5 flex flex-col justify-center gap-1 group hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-grey-muted uppercase tracking-wider">{t('dashboard.statsViews', 'Разглеждания')}</span>
+                        <div className="w-8 h-8 rounded-full bg-academic-purple/10 flex items-center justify-center text-academic-purple group-hover:bg-academic-purple group-hover:text-white transition-colors">
+                            <TrendingUp className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <span className="text-3xl font-black text-grey-dark">0</span>
+                    <span className="text-[10px] text-grey-muted font-medium mt-1">От институции</span>
+                </Card>
+            </div>
+
+            {/* Main Grid: Applications vs Matches */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Recent Applications Summary (Left 8 columns) */}
                 <div className="lg:col-span-8 flex flex-col gap-6">
-                    <Card
-                        className="flex-1 rounded-3xl border-[#c6c6cd] shadow-xs bg-white/40 backdrop-blur-md flex flex-col justify-between overflow-hidden">
-                        <CardHeader
-                            className="flex flex-row justify-between items-center pb-4 border-b border-[#f0edef]/50 space-y-0">
-                            <CardTitle
-                                className="text-xl font-display font-bold text-grey-dark flex items-center gap-2.5">
-                                <History className="w-5.5 h-5.5 text-brand-blue"/>
-                                {t('dashboard.recentApplications')}
+                    <Card className="flex-1 rounded-3xl border-0 shadow-lg bg-white/80 backdrop-blur-xl flex flex-col overflow-hidden relative">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-blue to-purple-500"></div>
+                        <CardHeader className="flex flex-row justify-between items-center pb-4 border-b border-[#f0edef]/80">
+                            <CardTitle className="text-xl font-display font-bold text-grey-dark flex items-center gap-2.5">
+                                <History className="w-6 h-6 text-brand-blue" />
+                                {t('dashboard.recentApplications', 'Последно Кандидатствани')}
                             </CardTitle>
-                            <Button
-                                variant="link"
-                                onClick={() => setCurrentTab('opportunities')}
-                                className="text-xs font-bold text-brand-blue hover:text-brand-blue-dark uppercase p-0 h-auto"
-                            >
-                                {t('dashboard.viewAll')}
-                            </Button>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
                             {appliedList.length === 0 ? (
-                                <div
-                                    className="text-center py-8 text-grey-muted text-sm">{t('dashboard.noApplications')}</div>
+                                <div className="text-center py-12 flex flex-col items-center justify-center">
+                                    <div className="w-16 h-16 bg-brand-blue/10 rounded-full flex items-center justify-center mb-4">
+                                        <History className="w-8 h-8 text-brand-blue opacity-50" />
+                                    </div>
+                                    <p className="text-grey-muted text-sm font-medium">{t('dashboard.noApplications', 'Все още не сте кандидатствали по обяви.')}</p>
+                                    <Button onClick={() => setCurrentTab('opportunities')} variant="link" className="mt-2 text-brand-blue">
+                                        {t('dashboard.viewAll', 'Разгледайте свободните позиции')}
+                                    </Button>
+                                </div>
                             ) : (
-                                appliedList.map((app, index) => {
-                                    const isSelected = app.status === "В процес на преглед";
-                                    return (
-                                        <div
-                                            key={index}
-                                            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-[#fcf8fa]/80 hover:bg-[#f0edef]/60 transition-colors border border-transparent hover:border-[#c6c6cd]/50 group cursor-pointer gap-4"
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div
-                                                    className={`w-12 h-12 rounded-xl text-white font-mono flex items-center justify-center font-bold text-lg select-none shadow-xs ${
-                                                        app.logoColor || 'bg-brand-blue-light'
-                                                    }`}>
-                                                    {app.company.slice(0, 2).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-base font-bold text-grey-dark group-hover:text-brand-blue transition-colors">
-                                                        {app.title}
-                                                    </h3>
-                                                    <p className="text-xs text-grey-muted">
-                                                        {app.company} • София
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div
-                                                className="flex sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#c6c6cd]/20">
-                                                <Badge variant="outline"
-                                                       className={`gap-1.5 text-xs font-semibold px-2.5 py-1 bg-white/60 text-grey-dark rounded-full shadow-xs border-[#c6c6cd]/40`}>
-                                                    <span
-                                                        className={`w-2 h-2 rounded-full ${isSelected ? 'bg-professional-emerald' : 'bg-match-medium'}`}></span>
-                                                    {app.status}
-                                                </Badge>
-                                                <p className="text-[10px] text-grey-muted font-mono mt-1.5 pr-1">{app.date}</p>
+                                appliedList.map((app, index) => (
+                                    <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-[#fcf8fa]/50 hover:bg-white hover:shadow-md transition-all duration-300 border border-transparent hover:border-[#c6c6cd]/40 group cursor-pointer gap-4">
+                                        <div className="flex items-center gap-4">
+                                            <img
+                                                src={`https://ui-avatars.com/api/?name=${app.company}&background=random&color=fff&rounded=true&bold=true`}
+                                                alt={app.company}
+                                                className="w-12 h-12 rounded-xl shadow-sm group-hover:scale-110 transition-transform duration-300"
+                                            />
+                                            <div>
+                                                <h3 className="text-base font-bold text-grey-dark group-hover:text-brand-blue transition-colors">
+                                                    {app.title}
+                                                </h3>
+                                                <p className="text-xs text-grey-muted">{app.company}</p>
                                             </div>
                                         </div>
-                                    );
-                                })
-                            )}
-                        </CardContent>
-                    </Card>
 
-                    <Card className="rounded-2xl border-brand-blue/20 bg-brand-blue/5 backdrop-blur-sm">
-                        <CardContent className="p-4 flex items-center gap-3">
-                            <Sparkles className="w-5 h-5 text-brand-blue shrink-0 animate-bounce"/>
-                            <p className="text-xs text-brand-blue font-semibold m-0">
-                                {t('dashboard.tipPart1')} <span
-                                className="font-extrabold underline">85% {t('dashboard.tipPart2')}</span>. {t('dashboard.tipPart3')}
-                            </p>
+                                        <div className="flex sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#c6c6cd]/20">
+                                            <Badge variant="outline" className="gap-1.5 text-xs font-semibold px-3 py-1 bg-white text-grey-dark rounded-full shadow-sm">
+                                                <span className="w-2 h-2 rounded-full bg-professional-emerald animate-pulse"></span>
+                                                {app.status}
+                                            </Badge>
+                                            <p className="text-[10px] text-grey-muted font-mono mt-1.5">{app.date}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Top AI Matches Sidebar (Right 4 columns) */}
+                {/* Sidebar (Right 4 columns) - Changes based on isAiMatch */}
                 <aside className="lg:col-span-4 flex flex-col">
-                    <Card
-                        className="flex-1 rounded-3xl border-[#c6c6cd] shadow-xs bg-[#fcf8fa]/40 backdrop-blur-md flex flex-col justify-between overflow-hidden">
-                        <CardHeader className="pb-4 border-b border-[#f0edef]/50 space-y-0">
-                            <CardTitle
-                                className="text-lg font-display font-bold text-grey-dark flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-match-high animate-pulse"/>
-                                {t('dashboard.topMatches')}
+                    <Card className="flex-1 rounded-3xl border border-[#c6c6cd]/50 shadow-lg bg-gradient-to-b from-[#fcf8fa] to-white flex flex-col overflow-hidden">
+                        <CardHeader className="pb-4 border-b border-[#f0edef] bg-white/50 backdrop-blur-sm">
+                            <CardTitle className="text-lg font-display font-bold text-grey-dark flex items-center gap-2">
+                                {isAiMatch ? (
+                                    <>
+                                        <BrainCircuit className="w-5 h-5 text-match-high animate-pulse" />
+                                        {t('dashboard.topMatches', 'AI Препоръки')}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="w-5 h-5 text-brand-blue" />
+                                        {t('dashboard.latestJobs', 'Последни Обяви')}
+                                    </>
+                                )}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-6 space-y-4">
-                            {opportunities.length === 0 ? (
-                                <div
-                                    className="text-center py-8 text-grey-muted text-sm">{t('dashboard.noMatches')}</div>
+                        <CardContent className="pt-6 space-y-5">
+                            {isLoadingMatches ? (
+                                <div className="flex flex-col items-center justify-center py-10">
+                                    <Loader2 className="w-8 h-8 text-brand-blue animate-spin mb-3" />
+                                    <p className="text-xs text-grey-muted font-mono">{t('dashboard.analyzingMatches', 'Зареждане...')}</p>
+                                </div>
+                            ) : topMatches.length === 0 ? (
+                                <div className="text-center py-8 text-grey-muted text-sm">{t('dashboard.noMatches', 'В момента няма активни обяви.')}</div>
                             ) : (
-                                opportunities.slice(0, 2).map((opp) => {
-                                    const alreadyApplied = appliedList.some(item => item.title === opp.title && item.company === opp.company);
-                                    return (
-                                        <div
-                                            key={opp.id}
-                                            className="bg-white/70 rounded-2xl p-4.5 border border-[#c6c6cd]/75 relative overflow-hidden group hover:shadow-md transition-shadow duration-300"
-                                        >
-                                            {/* Compact Badge Match Rate */}
-                                            <div
-                                                className="absolute top-0 right-0 bg-match-high text-white text-[11px] font-mono font-bold px-2.5 py-1 rounded-bl-xl shadow-xs">
-                                                {opp.matchScore}%
-                                            </div>
-
-                                            <h3 className="text-base font-bold text-grey-dark mb-1 mt-2 tracking-tight">
-                                                {opp.title}
-                                            </h3>
-                                            <p className="text-xs text-grey-muted mb-3">
-                                                {opp.company}
+                                <>
+                                    {!isAiMatch && profileScore < 100 && (
+                                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-3 items-start mb-2">
+                                            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                                            <p className="text-[11px] text-amber-800 leading-tight">
+                                                Показваме ви последните обяви, тъй като нямате въведени умения за AI съвпадения.
                                             </p>
-
-                                            <div className="flex flex-wrap gap-1.5 mb-4">
-                                                {opp.tags.slice(0, 3).map((tag, i) => (
-                                                    <Badge key={i} variant="secondary"
-                                                           className="bg-[#f0edef]/80 text-grey-muted hover:bg-[#f0edef] text-[10px] font-semibold font-mono rounded-md px-2 py-0.5">
-                                                        {tag}
-                                                    </Badge>
-                                                ))}
-                                            </div>
-
-                                            {alreadyApplied ? (
-                                                <div
-                                                    className="w-full flex items-center justify-center gap-1.5 py-2 bg-professional-emerald/10 text-professional-emerald border border-professional-emerald/20 rounded-xl text-xs font-bold leading-none">
-                                                    <CheckCircle2 className="w-4.5 h-4.5"/>
-                                                    {t('dashboard.applied')}
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col sm:flex-row gap-2">
-                                                    <Button
-                                                        onClick={() => handleApplyOneClick(opp)}
-                                                        className="flex-1 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl text-xs font-bold shadow-sm hover:scale-[1.02] transition-transform h-9"
-                                                    >
-                                                        {t('dashboard.oneClickApply')}
-                                                        <ArrowRight className="w-3.5 h-3.5 ml-1.5"/>
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            setSelectedOpportunityId(opp.id);
-                                                            setCurrentTab('opportunities');
-                                                        }}
-                                                        className="w-10 h-9 p-0 rounded-xl border-[#c6c6cd] hover:bg-[#f0edef]/60 text-[#0058be]"
-                                                        title={t('dashboard.viewDetails')}
-                                                    >
-                                                        <Eye className="w-4 h-4"/>
-                                                    </Button>
-                                                </div>
-                                            )}
                                         </div>
-                                    );
-                                })
+                                    )}
+                                    {topMatches.map((opp) => {
+                                        const alreadyApplied = appliedList.some(item => item.id === opp.id);
+                                        return (
+                                            <div key={opp.id} className="bg-white rounded-2xl p-5 border border-[#c6c6cd]/40 relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+
+                                                {/* Glowing Score Badge - Only if AI Match */}
+                                                {isAiMatch && opp.matchScore && (
+                                                    <div className="absolute top-0 right-0 bg-gradient-to-bl from-match-high to-emerald-500 text-white text-xs font-mono font-black px-3 py-1.5 rounded-bl-2xl shadow-sm z-10 flex items-center gap-1">
+                                                        <Sparkles className="w-3 h-3" />
+                                                        {opp.matchScore}%
+                                                    </div>
+                                                )}
+
+                                                <h3 className={`text-base font-bold text-grey-dark leading-tight mb-1 ${isAiMatch ? 'pr-12' : ''}`}>
+                                                    {opp.title}
+                                                </h3>
+                                                <p className="text-xs text-grey-muted font-medium mb-3">
+                                                    {opp.company}
+                                                </p>
+
+                                                {/* AI Reasoning Tooltip */}
+                                                {isAiMatch && opp.aiReasoning && (
+                                                    <div className="bg-brand-blue/5 border border-brand-blue/10 rounded-lg p-2.5 mb-4">
+                                                        <p className="text-[10px] leading-relaxed text-grey-dark italic">
+                                                            "{opp.aiReasoning}"
+                                                        </p>
+                                                    </div>
+                                                )}
+
+                                                {alreadyApplied ? (
+                                                    <div className="w-full flex items-center justify-center gap-2 py-2.5 bg-professional-emerald/10 text-professional-emerald border border-professional-emerald/20 rounded-xl text-xs font-bold">
+                                                        <CheckCircle2 className="w-4 h-4" /> {t('dashboard.applied', 'Кандидатствали сте')}
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex gap-2 mt-4">
+                                                        <Button onClick={() => handleApplyOneClick(opp)} disabled={isApplying === opp.id} className="flex-1 bg-grey-dark hover:bg-black text-white rounded-xl text-xs font-bold shadow-md transition-all h-10">
+                                                        {isApplying === opp.id ? t('dashboard.applying', 'Кандидатстване...') : t('dashboard.oneClickApply', 'Кандидатствай')}
+                                                    </Button>
+                                                        <Button variant="outline" onClick={() => { setSelectedOpportunityId(opp.id); setCurrentTab('opportunities'); }} className="w-10 h-10 p-0 rounded-xl border-[#c6c6cd] hover:border-brand-blue hover:text-brand-blue transition-colors">
+                                                            <Eye className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </>
                             )}
                         </CardContent>
-                        <CardFooter className="pt-4 border-t border-[#f0edef]/50 flex justify-center pb-6">
-                            <Button
-                                variant="ghost"
-                                onClick={() => setCurrentTab('aimatches')}
-                                className="text-xs font-bold text-grey-muted hover:text-brand-blue hover:bg-transparent h-auto p-0 flex items-center gap-1.5"
-                            >
-                                {t('dashboard.viewAiAnalysis')}
-                                <ArrowRight className="w-3.5 h-3.5"/>
+                        <CardFooter className="pt-4 border-t border-[#f0edef] bg-white/50 pb-4">
+                            <Button variant="ghost" onClick={() => setCurrentTab('opportunities')} className="w-full text-xs font-bold text-brand-blue hover:bg-brand-blue/5 h-10 rounded-xl">
+                                Разгледай всички обяви <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </CardFooter>
                     </Card>

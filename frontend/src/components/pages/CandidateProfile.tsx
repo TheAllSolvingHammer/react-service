@@ -1,7 +1,10 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Briefcase, Edit2, GraduationCap, Mail, MapPin, Plus, Save, X} from 'lucide-react';
-import {Profile} from '@/lib/types';
+import {Briefcase, Edit2, GraduationCap, Loader2, Mail, MapPin, Plus, Save, X} from 'lucide-react';
+import {Experience, Profile} from '@/lib/types';
+import {CandidateMode} from '@/lib/mode';
+import ModeToggle from '@/components/shared/ModeToggle';
+import {fetchCandidateExperiences} from '@/lib/experiences';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
@@ -12,23 +15,52 @@ import {Label} from "@/components/ui/label";
 interface CandidateProfileProps {
     profile: Profile;
     setProfile: (profile: Profile) => void;
-    candidateMode: 'professional' | 'academic';
-    setCandidateMode: (mode: 'professional' | 'academic') => void;
+    candidateMode: CandidateMode;
+    onSwitchMode: (mode: CandidateMode) => void;
+    isSwitchingMode?: boolean;
+    onSaveProfile: (profile: Profile) => Promise<void>;
 }
 
 export default function CandidateProfile({
                                              profile,
                                              setProfile,
-                                             candidateMode
+                                             candidateMode,
+                                             onSwitchMode,
+                                             isSwitchingMode,
+                                             onSaveProfile
                                          }: CandidateProfileProps) {
     const {t} = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [editedProfile, setEditedProfile] = useState<Profile>(profile);
+    const [experiences, setExperiences] = useState<Experience[]>([]);
+    const [isLoadingExperiences, setIsLoadingExperiences] = useState(true);
     const [newSkill, setNewSkill] = useState('');
 
-    const handleSave = () => {
-        setProfile(editedProfile);
-        setIsEditing(false);
+    useEffect(() => {
+        setEditedProfile(profile);
+    }, [profile]);
+
+    useEffect(() => {
+        if (!profile.id) return;
+
+        setIsLoadingExperiences(true);
+        fetchCandidateExperiences(profile.id, candidateMode)
+            .then(setExperiences)
+            .catch((err) => console.error('Failed to load experiences:', err))
+            .finally(() => setIsLoadingExperiences(false));
+    }, [profile.id, candidateMode]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            await onSaveProfile(editedProfile);
+            setIsEditing(false);
+        } catch (err) {
+            console.error('Failed to save profile:', err);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleAddSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -67,10 +99,11 @@ export default function CandidateProfile({
                     {isEditing ? (
                         <Button
                             onClick={handleSave}
+                            disabled={isSaving}
                             className="bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl shadow-sm gap-2 px-6 h-10"
                         >
-                            <Save className="w-4 h-4"/>
-                            {t('profile.saveChanges')}
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin"/> : <Save className="w-4 h-4"/>}
+                            {isSaving ? t('profile.saving', 'Запазване...') : t('profile.saveChanges')}
                         </Button>
                     ) : (
                         <Button
@@ -194,20 +227,28 @@ export default function CandidateProfile({
                 <div className="lg:col-span-8 space-y-6">
 
                     {/* Active Mode Indicator */}
-                    <div className="flex items-center gap-3 bg-[#f0edef]/50 p-4 rounded-2xl border border-[#c6c6cd]/30">
-                        <div
-                            className={`p-2 rounded-xl text-white ${candidateMode === 'professional' ? 'bg-professional-emerald' : 'bg-academic-purple'}`}>
-                            {candidateMode === 'professional' ? <Briefcase className="w-5 h-5"/> :
-                                <GraduationCap className="w-5 h-5"/>}
+                    <div
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#f0edef]/50 p-4 rounded-2xl border border-[#c6c6cd]/30">
+                        <div className="flex items-center gap-3">
+                            <div
+                                className={`p-2 rounded-xl text-white ${candidateMode === 'professional' ? 'bg-professional-emerald' : 'bg-academic-purple'}`}>
+                                {candidateMode === 'professional' ? <Briefcase className="w-5 h-5"/> :
+                                    <GraduationCap className="w-5 h-5"/>}
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-grey-dark">
+                                    {t('profile.activeView')}: {candidateMode === 'professional' ? t('profile.proMode') : t('profile.academicMode')}
+                                </h3>
+                                <p className="text-xs text-grey-muted mt-0.5">
+                                    {t('profile.activeViewDesc')}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="text-sm font-bold text-grey-dark">
-                                {t('profile.activeView')}: {candidateMode === 'professional' ? t('profile.proMode') : t('profile.academicMode')}
-                            </h3>
-                            <p className="text-xs text-grey-muted mt-0.5">
-                                {t('profile.activeViewDesc')}
-                            </p>
-                        </div>
+                        <ModeToggle
+                            mode={candidateMode}
+                            onModeChange={onSwitchMode}
+                            isLoading={isSwitchingMode}
+                        />
                     </div>
 
                     <Card className="rounded-3xl border-[#c6c6cd] shadow-xs bg-white/40 backdrop-blur-md">
@@ -259,25 +300,39 @@ export default function CandidateProfile({
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6">
-                            <div className="relative border-l-2 border-[#c6c6cd]/40 ml-4 pl-6 pb-4 space-y-8">
-                                {/* Simulated Timeline Item 1 */}
-                                <div className="relative">
-                                    <div
-                                        className={`absolute -left-[35px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${candidateMode === 'professional' ? 'bg-professional-emerald' : 'bg-academic-purple'}`}></div>
-                                    <h4 className="text-base font-bold text-grey-dark">
-                                        {candidateMode === 'professional' ? 'Junior Software Engineer' : 'Дипломна Работа: AI Matching Engine'}
-                                    </h4>
-                                    <p className="text-sm font-medium text-brand-blue mt-0.5">
-                                        {candidateMode === 'professional' ? 'Tech Innovators Ltd.' : 'Технически Университет - Варна'}
-                                    </p>
-                                    <p className="text-xs text-grey-muted mt-1 font-mono">2023 - Настояще</p>
-                                    <p className="text-sm text-grey-muted mt-3 leading-relaxed">
-                                        {candidateMode === 'professional'
-                                            ? 'Разработка на микросървисна архитектура със Spring Boot и React. Интеграция на AI модели за обработка на данни.'
-                                            : 'Изграждане на алгоритъм за препоръки базиран на Spring WebFlux и NLP за анализ на автобиографии.'}
-                                    </p>
+                            {isLoadingExperiences ? (
+                                <div className="flex items-center justify-center py-8 text-grey-muted gap-2">
+                                    <Loader2 className="w-5 h-5 animate-spin"/>
+                                    {t('profile.loadingExperiences', 'Зареждане...')}
                                 </div>
-                            </div>
+                            ) : experiences.length === 0 ? (
+                                <p className="text-sm text-grey-muted">{t('profile.noExperiences', 'Все още няма добавен опит за този режим.')}</p>
+                            ) : (
+                                <div className="relative border-l-2 border-[#c6c6cd]/40 ml-4 pl-6 pb-4 space-y-8">
+                                    {experiences.map((experience) => (
+                                        <div key={experience.id} className="relative">
+                                            <div
+                                                className={`absolute -left-[35px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${candidateMode === 'professional' ? 'bg-professional-emerald' : 'bg-academic-purple'}`}></div>
+                                            <h4 className="text-base font-bold text-grey-dark">
+                                                {experience.title}
+                                            </h4>
+                                            <p className="text-sm font-medium text-brand-blue mt-0.5">
+                                                {experience.organization}
+                                            </p>
+                                            <p className="text-xs text-grey-muted mt-1 font-mono">
+                                                {experience.startDate ?? '—'}
+                                                {' - '}
+                                                {experience.currentlyActive ? t('profile.present', 'Настояще') : (experience.endDate ?? '—')}
+                                            </p>
+                                            {experience.description && (
+                                                <p className="text-sm text-grey-muted mt-3 leading-relaxed">
+                                                    {experience.description}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
