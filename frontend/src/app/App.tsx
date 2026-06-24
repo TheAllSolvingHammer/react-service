@@ -1,3 +1,298 @@
+import { useState, useEffect } from 'react';
+import Header from '@/components/pages/Header';
+import CandidateDashboard from '@/components/pages/CandidateDashboard';
+import CandidateProfile from '@/components/pages/CandidateProfile';
+import CandidateOpportunities from '@/components/pages/CandidateOpportunities';
+import CandidateAiMatches from '@/components/pages/CandidateAiMatches';
+import RecruiterDashboard from '@/components/pages/RecruiterDashboard';
+import RecruiterRanking from '@/components/pages/RecruiterRanking';
+import RecruiterCandidateDetail from '@/components/pages/RecruiterCandidateDetail';
+
+// Auth & Onboarding Components
+import Login from '@/components/pages/Login';
+import Register from '@/components/pages/Register';
+import ProfileOnboarding from '@/components/pages/ProfileOnboarding';
+
+import apiClient from '@/lib/axios';
+import { Profile, Opportunity, Applicant } from '@/lib/types';
+import { parseApiMode, CandidateMode } from '@/lib/mode';
+import { switchCandidateMode, saveCandidateProfile } from '@/lib/profileApi';
+import { fetchOpportunitiesWithMatches, fetchOpportunityCount } from '@/lib/opportunities';
+import { fetchRecruiterApplicants } from '@/lib/applicants';
+import { resolveSkillNames } from '@/lib/skills';
+import { Sparkles } from 'lucide-react';
+
 export default function App() {
-    return null;
+    // Check localStorage initially to survive page refreshes
+    const savedToken = localStorage.getItem('jwt_token');
+    const savedRole = localStorage.getItem('user_role') as 'candidate' | 'recruiter' | null;
+    const savedUserId = localStorage.getItem('user_id'); // <-- Retrieved the user ID
+
+    // Auth State
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!savedToken);
+    const [authView, setAuthView] = useState<'login' | 'register'>('login');
+
+    // App Navigation State
+    const [currentRole, setCurrentRole] = useState<'candidate' | 'recruiter'>(savedRole || 'candidate');
+    const [currentTab, setCurrentTab] = useState<string>('dashboard');
+    const [candidateMode, setCandidateMode] = useState<CandidateMode>('professional');
+    const [isSwitchingMode, setIsSwitchingMode] = useState(false);
+
+    // Network State
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Shared Application State
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+    const [applicants, setApplicants] = useState<Applicant[]>([]);
+    const [opportunityCount, setOpportunityCount] = useState(0);
+    const [appliedList, setAppliedList] = useState<any[]>([]);
+
+    const [selectedOpportunityId, setSelectedOpportunityId] = useState<string | null>(null);
+    const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(null);
+
+    // Logout Handler
+    const handleLogout = () => {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('user_role');
+        localStorage.removeItem('user_id'); // <-- Clear ID on logout
+        setIsAuthenticated(false);
+        setProfile(null);
+    };
+
+    // Main Data Fetching Hook
+    useEffect(() => {
+        if (!isAuthenticated || !savedUserId) return;
+
+        setIsLoading(true);
+        setError(null);
+
+        const profileEndpoint = currentRole === 'recruiter'
+            ? `/api/v1/profiles/institution/${savedUserId}`
+            : `/api/v1/profiles/candidates/${savedUserId}`;
+
+        apiClient.get(profileEndpoint)
+            .then(async (response: { data: any; }) => {
+                const p = response.data;
+                const skillIds = p.skillNames
+                    ? Array.from(p.skillNames as Iterable<unknown>).map(String)
+                    : Array.isArray(p.skills)
+                        ? p.skills.map(String)
+                        : [];
+                const skillNames = currentRole === 'candidate'
+                    ? await resolveSkillNames(skillIds)
+                    : [];
+
+                setProfile({
+                    ...p,
+                    id: p.id || savedUserId,
+                    userId: savedUserId,
+                    name: p.firstName ? `${p.firstName} ${p.lastName}` : (p.displayName || p.fullName || 'Неизвестен Потребител'),
+                    role: p.headline || p.role || 'Специалист',
+                    email: p.email || '',
+                    location: p.location || '',
+                    bio: p.biography || p.bio || '',
+                    skills: skillNames,
+                    skillIds,
+                    type: currentRole === 'candidate' ? 'professional' : 'institution',
+                    candidateType: p.candidateType,
+                    educationType: p.educationType,
+                    birthday: p.birthday,
+                    currentMode: parseApiMode(p.currentMode),
+                    isCompleted: p.isCompleted !== undefined ? p.isCompleted : false
+                });
+
+                if (currentRole === 'candidate') {
+                    setCandidateMode(parseApiMode(p.currentMode));
+                }
+
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to load profile:", err);
+                if (err.response?.status === 404) {
+                    // Profile truly doesn't exist yet (fresh registration). Show the wizard!
+                    setProfile({
+                        id: savedUserId,
+                        userId: savedUserId,
+                        name: '',
+                        role: '',
+                        email: '',
+                        location: '',
+                        bio: '',
+                        skills: [],
+                        type: currentRole === 'candidate' ? 'professional' : 'institution',
+                        isCompleted: false
+                    });
+                } else {
+                    setError("Неуспешна връзка с Profile Service. Моля, проверете конзолата на бекенда.");
+                }
+                setIsLoading(false);
+            });
+
+    }, [isAuthenticated, currentRole, savedUserId]);
+
+    useEffect(() => {
+        if (!isAuthenticated || currentRole !== 'candidate' || !profile?.isCompleted || !profile.userId) return;
+
+        fetchOpportunitiesWithMatches(profile.userId)
+            .then(setOpportunities)
+            .catch((err) => console.error('Failed to load opportunities:', err));
+    }, [isAuthenticated, currentRole, profile?.isCompleted, profile?.userId]);
+
+    useEffect(() => {
+        if (!isAuthenticated || currentRole !== 'recruiter' || !profile?.isCompleted) return;
+
+        Promise.all([
+            fetchRecruiterApplicants().then(setApplicants),
+            fetchOpportunityCount().then(setOpportunityCount),
+        ]).catch((err) => console.error('Failed to load recruiter data:', err));
+    }, [isAuthenticated, currentRole, profile?.isCompleted]);
+
+    const handleSwitchMode = async (mode: CandidateMode) => {
+        if (!profile?.id || mode === candidateMode) return;
+
+        const previousMode = candidateMode;
+        setCandidateMode(mode);
+        setIsSwitchingMode(true);
+
+        try {
+            const persistedMode = await switchCandidateMode(profile.id, mode);
+            setCandidateMode(persistedMode);
+            setProfile((prev) => prev ? { ...prev, currentMode: persistedMode } : prev);
+        } catch (err) {
+            console.error('Failed to switch mode:', err);
+            setCandidateMode(previousMode);
+        } finally {
+            setIsSwitchingMode(false);
+        }
+    };
+
+    const handleUpdateApplicantStatus = (id: string, newStatus: "Ново" | "Интервю" | "Преглед") => {
+        setApplicants(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
+    };
+
+    const selectedApplicant = applicants.find(a => a.id === selectedApplicantId) || applicants[0];
+
+    // ==========================================
+    // 1. AUTHENTICATION GATE
+    // ==========================================
+    if (!isAuthenticated) {
+        if (authView === 'login') {
+            return (
+                <Login
+                    onNavigateToRegister={() => setAuthView('register')}
+                    onLoginSuccess={() => {
+                        setIsAuthenticated(true);
+                        const role = (localStorage.getItem('user_role') as 'candidate' | 'recruiter') || 'candidate';
+                        setCurrentRole(role);
+                        setCurrentTab(role === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
+                    }}
+                />
+            );
+        }
+
+        if (authView === 'register') {
+            return (
+                <Register
+                    onNavigateToLogin={() => setAuthView('login')}
+                    onRegisterSuccess={(role) => {
+                        setCurrentRole(role);
+                        setCurrentTab(role === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
+                        setIsAuthenticated(true);
+                    }}
+                />
+            );
+        }
+    }
+
+    // ==========================================
+    // 2. LOADING & ERROR STATES (Post-Login)
+    // ==========================================
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-transparent z-10 relative">
+                <Sparkles className="w-12 h-12 text-brand-blue animate-pulse mb-4" />
+                <h2 className="text-xl font-display font-bold text-grey-dark tracking-widest uppercase">Зареждане на данни...</h2>
+                <p className="text-sm text-grey-muted mt-2 font-mono">Connecting to API Gateway</p>
+            </div>
+        );
+    }
+
+    if (error || !profile) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-transparent z-10 relative text-center px-4">
+                <div className="bg-red-500/10 border border-red-500/20 text-red-600 p-6 rounded-2xl max-w-md backdrop-blur-md">
+                    <h2 className="text-lg font-bold mb-2">Грешка в системата</h2>
+                    <p className="text-sm">{error || "Профилът не беше открит."}</p>
+                    <button
+                        onClick={handleLogout}
+                        className="mt-4 px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-bold shadow-sm hover:bg-red-50"
+                    >
+                        Изход
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // ==========================================
+    // 3. PROFILE ONBOARDING GATE
+    // ==========================================
+    if (profile && profile.isCompleted === false) {
+        return (
+            <ProfileOnboarding
+                profile={profile}
+                onComplete={(updatedProfile) => {
+                    setProfile({ ...updatedProfile, isCompleted: true });
+                }}
+                onLogout={handleLogout}
+            />
+        );
+    }
+
+    // ==========================================
+    // 4. MAIN APPLICATION ROUTING
+    // ==========================================
+    return (
+        <div className="min-h-screen flex flex-col bg-transparent relative overflow-x-hidden z-10">
+            <Header
+                currentRole={currentRole}
+                setCurrentRole={(role) => {
+                    setCurrentRole(role);
+                    setCurrentTab(role === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
+                }}
+                currentTab={currentTab}
+                setCurrentTab={setCurrentTab}
+                candidateMode={candidateMode}
+                onSwitchMode={handleSwitchMode}
+                isSwitchingMode={isSwitchingMode}
+                onLogout={handleLogout}
+            />
+
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {currentRole === 'candidate' && (
+                    <>
+                        {currentTab === 'dashboard' && <CandidateDashboard profile={profile} candidateMode={candidateMode} setCurrentTab={setCurrentTab} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
+                        {currentTab === 'profile' && <CandidateProfile profile={profile} setProfile={setProfile as any} candidateMode={candidateMode} onSwitchMode={handleSwitchMode} isSwitchingMode={isSwitchingMode} onSaveProfile={async (updated) => {
+                            const saved = await saveCandidateProfile(updated);
+                            setProfile(saved);
+                            if (saved.currentMode) setCandidateMode(saved.currentMode);
+                        }} />}
+                        {currentTab === 'opportunities' && <CandidateOpportunities profile={profile} opportunities={opportunities} selectedOpportunityId={selectedOpportunityId} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
+                        {currentTab === 'aimatches' && <CandidateAiMatches profile={profile} candidateMode={candidateMode} opportunities={opportunities} />}
+                    </>
+                )}
+
+                {currentRole === 'recruiter' && (
+                    <>
+                        {currentTab === 'recruiter_dashboard' && <RecruiterDashboard applicants={applicants} opportunityCount={opportunityCount} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
+                        {currentTab === 'recruiter_applicants' && <RecruiterRanking applicants={applicants} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
+                        {currentTab === 'recruiter_applicant_detail' && selectedApplicant && <RecruiterCandidateDetail applicant={selectedApplicant} onBack={() => setCurrentTab('recruiter_dashboard')} onUpdateStatus={handleUpdateApplicantStatus} />}
+                    </>
+                )}
+            </main>
+        </div>
+    );
 }
