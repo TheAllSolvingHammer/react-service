@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Mail, Lock, User, Briefcase, Building, ArrowRight, ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
+import { Sparkles, Mail, Lock, User, Briefcase, Building, ArrowRight, ArrowLeft, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +56,7 @@ export default function Register({ onNavigateToLogin, onRegisterSuccess }: { onN
     };
 
     const handleFinalSubmit = async () => {
-        if (!selectedRole) return;
+        if (!selectedRole || isSubmitting) return;
         setIsSubmitting(true);
         setError(null);
 
@@ -89,6 +89,8 @@ export default function Register({ onNavigateToLogin, onRegisterSuccess }: { onN
             // Try to extract the exact error message from the Spring Boot response
             const backendMessage = err.response?.data?.message || err.response?.data;
             setError(typeof backendMessage === 'string' ? backendMessage : t('auth.registrationFailed'));
+        }
+        finally {
             setIsSubmitting(false);
         }
     };
@@ -286,7 +288,16 @@ export default function Register({ onNavigateToLogin, onRegisterSuccess }: { onN
                                         disabled={!selectedRole || isSubmitting}
                                         className="flex-1 h-12 rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white font-bold shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isSubmitting ? 'Моля изчакайте...' : t('auth.completeRegistration')} <Sparkles className="w-4 h-4 ml-2" />
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                {t('auth.awaitingOperation')}
+                                            </>
+                                        ) : (
+                                            <>
+                                                {t('auth.completeRegistration')} <Sparkles className="w-4 h-4 ml-2" />
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </div>

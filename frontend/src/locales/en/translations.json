@@ -185,6 +185,24 @@
     "passwordsDoNotMatch": "Passwords do not match!",
     "shortPassword": "Password must contain at least 6 characters.",
     "shortName": "Name must be at least 3 characters.",
-    "registrationFailed": "Registration failed. The email might already be in use."
+    "registrationFailed": "Registration failed. The email might already be in use.",
+    "loadingDots" : "Loading...",
+    "awaitingOperation" : "Please wait while we process your request.."
+  },
+  "academic": {
+    "campaignTitle": "University Admissions",
+    "campaignSubtitle": "Manage your applications and choose your best future.",
+    "applicationLimit": "Application Limit",
+    "maxReached": "Maximum limit reached",
+    "yourApplications": "Your Applications",
+    "enrollNow": "Enroll Now",
+    "processing": "Processing...",
+    "status": {
+      "enrolled": "Enrolled",
+      "accepted": "Accepted! Awaiting Decision",
+      "review": "Under Review",
+      "new": "Submitted",
+      "archived": "Archived"
+    }
   }
 }

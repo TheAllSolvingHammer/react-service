@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Mail, Lock, ArrowRight } from 'lucide-react';
+import {Sparkles, Mail, Lock, ArrowRight, Loader2} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,13 +9,17 @@ import apiClient from '@/lib/axios';
 import {parseJwt} from "@/lib/utils.ts";
 
 export default function Login({ onNavigateToRegister, onLoginSuccess }: { onNavigateToRegister: () => void, onLoginSuccess: () => void }) {
+    const [isLoading, setIsLoading] = useState(false);
     const { t } = useTranslation();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
+        if (isLoading)
+            return;
 
+        setIsLoading(true);
         try {
             const payload = {
                 username: username,
@@ -38,6 +42,9 @@ export default function Login({ onNavigateToRegister, onLoginSuccess }: { onNavi
             }
         } catch (error) {
             console.error("Login failed:", error);
+        }
+        finally {
+            setIsLoading(false);
         }
     };
 
@@ -98,7 +105,16 @@ export default function Login({ onNavigateToRegister, onLoginSuccess }: { onNavi
                             </div>
 
                             <Button type="submit" className="w-full h-12 rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white font-bold text-sm shadow-md mt-4 transition-transform hover:scale-[1.02]">
-                                {t('auth.signIn')} <ArrowRight className="w-4 h-4 ml-2" />
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        {t('auth.loadingDots')}
+                                    </>
+                                ) : (
+                                    <>
+                                        {t('auth.signIn')} <ArrowRight className="w-4 h-4 ml-2" />
+                                    </>
+                                )}
                             </Button>
                         </form>
 

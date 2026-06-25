@@ -21,6 +21,9 @@ import { fetchOpportunitiesWithMatches, fetchOpportunityCount } from '@/lib/oppo
 import { fetchRecruiterApplicants } from '@/lib/applicants';
 import { resolveSkillNames } from '@/lib/skills';
 import { Sparkles } from 'lucide-react';
+import AcademicDashboard from "@/components/pages/AcademicDashboard.tsx";
+
+
 
 export default function App() {
     const savedToken = localStorage.getItem('jwt_token');
@@ -168,7 +171,7 @@ export default function App() {
         }
     };
 
-    const handleUpdateApplicantStatus = (id: string, newStatus: "Ново" | "Интервю" | "Преглед") => {
+    const handleUpdateApplicantStatus = (id: string, newStatus: "Ново" | "Интервю" | "Преглед" | "Приет" | "Отказан") => {
         setApplicants(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
     };
 
@@ -273,7 +276,7 @@ export default function App() {
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {currentRole === 'candidate' && (
                     <>
-                        {currentTab === 'dashboard' && (
+                        {currentTab === 'dashboard' && candidateMode === 'professional' && (
                             <CandidateDashboard
                                 profile={profile}
                                 candidateMode={candidateMode}
@@ -281,6 +284,10 @@ export default function App() {
                                 setCurrentTab={setCurrentTab}
                                 setSelectedOpportunityId={setSelectedOpportunityId}
                             />
+                        )}
+
+                        {currentTab === 'dashboard' && candidateMode === 'academic' && (
+                            <AcademicDashboard />
                         )}
                         {currentTab === 'profile' && (
                             <CandidateProfile

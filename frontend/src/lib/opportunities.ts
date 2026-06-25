@@ -96,3 +96,10 @@ export async function fetchOpportunityCount(): Promise<number> {
     );
     return Number(response.data?.totalElements ?? 0);
 }
+
+export async function updateApplicationStatus(applicationId: string, status: string) {
+    const response = await apiClient.patch(`/api/v1/opportunities/applications/${applicationId}/status`, null, {
+        params: { status }
+    });
+    return response.data;
+}
