@@ -5,12 +5,18 @@ import {fetchLatestApplications} from '@/lib/applications';
 import {fetchCandidateMatches} from '@/lib/matching';
 import {resolveSkillNames} from '@/lib/skills';
 
+
 function mapApplicantStatus(status: string): Applicant['status'] {
     switch (status) {
-        case 'INTERVIEW_SCHEDULED':
-            return 'Интервю';
         case 'REVIEWING':
             return 'Преглед';
+        case 'INTERVIEW_SCHEDULED':
+            return 'Интервю';
+        case 'ACCEPTED':
+            return 'Приет';
+        case 'REJECTED':
+            return 'Отказан';
+        case 'PENDING':
         default:
             return 'Ново';
     }

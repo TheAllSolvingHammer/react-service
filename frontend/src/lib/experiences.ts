@@ -1,5 +1,5 @@
 import apiClient from '@/lib/axios';
-import { CandidateMode, toApiMode } from '@/lib/mode';
+import {ApiExperienceMode, CandidateMode, toApiMode} from '@/lib/mode';
 import { Experience } from '@/lib/types';
 
 export async function fetchCandidateExperiences(
@@ -26,4 +26,21 @@ export async function fetchCandidateExperiences(
         currentlyActive: Boolean(item.currentlyActive),
         mode: String(item.mode ?? ''),
     }));
+}
+
+export async function createCandidateExperience(payload: {
+    candidateId: string;
+    title: string;
+    organization: string;
+    description?: string;
+    startDate: string;
+    endDate?: string;
+    currentlyActive: boolean;
+    mode: ApiExperienceMode;
+}): Promise<void> {
+    await apiClient.post('/api/v1/experiences', payload);
+}
+
+export async function deleteCandidateExperience(expId: string): Promise<void> {
+    await apiClient.delete(`/api/v1/experiences/${expId}`);
 }

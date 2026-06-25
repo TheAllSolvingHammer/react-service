@@ -1,6 +1,7 @@
 export type CandidateMode = 'professional' | 'academic';
 
-export type ApiExperienceMode = 'Professional' | 'Academic';
+// ОБНОВЕНО: Използваме изцяло главни букви, за да съвпадат с Java Enum-а
+export type ApiExperienceMode = 'PROFESSIONAL' | 'ACADEMIC';
 
 export function parseApiMode(value: unknown): CandidateMode {
     if (value === 'Academic' || value === 'ACADEMIC' || value === 'academic') {
@@ -10,5 +11,6 @@ export function parseApiMode(value: unknown): CandidateMode {
 }
 
 export function toApiMode(mode: CandidateMode): ApiExperienceMode {
-    return mode === 'academic' ? 'Academic' : 'Professional';
+    // ОБНОВЕНО: Връщаме изцяло главни букви към бекенда
+    return mode === 'academic' ? 'ACADEMIC' : 'PROFESSIONAL';
 }

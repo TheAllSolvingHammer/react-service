@@ -12,14 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
-// Този интерфейс перфектно съвпада с това, което подаваш в App.tsx!
-interface CandidateOpportunitiesProps {
+interface OpportunitiesProps {
     profile: Profile;
     selectedOpportunityId: string | null;
     setSelectedOpportunityId: (id: string | null) => void;
 }
 
-export default function CandidateOpportunities({ profile, selectedOpportunityId, setSelectedOpportunityId }: CandidateOpportunitiesProps) {
+export default function Opportunities({ profile, selectedOpportunityId, setSelectedOpportunityId }: OpportunitiesProps) {
     const { t } = useTranslation();
 
     // Списък състояния

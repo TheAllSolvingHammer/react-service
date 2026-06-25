@@ -17,7 +17,6 @@ interface HeaderProps {
 
 export default function Header({
                                    currentRole,
-                                   setCurrentRole,
                                    currentTab,
                                    setCurrentTab,
                                    candidateMode,
@@ -110,35 +109,6 @@ export default function Header({
                         <Globe className="w-4 h-4"/>
                         {i18n.language.startsWith('bg') ? 'EN' : 'BG'}
                     </Button>
-
-                    <div className="flex bg-[#f0edef] p-1 rounded-xl border border-[#c6c6cd]/40">
-                        <button
-                            onClick={() => {
-                                setCurrentRole('candidate');
-                                setCurrentTab('dashboard');
-                            }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                currentRole === 'candidate'
-                                    ? 'bg-white text-brand-blue shadow-sm'
-                                    : 'text-grey-muted hover:text-grey-dark'
-                            }`}
-                        >
-                            {t('roles.candidate')}
-                        </button>
-                        <button
-                            onClick={() => {
-                                setCurrentRole('recruiter');
-                                setCurrentTab('recruiter_dashboard');
-                            }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                currentRole === 'recruiter'
-                                    ? 'bg-[#1b1b1d] text-white shadow-sm'
-                                    : 'text-grey-muted hover:text-grey-dark'
-                            }`}
-                        >
-                            {t('roles.recruiter')}
-                        </button>
-                    </div>
                 </div>
             </div>
         </header>

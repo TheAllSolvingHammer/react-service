@@ -23,10 +23,9 @@ import { resolveSkillNames } from '@/lib/skills';
 import { Sparkles } from 'lucide-react';
 
 export default function App() {
-    // Check localStorage initially to survive page refreshes
     const savedToken = localStorage.getItem('jwt_token');
     const savedRole = localStorage.getItem('user_role') as 'candidate' | 'recruiter' | null;
-    const savedUserId = localStorage.getItem('user_id'); // <-- Retrieved the user ID
+    const savedUserId = localStorage.getItem('user_id');
 
     // Auth State
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!savedToken);
@@ -47,7 +46,6 @@ export default function App() {
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [applicants, setApplicants] = useState<Applicant[]>([]);
     const [opportunityCount, setOpportunityCount] = useState(0);
-    const [appliedList, setAppliedList] = useState<any[]>([]);
 
     const [selectedOpportunityId, setSelectedOpportunityId] = useState<string | null>(null);
     const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(null);
@@ -56,7 +54,7 @@ export default function App() {
     const handleLogout = () => {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('user_role');
-        localStorage.removeItem('user_id'); // <-- Clear ID on logout
+        localStorage.removeItem('user_id');
         setIsAuthenticated(false);
         setProfile(null);
     };
@@ -112,7 +110,6 @@ export default function App() {
             .catch(err => {
                 console.error("Failed to load profile:", err);
                 if (err.response?.status === 404) {
-                    // Profile truly doesn't exist yet (fresh registration). Show the wizard!
                     setProfile({
                         id: savedUserId,
                         userId: savedUserId,
@@ -133,6 +130,7 @@ export default function App() {
 
     }, [isAuthenticated, currentRole, savedUserId]);
 
+    // Fetch Opportunities for AI Matches Tab
     useEffect(() => {
         if (!isAuthenticated || currentRole !== 'candidate' || !profile?.isCompleted || !profile.userId) return;
 
@@ -141,6 +139,7 @@ export default function App() {
             .catch((err) => console.error('Failed to load opportunities:', err));
     }, [isAuthenticated, currentRole, profile?.isCompleted, profile?.userId]);
 
+    // Fetch Recruiter Data
     useEffect(() => {
         if (!isAuthenticated || currentRole !== 'recruiter' || !profile?.isCompleted) return;
 
@@ -208,7 +207,7 @@ export default function App() {
     }
 
     // ==========================================
-    // 2. LOADING & ERROR STATES (Post-Login)
+    // 2. LOADING & ERROR STATES
     // ==========================================
     if (isLoading) {
         return (
@@ -274,14 +273,43 @@ export default function App() {
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {currentRole === 'candidate' && (
                     <>
-                        {currentTab === 'dashboard' && <CandidateDashboard profile={profile} candidateMode={candidateMode} setCurrentTab={setCurrentTab} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
-                        {currentTab === 'profile' && <CandidateProfile profile={profile} setProfile={setProfile as any} candidateMode={candidateMode} onSwitchMode={handleSwitchMode} isSwitchingMode={isSwitchingMode} onSaveProfile={async (updated) => {
-                            const saved = await saveCandidateProfile(updated);
-                            setProfile(saved);
-                            if (saved.currentMode) setCandidateMode(saved.currentMode);
-                        }} />}
-                        {currentTab === 'opportunities' && <CandidateOpportunities profile={profile} opportunities={opportunities} selectedOpportunityId={selectedOpportunityId} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
-                        {currentTab === 'aimatches' && <CandidateAiMatches profile={profile} candidateMode={candidateMode} opportunities={opportunities} />}
+                        {currentTab === 'dashboard' && (
+                            <CandidateDashboard
+                                profile={profile}
+                                candidateMode={candidateMode}
+                                setCandidateMode={handleSwitchMode}
+                                setCurrentTab={setCurrentTab}
+                                setSelectedOpportunityId={setSelectedOpportunityId}
+                            />
+                        )}
+                        {currentTab === 'profile' && (
+                            <CandidateProfile
+                                profile={profile}
+                                setProfile={setProfile as any}
+                                candidateMode={candidateMode}
+                                onSwitchMode={handleSwitchMode}
+                                isSwitchingMode={isSwitchingMode}
+                                onSaveProfile={async (updated) => {
+                                    const saved = await saveCandidateProfile(updated);
+                                    setProfile(saved);
+                                    if (saved.currentMode) setCandidateMode(saved.currentMode);
+                                }}
+                            />
+                        )}
+                        {currentTab === 'opportunities' && (
+                            <CandidateOpportunities
+                                profile={profile}
+                                selectedOpportunityId={selectedOpportunityId}
+                                setSelectedOpportunityId={setSelectedOpportunityId}
+                            />
+                        )}
+                        {currentTab === 'aimatches' && (
+                            <CandidateAiMatches
+                                profile={profile}
+                                candidateMode={candidateMode}
+                                opportunities={opportunities}
+                            />
+                        )}
                     </>
                 )}
 

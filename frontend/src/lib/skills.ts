@@ -7,10 +7,10 @@ export interface SkillRecord {
 
 let cachedSkills: SkillRecord[] | null = null;
 
-export async function fetchAllSkills(): Promise<SkillRecord[]> {
+export async function fetchAllSkills(): Promise<SkillRecord[] | null> {
     if (cachedSkills) return cachedSkills;
 
-    const response = await apiClient.get('/api/v1/utils/skills?page=0&size=200&sortBy=name&direction=ASC');
+    const response = await apiClient.get('/api/v1/utils/skills?page=0&size=100&sortBy=name&direction=ASC');
     const content = response.data?.content ?? [];
     cachedSkills = content.map((skill: Record<string, unknown>) => ({
         id: String(skill.id),

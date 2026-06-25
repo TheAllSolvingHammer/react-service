@@ -1,11 +1,8 @@
-import {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Award, Briefcase, ChevronRight, Search, Sparkles, TrendingUp, Users} from 'lucide-react';
+import {ArrowRight, Briefcase, Clock, Eye, TrendingUp, UserCheck, Users} from 'lucide-react';
 import {Applicant} from '@/lib/types';
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
-import {Badge} from "@/components/ui/badge";
-import {Input} from "@/components/ui/input";
 
 interface RecruiterDashboardProps {
     applicants: Applicant[];
@@ -21,232 +18,191 @@ export default function RecruiterDashboard({
                                                setSelectedApplicantId
                                            }: RecruiterDashboardProps) {
     const {t} = useTranslation();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedType, setSelectedType] = useState<string>('all');
 
-    const avgMatch = applicants.length
-        ? Math.round(applicants.reduce((sum, app) => sum + app.matchScore, 0) / applicants.length)
-        : 0;
+    const newApplicants = applicants.filter(a => a.status === 'Ново').length;
+    // @ts-ignore
+    const reviewingApplicants = applicants.filter(a => a.status === 'Преглед').length;
+    // Сортираме най-новите/най-силните кандидати (вземаме топ 5)
+    const recentApplicants = [...applicants]
+        .sort((a, b) => b.matchScore - a.matchScore) // За демото ги сортираме по AI Score
+        .slice(0, 5);
 
-    const topUniversity = useMemo(() => {
-        const academicApplicants = applicants.filter((app) => app.candidateMode === 'academic');
-        return academicApplicants[0]?.role ?? '—';
-    }, [applicants]);
-
-    const stats = [
-        {
-            label: t('recruiterDashboard.totalCandidates'),
-            value: applicants.length.toString(),
-            icon: Users,
-            color: "text-brand-blue bg-brand-blue/10"
-        },
-        {
-            label: t('recruiterDashboard.activePositions'),
-            value: opportunityCount.toString(),
-            icon: Briefcase,
-            color: "text-professional-emerald bg-professional-emerald/10"
-        },
-        {
-            label: t('recruiterDashboard.topUniversity'),
-            value: topUniversity,
-            icon: Award,
-            color: "text-academic-purple bg-academic-purple/10"
-        },
-        {
-            label: t('recruiterDashboard.avgMatch'),
-            value: applicants.length ? `${avgMatch}%` : '—',
-            icon: TrendingUp,
-            color: "text-amber-500 bg-amber-500/10"
-        }
-    ];
-
-    // Search filter
-    const filteredApplicants = useMemo(() => {
-        return applicants.filter(app => {
-            const matchSearch =
-                app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                app.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                app.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
-
-            const matchType =
-                selectedType === 'all' ||
-                app.candidateMode === selectedType;
-
-            return matchSearch && matchType;
-        });
-    }, [applicants, searchQuery, selectedType]);
-
-    const handleInspectApplicant = (id: string) => {
+    const handleViewApplicant = (id: string) => {
         setSelectedApplicantId(id);
         setCurrentTab('recruiter_applicant_detail');
     };
 
     return (
-        <div className="space-y-8 animate-fade-in pb-12">
-            {/* Header section */}
-            <header
-                className="pb-6 border-b border-[#c6c6cd]/30 flex flex-col md:flex-row md:justify-between md:items-end gap-6">
-                <div>
-                    <h1 className="text-3xl font-display font-black text-grey-dark leading-tight">
-                        {t('recruiterDashboard.title')}
-                    </h1>
-                    <p className="text-sm text-grey-muted mt-1.5">
-                        {t('recruiterDashboard.subtitle')}
-                    </p>
-                </div>
-                <Badge variant="outline"
-                       className="bg-[#1b1b1d] text-white px-3 py-1.5 text-xs font-bold rounded-xl font-mono self-start md:self-auto uppercase tracking-wide border-transparent shadow-sm">
-                    {t('recruiterDashboard.accessEnabled')}
-                </Badge>
+        <div className="space-y-6 animate-fade-in relative pb-12">
+            <div
+                className="absolute top-0 right-0 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
+            <header className="pb-6 border-b border-[#c6c6cd]/30">
+                <h1 className="text-4xl font-display font-extrabold text-grey-dark tracking-tight leading-tight">
+                    {t('recruiter.welcome', 'Команден център')}
+                </h1>
+                <p className="text-lg text-grey-muted mt-2">
+                    {t('recruiter.subtitle', 'Управлявайте вашите обяви и открийте най-добрите таланти чрез AI анализ.')}
+                </p>
             </header>
 
-            {/* Numerical Metrics Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {stats.map((stat, i) => {
-                    const IconComp = stat.icon;
-                    return (
-                        <Card key={i} className="bg-white/60 backdrop-blur-md border-[#c6c6cd] rounded-3xl shadow-xs">
-                            <CardContent className="p-5 flex flex-col gap-3">
-                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${stat.color}`}>
-                                    <IconComp className="w-5 h-5"/>
-                                </div>
-                                <div>
-                                    <span
-                                        className="block text-2xl font-display font-black text-grey-dark tracking-tight">{stat.value}</span>
-                                    <span
-                                        className="text-[10px] uppercase tracking-wide font-extrabold text-grey-muted">{stat.label}</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+            {/* Stats Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card
+                    className="rounded-3xl border-0 shadow-sm bg-white p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div
+                        className="absolute -right-4 -top-4 w-24 h-24 bg-brand-blue/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <div className="flex justify-between items-center z-10">
+                        <span
+                            className="text-xs font-bold text-grey-muted uppercase tracking-wider">{t('recruiter.activeJobs', 'Активни Обяви')}</span>
+                        <div
+                            className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                            <Briefcase className="w-5 h-5"/>
+                        </div>
+                    </div>
+                    <span className="text-4xl font-black text-grey-dark z-10">{opportunityCount}</span>
+                </Card>
+
+                <Card
+                    className="rounded-3xl border-0 shadow-sm bg-white p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div
+                        className="absolute -right-4 -top-4 w-24 h-24 bg-match-high/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <div className="flex justify-between items-center z-10">
+                        <span
+                            className="text-xs font-bold text-grey-muted uppercase tracking-wider">{t('recruiter.totalApplicants', 'Общо Кандидати')}</span>
+                        <div
+                            className="w-10 h-10 rounded-xl bg-match-high/10 flex items-center justify-center text-match-high group-hover:bg-match-high group-hover:text-white transition-colors">
+                            <Users className="w-5 h-5"/>
+                        </div>
+                    </div>
+                    <span className="text-4xl font-black text-grey-dark z-10">{applicants.length}</span>
+                </Card>
+
+                <Card
+                    className="rounded-3xl border-0 shadow-sm bg-white p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div
+                        className="absolute -right-4 -top-4 w-24 h-24 bg-professional-emerald/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <div className="flex justify-between items-center z-10">
+                        <span
+                            className="text-xs font-bold text-grey-muted uppercase tracking-wider">{t('recruiter.newApplicants', 'Нови за преглед')}</span>
+                        <div
+                            className="w-10 h-10 rounded-xl bg-professional-emerald/10 flex items-center justify-center text-professional-emerald group-hover:bg-professional-emerald group-hover:text-white transition-colors">
+                            <Clock className="w-5 h-5"/>
+                        </div>
+                    </div>
+                    <span className="text-4xl font-black text-grey-dark z-10">{newApplicants}</span>
+                </Card>
             </div>
 
-            {/* Main Applicants Panel */}
-            <Card className="bg-white/60 backdrop-blur-md rounded-3xl border-[#c6c6cd] shadow-xs overflow-hidden">
-                <CardHeader
-                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-[#f0edef]/60">
-                    <CardTitle className="text-lg font-display font-bold text-grey-dark">
-                        {t('recruiterDashboard.applicantListTitle')}
-                    </CardTitle>
-
-                    <div
-                        className="flex flex-wrap items-center gap-2 bg-[#f0edef]/60 p-1 rounded-2xl border border-[#c6c6cd]/30">
-                        <Button
-                            variant={selectedType === 'all' ? "default" : "ghost"}
-                            onClick={() => setSelectedType('all')}
-                            className={`rounded-xl text-xs font-semibold h-8 px-3 ${selectedType === 'all' ? 'bg-[#1b1b1d] text-white hover:bg-black' : 'text-grey-muted hover:text-grey-dark'}`}
-                        >
-                            {t('recruiterDashboard.filterAll')}
-                        </Button>
-                        <Button
-                            variant={selectedType === 'professional' ? "default" : "ghost"}
-                            onClick={() => setSelectedType('professional')}
-                            className={`rounded-xl text-xs font-semibold h-8 px-3 ${selectedType === 'professional' ? 'bg-[#1b1b1d] text-white hover:bg-black' : 'text-grey-muted hover:text-grey-dark'}`}
-                        >
-                            {t('recruiterDashboard.filterPro')}
-                        </Button>
-                        <Button
-                            variant={selectedType === 'academic' ? "default" : "ghost"}
-                            onClick={() => setSelectedType('academic')}
-                            className={`rounded-xl text-xs font-semibold h-8 px-3 ${selectedType === 'academic' ? 'bg-[#1b1b1d] text-white hover:bg-black' : 'text-grey-muted hover:text-grey-dark'}`}
-                        >
-                            {t('recruiterDashboard.filterAcademic')}
-                        </Button>
-                    </div>
-                </CardHeader>
-
-                <CardContent className="p-6 lg:p-8 space-y-6">
-                    {/* Filters and Searches row */}
-                    <div className="relative max-w-2xl">
-                        <Input
-                            type="text"
-                            placeholder={t('recruiterDashboard.searchPlaceholder')}
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full bg-white/50 border-[#c6c6cd]/60 rounded-2xl pl-11 h-12 text-sm font-semibold focus-visible:ring-brand-blue shadow-sm"
-                        />
-                        <Search className="absolute left-4 top-4 w-4 h-4 text-grey-muted"/>
-                    </div>
-
-                    {/* Applicants List */}
-                    <div className="space-y-4">
-                        {filteredApplicants.length === 0 ? (
-                            <div
-                                className="text-center py-10 text-grey-muted font-medium border border-dashed border-[#c6c6cd] rounded-2xl">
-                                {t('recruiterDashboard.noCandidatesFound')}
-                            </div>
-                        ) : (
-                            filteredApplicants.map((app) => (
-                                <div
-                                    key={app.id}
-                                    onClick={() => handleInspectApplicant(app.id)}
-                                    className="flex flex-col md:flex-row items-stretch md:items-center justify-between p-4.5 rounded-2xl border border-[#c6c6cd]/60 hover:border-brand-blue bg-white/40 hover:bg-white/80 hover:shadow-sm transition-all cursor-pointer group gap-4 relative overflow-hidden"
-                                >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Pipeline Summary */}
+                <div className="lg:col-span-8 flex flex-col gap-6">
+                    <Card
+                        className="flex-1 rounded-3xl border border-[#c6c6cd]/30 shadow-lg bg-white/80 backdrop-blur-xl flex flex-col overflow-hidden relative">
+                        <div
+                            className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-blue to-purple-500"></div>
+                        <CardHeader
+                            className="flex flex-row justify-between items-center pb-4 border-b border-[#f0edef]/80">
+                            <CardTitle
+                                className="text-xl font-display font-bold text-grey-dark flex items-center gap-2.5">
+                                <UserCheck className="w-6 h-6 text-brand-blue"/>
+                                {t('recruiter.topCandidates', 'Топ Кандидати (AI Препоръчани)')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-4">
+                            {recentApplicants.length === 0 ? (
+                                <div className="text-center py-12 flex flex-col items-center justify-center">
                                     <div
-                                        className={`absolute top-0 left-0 w-1.5 h-full transition-colors ${app.candidateMode === 'professional' ? 'bg-[#c6c6cd]/30 group-hover:bg-professional-emerald' : 'bg-[#c6c6cd]/30 group-hover:bg-academic-purple'}`}></div>
-
-                                    <div className="flex items-center gap-4 pl-2">
-                                        <div
-                                            className="w-12 h-12 rounded-xl border border-[#c6c6cd]/50 overflow-hidden flex items-center justify-center bg-brand-blue/10 text-brand-blue font-bold text-lg select-none">
-                                            {app.name.split(' ').map(n => n[0]).join('')}
-                                        </div>
-
-                                        <div>
-                                            <h3 className="font-display font-black text-gray-900 group-hover:text-brand-blue transition-colors text-base leading-tight">
-                                                {app.name}
-                                            </h3>
-                                            <p className="text-xs text-grey-muted mt-1 font-semibold">
-                                                {app.role}
-                                            </p>
-
-                                            <div className="flex flex-wrap gap-1.5 mt-2.5">
-                                                {app.skills.slice(0, 4).map((s, i) => (
-                                                    <Badge key={i} variant="secondary"
-                                                           className="bg-[#f0edef]/80 text-gray-600 font-mono font-semibold px-2 py-0.5 text-[10px] rounded-md">
-                                                        {s}
-                                                    </Badge>
-                                                ))}
-                                                {app.skills.length > 4 && (
-                                                    <Badge variant="secondary"
-                                                           className="bg-[#f0edef]/80 text-gray-600 font-mono font-semibold px-2 py-0.5 text-[10px] rounded-md">
-                                                        +{app.skills.length - 4}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </div>
+                                        className="w-16 h-16 bg-brand-blue/10 rounded-full flex items-center justify-center mb-4">
+                                        <Users className="w-8 h-8 text-brand-blue opacity-50"/>
                                     </div>
-
-                                    {/* Action column on right */}
-                                    <div
-                                        className="flex items-center justify-between md:justify-end gap-6 pt-3 md:pt-0 border-t md:border-t-0 border-[#f0edef]/60">
-
-                                        {/* Match Score Indicator */}
+                                    <p className="text-grey-muted text-sm font-medium">{t('recruiter.noApplicantsYet', 'Все още нямате получени кандидатури.')}</p>
+                                </div>
+                            ) : (
+                                recentApplicants.map((applicant, index) => (
+                                    <div key={`${applicant.id}-${index}`}
+                                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-[#fcf8fa]/50 hover:bg-white hover:shadow-md transition-all duration-300 border border-transparent hover:border-[#c6c6cd]/40 group gap-4">
                                         <div className="flex items-center gap-4">
-                                            <div className="text-right">
-                                                <Badge variant="outline"
-                                                       className="gap-1 bg-professional-emerald/5 text-professional-emerald border-professional-emerald/20 rounded-xl px-2.5 py-1 text-xs font-bold">
-                                                    <Sparkles className="w-3.5 h-3.5"/>
-                                                    {app.matchScore}{t('recruiterDashboard.matchSuffix')}
-                                                </Badge>
+                                            <div
+                                                className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue/20 to-purple-600/20 text-brand-blue border border-brand-blue/30 flex items-center justify-center font-bold text-lg shadow-inner shrink-0">
+                                                {applicant.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <h3 className="text-base font-bold text-grey-dark">
+                                                    {applicant.name}
+                                                </h3>
+                                                <p className="text-xs text-grey-muted font-medium">{applicant.role}</p>
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                                            <div className="flex flex-col items-center justify-center">
                                                 <span
-                                                    className="block text-[10px] text-grey-muted font-mono mt-1.5 text-right pr-1">
-                          {t('recruiterDashboard.appliedPrefix')}{app.appliedDate}
-                        </span>
+                                                    className={`text-lg font-black ${applicant.matchScore >= 80 ? 'text-match-high' : 'text-match-medium'}`}>
+                                                    {applicant.matchScore}%
+                                                </span>
+                                                <span
+                                                    className="text-[9px] font-bold text-grey-muted uppercase">Match</span>
                                             </div>
 
-                                            <Button variant="ghost"
-                                                    className="h-8 w-8 p-0 rounded-lg border border-[#c6c6cd]/50 group-hover:border-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors text-[#0058be]">
-                                                <ChevronRight className="w-4 h-4"/>
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => handleViewApplicant(applicant.id)}
+                                                className="rounded-xl border-[#c6c6cd] hover:border-brand-blue hover:text-brand-blue transition-colors h-10 px-4"
+                                            >
+                                                <Eye className="w-4 h-4 mr-2"/> Профил
                                             </Button>
                                         </div>
                                     </div>
-                                </div>
-                            ))
+                                ))
+                            )}
+                        </CardContent>
+                        {recentApplicants.length > 0 && (
+                            <CardFooter className="pt-2 pb-4 bg-[#fcf8fa]/30 border-t border-[#f0edef]/80">
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setCurrentTab('recruiter_applicants')}
+                                    className="w-full text-brand-blue font-bold hover:bg-brand-blue/5 h-12 rounded-xl"
+                                >
+                                    Виж всички кандидати <ArrowRight className="w-4 h-4 ml-2"/>
+                                </Button>
+                            </CardFooter>
                         )}
-                    </div>
-                </CardContent>
-            </Card>
+                    </Card>
+                </div>
+
+                {/* Quick Actions Sidebar */}
+                <aside className="lg:col-span-4 flex flex-col">
+                    <Card
+                        className="flex-1 rounded-3xl border border-[#c6c6cd]/50 shadow-lg bg-gradient-to-b from-[#fcf8fa] to-white flex flex-col overflow-hidden">
+                        <CardHeader className="pb-4 border-b border-[#f0edef] bg-white/50 backdrop-blur-sm">
+                            <CardTitle
+                                className="text-lg font-display font-bold text-grey-dark flex items-center gap-2">
+                                <TrendingUp className="w-5 h-5 text-brand-blue"/>
+                                {t('recruiter.quickActions', 'Бързи действия')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-4">
+                            <Button
+                                onClick={() => setCurrentTab('recruiter_applicants')}
+                                className="w-full bg-[#1b1b1d] hover:bg-brand-blue text-white rounded-xl h-14 justify-start px-6 font-bold shadow-md transition-all group"
+                            >
+                                <Users className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform"/>
+                                Към всички кандидатури
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                className="w-full bg-white border-[#c6c6cd] text-grey-dark hover:border-brand-blue hover:text-brand-blue rounded-xl h-14 justify-start px-6 font-bold shadow-sm transition-all group"
+                            >
+                                <Briefcase className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform"/>
+                                Публикувай нова обява
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </aside>
+            </div>
         </div>
     );
 }
