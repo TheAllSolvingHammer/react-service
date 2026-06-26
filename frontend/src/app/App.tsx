@@ -17,11 +17,12 @@ import apiClient from '@/lib/axios';
 import { Profile, Opportunity, Applicant } from '@/lib/types';
 import { parseApiMode, CandidateMode } from '@/lib/mode';
 import { switchCandidateMode, saveCandidateProfile } from '@/lib/profileApi';
-import { fetchOpportunitiesWithMatches, fetchOpportunityCount } from '@/lib/opportunities';
+import {fetchOpportunitiesWithMatches, fetchOpportunityCount, updateApplicationStatus} from '@/lib/opportunities';
 import { fetchRecruiterApplicants } from '@/lib/applicants';
 import { resolveSkillNames } from '@/lib/skills';
 import { Sparkles } from 'lucide-react';
 import AcademicDashboard from "@/components/pages/AcademicDashboard.tsx";
+import InstitutionOnboarding from "@/components/pages/InstitutionOnboarding.tsx";
 
 
 
@@ -171,8 +172,21 @@ export default function App() {
         }
     };
 
-    const handleUpdateApplicantStatus = (id: string, newStatus: "Ново" | "Интервю" | "Преглед" | "Приет" | "Отказан") => {
-        setApplicants(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
+    const handleUpdateApplicantStatus = async (id: string, newStatus: "Ново" | "Интервю" | "Преглед" | "Приет" | "Отказан") => {
+        let backendStatus = "REVIEW";
+        if (newStatus === "Ново") backendStatus = "NEW";
+        if (newStatus === "Интервю") backendStatus = "INTERVIEW";
+        if (newStatus === "Приет") backendStatus = "ACCEPTED";
+        if (newStatus === "Отказан") backendStatus = "REJECTED";
+
+        try {
+            await updateApplicationStatus(id, backendStatus);
+
+            setApplicants(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
+        } catch (error) {
+            console.error("Грешка при смяна на статуса", error);
+            alert("Възникна грешка при запазване на статуса.");
+        }
     };
 
     const selectedApplicant = applicants.find(a => a.id === selectedApplicantId) || applicants[0];
@@ -243,6 +257,19 @@ export default function App() {
     // 3. PROFILE ONBOARDING GATE
     // ==========================================
     if (profile && profile.isCompleted === false) {
+
+        if (currentRole === 'recruiter') {
+            return (
+                <InstitutionOnboarding
+                    profile={profile}
+                    onComplete={(updatedProfile) => {
+                        setProfile({ ...updatedProfile, isCompleted: true });
+                    }}
+                    onLogout={handleLogout}
+                />
+            );
+        }
+
         return (
             <ProfileOnboarding
                 profile={profile}
@@ -287,7 +314,7 @@ export default function App() {
                         )}
 
                         {currentTab === 'dashboard' && candidateMode === 'academic' && (
-                            <AcademicDashboard />
+                            <AcademicDashboard profile={profile} />
                         )}
                         {currentTab === 'profile' && (
                             <CandidateProfile

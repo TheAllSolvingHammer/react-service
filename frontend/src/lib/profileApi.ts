@@ -52,3 +52,8 @@ export async function saveCandidateProfile(profile: Profile): Promise<Profile> {
         isCompleted: saved.isCompleted ?? true,
     };
 }
+
+export async function createInstitutionProfile(data: any) {
+    const response = await apiClient.post('/api/v1/profiles/institutions', data);
+    return response.data;
+}

@@ -168,7 +168,7 @@
     "forgotPassword": "Forgot password?",
     "registerTitle": "Create an Account",
     "registerSubtitle": "Join the future of AI recruitment.",
-    "name": "Full Name",
+    "name": "Username",
     "confirmPassword": "Confirm Password",
     "nextStep": "Continue",
     "hasAccount": "Already have an account?",
@@ -203,6 +203,33 @@
       "review": "Under Review",
       "new": "Submitted",
       "archived": "Archived"
+    }
+  },
+  "institutionOnboarding": {
+    "title": "Profile Setup",
+    "subtitle": "Fill in the details for your organization",
+    "company": "Company",
+    "university": "University",
+    "orgName": "Organization Name",
+    "orgNamePlaceholder": "e.g. Technical University",
+    "email": "Contact Email",
+    "sector": "Industrial Sector",
+    "location": "Location",
+    "locationPlaceholder": "e.g. Varna, Bulgaria",
+    "website": "Website",
+    "biography": "Description (Biography)",
+    "bioPlaceholder": "A short description of your organization...",
+    "cancel": "Cancel",
+    "submit": "Complete Registration",
+    "errorMessage": "An error occurred while saving the profile. Please try again.",
+    "uniName": "Name of the University",
+    "compName": "Company Name",
+    "sectors": {
+      "service": "IT and Trading services",
+      "secondary": "Industry and processing",
+      "primary": "Extraction and Harvesting",
+      "quaternary": "Education and Science",
+      "unspecified": "Other / Unspecified"
     }
   }
 }

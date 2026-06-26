@@ -33,7 +33,12 @@ export default function Login({ onNavigateToRegister, onLoginSuccess }: { onNavi
 
             if (decodedToken) {
                 localStorage.setItem('jwt_token', token);
-                localStorage.setItem('user_role', decodedToken.role.toLowerCase());
+                const backendRole = decodedToken.role.toUpperCase();
+                const frontendRole = (backendRole === 'INSTITUTION' || backendRole === 'RECRUITER')
+                    ? 'recruiter'
+                    : 'candidate';
+
+                localStorage.setItem('user_role', frontendRole);
                 localStorage.setItem('user_id', decodedToken.userId);
 
                 onLoginSuccess();

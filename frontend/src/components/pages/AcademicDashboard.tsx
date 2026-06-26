@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     AlertCircle,
@@ -14,8 +14,10 @@ import {
 import {Card, CardContent} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {updateApplicationStatus} from "@/lib/opportunities.ts";
+import {fetchMyApplications, updateApplicationStatus} from "@/lib/opportunities.ts";
 
+//за тестване е само
+// @ts-ignore
 const mockApplications = [
     {id: '1', university: 'Технически Университет', faculty: 'СИТ', status: 'ACCEPTED', date: '2026-06-20'},
     {id: '2', university: 'Софийски Университет', faculty: 'ФМИ', status: 'REVIEW', date: '2026-06-22'},
@@ -24,12 +26,41 @@ const mockApplications = [
 
 const MAX_APPLICATIONS = 5;
 
-export default function AcademicDashboard() {
-    const {t} = useTranslation();
-    const [applications, setApplications] = useState(mockApplications);
-    const [isEnrolling, setIsEnrolling] = useState<string | null>(null);
+export default function AcademicDashboard({ profile }: { profile: any }) {
+    const { t } = useTranslation();
 
-    const activeCount = applications.filter(a => a.status !== 'ARCHIVED' && a.status !== 'REJECTED').length;
+    const [applications, setApplications] = useState<any[]>([]);
+    const [isEnrolling, setIsEnrolling] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    //зареждаме тук
+    useEffect(() => {
+        if (profile?.id) {
+            setIsLoading(true);
+            fetchMyApplications(profile.id)
+                .then(response => {
+                    if (Array.isArray(response)) {
+                        setApplications(response);
+                    } else if (response && Array.isArray(response.content)) {
+                        setApplications(response.content);
+                    } else if (response && Array.isArray(response.data)) {
+                        setApplications(response.data);
+                    } else {
+                        setApplications([]);
+                    }
+                    setIsLoading(false);
+                })
+                .catch(err => {
+                    console.error("Грешка при зареждане на кандидатурите:", err);
+                    setApplications([]);
+                    setIsLoading(false);
+                });
+        }
+    }, [profile?.id]);
+
+    const safeApplications = Array.isArray(applications) ? applications : [];
+
+    const activeCount = safeApplications.filter(a => a.status !== 'ARCHIVED' && a.status !== 'REJECTED').length;
     const progressPercentage = (activeCount / MAX_APPLICATIONS) * 100;
 
     const handleEnroll = async (appId: string) => {
@@ -52,6 +83,14 @@ export default function AcademicDashboard() {
             setIsEnrolling(null);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center py-20">
+                <Loader2 className="w-10 h-10 animate-spin text-purple-600" />
+            </div>
+        );
+    }
 
     const getStatusUI = (status: string) => {
         switch (status) {
@@ -132,7 +171,7 @@ export default function AcademicDashboard() {
                         className="w-5 h-5 text-purple-600"/> {t('academic.yourApplications', 'Твоите кандидатури')}
                 </h2>
 
-                {applications.map((app) => {
+                {safeApplications.map((app) => {
                     const statusUI = getStatusUI(app.status);
                     const StatusIcon = statusUI.icon;
                     const isAccepted = app.status === 'ACCEPTED';

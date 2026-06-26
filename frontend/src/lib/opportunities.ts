@@ -103,3 +103,8 @@ export async function updateApplicationStatus(applicationId: string, status: str
     });
     return response.data;
 }
+
+export async function fetchMyApplications(candidateId: string) {
+    const response = await apiClient.get(`/api/v1/opportunities/applications/candidate/${candidateId}`);
+    return response.data; // Очакваме масив от кандидатури
+}
