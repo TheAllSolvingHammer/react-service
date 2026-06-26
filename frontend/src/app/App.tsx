@@ -23,6 +23,7 @@ import { resolveSkillNames } from '@/lib/skills';
 import { Sparkles } from 'lucide-react';
 import AcademicDashboard from "@/components/pages/AcademicDashboard.tsx";
 import InstitutionOnboarding from "@/components/pages/InstitutionOnboarding.tsx";
+import ForgotPassword from "@/components/pages/ForgotPassword.tsx";
 
 
 
@@ -33,7 +34,7 @@ export default function App() {
 
     // Auth State
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!savedToken);
-    const [authView, setAuthView] = useState<'login' | 'register'>('login');
+    const [authView, setAuthView] = useState<'login' | 'register' | 'forgot-password'>('login');
 
     // App Navigation State
     const [currentRole, setCurrentRole] = useState<'candidate' | 'recruiter'>(savedRole || 'candidate');
@@ -134,7 +135,7 @@ export default function App() {
 
     }, [isAuthenticated, currentRole, savedUserId]);
 
-    // Fetch Opportunities for AI Matches Tab
+    // Fetch Opportunities
     useEffect(() => {
         if (!isAuthenticated || currentRole !== 'candidate' || !profile?.isCompleted || !profile.userId) return;
 
@@ -199,6 +200,7 @@ export default function App() {
             return (
                 <Login
                     onNavigateToRegister={() => setAuthView('register')}
+                    onNavigateToForgotPassword={() => setAuthView('forgot-password')} // ДОБАВИ ТОВА
                     onLoginSuccess={() => {
                         setIsAuthenticated(true);
                         const role = (localStorage.getItem('user_role') as 'candidate' | 'recruiter') || 'candidate';
@@ -218,6 +220,14 @@ export default function App() {
                         setCurrentTab(role === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
                         setIsAuthenticated(true);
                     }}
+                />
+            );
+        }
+
+        if (authView === 'forgot-password') {
+            return (
+                <ForgotPassword
+                    onNavigateToLogin={() => setAuthView('login')}
                 />
             );
         }

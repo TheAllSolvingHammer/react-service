@@ -187,7 +187,14 @@
     "shortName": "Name must be at least 3 characters.",
     "registrationFailed": "Registration failed. The email might already be in use.",
     "loadingDots" : "Loading...",
-    "awaitingOperation" : "Please wait while we process your request.."
+    "awaitingOperation" : "Please wait while we process your request..",
+    "loginSuccess": "Login successful! Redirecting...",
+    "registerSuccess": "Registration successful! Redirecting...",
+    "otpSentSuccess": "Code sent successfully! Please check your email.",
+    "emailNotFound": "A user with this email does not exist.",
+    "passwordResetSuccess": "Password reset successful! Please check your email.",
+    "invalidOtp": "Invalid or expired OTP code.",
+    "backToLogin": "Back to login"
   },
   "academic": {
     "campaignTitle": "University Admissions",
@@ -231,5 +238,12 @@
       "quaternary": "Education and Science",
       "unspecified": "Other / Unspecified"
     }
+  },
+  "validation": {
+    "usernameMin": "Name must be at least 3 characters",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordMin": "Password must contain at least 6 characters",
+    "passwordsMatch": "Passwords dont match",
+    "otpLength": "Кодът трябва да е точно 6 символа"
   }
 }
