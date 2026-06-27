@@ -24,6 +24,7 @@ import { Sparkles } from 'lucide-react';
 import AcademicDashboard from "@/components/pages/AcademicDashboard.tsx";
 import InstitutionOnboarding from "@/components/pages/InstitutionOnboarding.tsx";
 import ForgotPassword from "@/components/pages/ForgotPassword.tsx";
+import RecruiterCreateOpportunity from "@/components/pages/RecruiterCreateOpportunity.tsx";
 
 
 
@@ -372,6 +373,10 @@ export default function App() {
                         {currentTab === 'recruiter_applicants' && <RecruiterRanking applicants={applicants} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
                         {currentTab === 'recruiter_applicant_detail' && selectedApplicant && <RecruiterCandidateDetail applicant={selectedApplicant} onBack={() => setCurrentTab('recruiter_dashboard')} onUpdateStatus={handleUpdateApplicantStatus} />}
                     </>
+                )}
+
+                {currentTab === 'recruiter_create_opportunity' && (
+                    <RecruiterCreateOpportunity onBack={() => setCurrentTab('recruiter_dashboard')} />
                 )}
             </main>
         </div>
