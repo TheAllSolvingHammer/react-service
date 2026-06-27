@@ -1,7 +1,8 @@
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Calendar, Code2, Edit3, ExternalLink, Mail, MapPin, Save, ShieldCheck, X} from 'lucide-react';
+import {Calendar, Code2, Edit3, ExternalLink, Mail, MapPin, Save, ShieldCheck, X, PlusCircle} from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import AddExperienceModal from './AddExperienceModal';
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
@@ -21,6 +22,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
     const [isSaving, setIsSaving] = useState(false);
     const [experiences, setExperiences] = useState<Experience[]>([]);
     const [loadingExp, setLoadingExp] = useState(true);
+    const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
 
     // Локален стейт за формата при редакция
     const [editForm, setEditForm] = useState({
@@ -31,13 +33,17 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
         linkedinUrl: ''
     });
 
-    useEffect(() => {
+    const loadExperiences = () => {
         if (profile?.id) {
             fetchCandidateExperiences(profile.id)
                 .then(setExperiences)
                 .catch(err => console.error("Грешка при зареждане на опит:", err))
                 .finally(() => setLoadingExp(false));
         }
+    };
+
+    useEffect(() => {
+        loadExperiences();
     }, [profile?.id]);
 
     // Рестартираме формата, ако профилът се промени отвън
@@ -142,13 +148,13 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                         value={editForm.name}
                                         onChange={(e) => setEditForm({...editForm, name: e.target.value})}
                                         placeholder={t('profile.placeholders.name', 'Име и фамилия')}
-                                        className="text-center font-bold"
+                                        className="text-center font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                                     />
                                     <Input
                                         value={editForm.role}
                                         onChange={(e) => setEditForm({...editForm, role: e.target.value})}
                                         placeholder={t('profile.placeholders.role', 'Позиция (напр. Full-Stack Developer)')}
-                                        className="text-center text-sm text-brand-blue"
+                                        className="text-center text-sm text-brand-blue bg-white dark:bg-slate-800"
                                     />
                                 </div>
                             ) : (
@@ -256,7 +262,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                 <Textarea
                                     value={editForm.bio}
                                     onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
-                                    className="min-h-[120px]"
+                                    className="min-h-[120px] bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                                     placeholder={t('profile.placeholders.bio', 'Разкажете малко повече за вашия опит...')}
                                 />
                             ) : (
@@ -285,10 +291,19 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
 
                     <Card className="rounded-3xl border-0 shadow-md bg-white dark:bg-slate-900">
                         <CardHeader>
-                            <CardTitle className="text-xl font-bold text-grey-dark flex items-center gap-2">
-                                <ShieldCheck className="w-5 h-5 text-professional-emerald"/>
-                                {t('profile.experience', 'Професионален Опит')}
-                                //todo add button here probably
+                            <CardTitle className="text-xl font-bold text-grey-dark flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                    <ShieldCheck className="w-5 h-5 text-professional-emerald"/>
+                                    {t('profile.experience', 'Професионален Опит')}
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setIsExperienceModalOpen(true)}
+                                    className="text-brand-blue hover:text-brand-blue-dark hover:bg-brand-blue/10"
+                                >
+                                    <PlusCircle className="w-4 h-4 mr-1" /> Добави
+                                </Button>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -318,6 +333,15 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                     </Card>
                 </div>
             </div>
+
+            {profile?.id && (
+                <AddExperienceModal
+                    isOpen={isExperienceModalOpen}
+                    onClose={() => setIsExperienceModalOpen(false)}
+                    onSuccess={loadExperiences}
+                    candidateId={profile.id}
+                />
+            )}
         </div>
     );
 }

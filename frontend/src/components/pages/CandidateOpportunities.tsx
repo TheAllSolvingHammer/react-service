@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { fetchCandidateApplications, mapApplicationActivity } from '@/lib/applications';
 
 interface CandidateOpportunitiesProps {
     profile: Profile;
@@ -31,6 +32,15 @@ export default function CandidateOpportunities({ profile, candidateMode, selecte
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
     const [isApplying, setIsApplying] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
+    const [appliedList, setAppliedList] = useState<any[]>([]);
+    
+    // Зареждане на кандидатури за проследяване на статус
+    useEffect(() => {
+        if (!profile?.id) return;
+        fetchCandidateApplications(profile.id)
+            .then(apps => setAppliedList(apps.map(mapApplicationActivity)))
+            .catch(err => console.error("Error loading apps:", err));
+    }, [profile?.id]);
 
     // Зареждане на всички обяви с ТЪРСЕНЕ и РЕЖИМ
     useEffect(() => {
@@ -76,6 +86,28 @@ export default function CandidateOpportunities({ profile, candidateMode, selecte
             console.error(t('opportunities.errorApplying', 'Грешка при кандидатстване:'), error);
         } finally {
             setIsApplying(false);
+        }
+    };
+
+    const handleApplyOneClick = async (e: React.MouseEvent, opp: Opportunity) => {
+        e.stopPropagation();
+        const exists = appliedList.some(item => item.id === opp.id);
+        if (exists || !profile?.id) return;
+
+        try {
+            await applyToOpportunity(opp.id, profile.id, t('opportunities.quickApply', 'Кандидатстване чрез бърз бутон от обяви.'));
+            const newApp = mapApplicationActivity({
+                applicationId: Math.random().toString(),
+                candidateId: profile.id,
+                opportunityId: opp.id,
+                title: opp.title,
+                company: opp.company,
+                status: 'PENDING',
+                appliedAtDate: new Date().toISOString()
+            });
+            setAppliedList(prev => [newApp, ...prev]);
+        } catch (error) {
+            console.error("Грешка при бързо кандидатстване:", error);
         }
     };
 
@@ -215,10 +247,19 @@ export default function CandidateOpportunities({ profile, candidateMode, selecte
                                     {opp.description || t('opportunities.noDescription', 'Няма въведено описание.')}
                                 </p>
                             </CardContent>
-                            <CardFooter className="pt-0 pb-5">
-                                <Button className="w-full bg-[#f0edef] hover:bg-brand-blue hover:text-white text-grey-dark rounded-xl font-bold transition-colors">
+                            <CardFooter className="pt-0 pb-5 gap-2 flex flex-col md:flex-row">
+                                <Button className="w-full md:flex-1 bg-[#f0edef] hover:bg-grey-muted hover:text-white text-grey-dark rounded-xl font-bold transition-colors">
                                     {t('opportunities.viewDetails', 'Виж детайли')}
                                 </Button>
+                                {appliedList.some(item => item.id === opp.id) ? (
+                                    <div className="w-full md:flex-1 flex items-center justify-center gap-2 py-2.5 bg-professional-emerald/10 text-professional-emerald border border-professional-emerald/20 rounded-xl text-xs font-bold h-10">
+                                        <CheckCircle2 className="w-4 h-4"/> {t('dashboard.applied', 'Кандидатствали сте')}
+                                    </div>
+                                ) : (
+                                    <Button onClick={(e) => handleApplyOneClick(e, opp)} className="w-full md:flex-1 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl text-xs font-bold shadow-md transition-all h-10">
+                                        {t('dashboard.oneClickApply', 'Кандидатствай')}
+                                    </Button>
+                                )}
                             </CardFooter>
                         </Card>
                     ))}

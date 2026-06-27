@@ -3,6 +3,7 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {createCandidateExperience} from '@/lib/experiences';
+import {ApiExperienceMode} from '@/lib/mode';
 import {Loader2} from 'lucide-react';
 
 interface ModalProps {
@@ -30,8 +31,11 @@ export default function AddExperienceModal({isOpen, onClose, onSuccess, candidat
         e.preventDefault();
         setIsLoading(true);
         try {
-            //todo fix this
-            await createCandidateExperience({...formData, candidateId});
+            await createCandidateExperience({
+                ...formData,
+                candidateId,
+                mode: formData.mode as ApiExperienceMode
+            });
             onSuccess();
             onClose();
         } catch (err) {
