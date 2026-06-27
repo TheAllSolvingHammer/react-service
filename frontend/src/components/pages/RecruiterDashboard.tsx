@@ -186,7 +186,7 @@ export default function RecruiterDashboard({
                         <CardContent className="pt-6 space-y-4">
                             <Button
                                 onClick={() => setCurrentTab('recruiter_applicants')}
-                                className="w-full bg-[#1b1b1d] hover:bg-brand-blue text-white rounded-xl h-14 justify-start px-6 font-bold shadow-md transition-all group"
+                                className="w-full bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl h-14 justify-start px-6 font-bold shadow-md transition-all group"
                             >
                                 <Users className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform"/>
                                 Към всички кандидатури

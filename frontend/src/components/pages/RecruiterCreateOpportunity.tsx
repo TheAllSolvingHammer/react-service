@@ -72,7 +72,8 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
             const payload = {
                 title: formData.title,
                 location: formData.location,
-                type: formData.mode,
+                type: 'FULL_TIME',
+                mode: formData.mode,
                 startingPrice: formData.startingPrice ? parseFloat(formData.startingPrice) : 0,
                 endingPrice: formData.endingPrice ? parseFloat(formData.endingPrice) : 0,
                 description: formData.description,
@@ -119,8 +120,8 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
 
             <form onSubmit={handleSubmit}>
                 <Card
-                    className="rounded-3xl border border-[#c6c6cd] shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-                    <CardHeader className="bg-brand-blue/5 border-b border-[#c6c6cd]/20 pb-6">
+                    className="rounded-3xl border border-[#c6c6cd] shadow-lg bg-white dark:bg-slate-900">
+                    <CardHeader className="bg-brand-blue/5 border-b border-[#c6c6cd]/20 pb-6 rounded-t-3xl">
                         <CardTitle className="text-xl flex items-center gap-2">
                             <Briefcase className="w-5 h-5 text-brand-blue"/>
                             Основна Информация
@@ -138,7 +139,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                     value={formData.title}
                                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                                     placeholder="напр. Senior Java Developer"
-                                    className="h-11 rounded-xl border-[#c6c6cd] focus-visible:ring-brand-blue"
+                                    className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                 />
                             </div>
 
@@ -152,7 +153,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                     value={formData.location}
                                     onChange={(e) => setFormData({...formData, location: e.target.value})}
                                     placeholder="София, България или Remote"
-                                    className="h-11 rounded-xl border-[#c6c6cd] focus-visible:ring-brand-blue"
+                                    className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                 />
                             </div>
                         </div>
@@ -196,7 +197,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                     value={formData.startingPrice}
                                     onChange={(e) => setFormData({...formData, startingPrice: e.target.value})}
                                     placeholder="напр. 2000"
-                                    className="h-11 rounded-xl border-[#c6c6cd] focus-visible:ring-brand-blue"
+                                    className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -208,7 +209,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                     value={formData.endingPrice}
                                     onChange={(e) => setFormData({...formData, endingPrice: e.target.value})}
                                     placeholder="напр. 5000"
-                                    className="h-11 rounded-xl border-[#c6c6cd] focus-visible:ring-brand-blue"
+                                    className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                 />
                             </div>
                         </div>
@@ -223,7 +224,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                 value={formData.description}
                                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                                 placeholder="Опишете позицията, отговорностите и какво предлагате..."
-                                className="min-h-[150px] rounded-xl resize-none border-[#c6c6cd] focus-visible:ring-brand-blue"
+                                className="min-h-[150px] rounded-xl resize-none bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                             />
                         </div>
 
@@ -240,7 +241,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                     }}
                                     onFocus={() => setIsDropdownOpen(true)}
                                     placeholder="Потърси или добави ново умение..."
-                                    className="h-11 rounded-xl border-[#c6c6cd] focus-visible:ring-brand-blue"
+                                    className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                 />
                                 {isDropdownOpen && skillInput && (
                                     <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-[#c6c6cd] bg-white dark:bg-slate-800 p-1 shadow-lg">
