@@ -5,18 +5,12 @@ import {fetchLatestApplications} from '@/lib/applications';
 import {fetchCandidateMatches} from '@/lib/matching';
 import {resolveSkillNames} from '@/lib/skills';
 
-
 function mapApplicantStatus(status: string): Applicant['status'] {
     switch (status) {
-        case 'REVIEWING':
-            return 'Преглед';
         case 'INTERVIEW_SCHEDULED':
             return 'Интервю';
-        case 'ACCEPTED':
-            return 'Приет';
-        case 'REJECTED':
-            return 'Отказан';
-        case 'PENDING':
+        case 'REVIEWING':
+            return 'Преглед';
         default:
             return 'Ново';
     }
@@ -60,7 +54,7 @@ export async function fetchRecruiterApplicants(): Promise<Applicant[]> {
             const currentMode = parseApiMode(profile.currentMode ?? profile.candidateType);
 
             return {
-                id: application.applicationId || candidateUserId,
+                id: candidateUserId,
                 name: `${firstName} ${lastName}`.trim(),
                 role: String(profile.headline ?? application.title ?? 'Кандидат'),
                 email: String(profile.email ?? ''),

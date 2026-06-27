@@ -1,7 +1,7 @@
 import apiClient from '@/lib/axios';
-import {Opportunity} from '@/lib/types';
-import {fetchCandidateMatches} from '@/lib/matching';
-import {resolveSkillNames} from '@/lib/skills';
+import { Opportunity } from '@/lib/types';
+import { fetchCandidateMatches } from '@/lib/matching';
+import { resolveSkillNames } from '@/lib/skills';
 
 function requirementLabel(requirement: unknown): string {
     if (typeof requirement === 'string') return requirement;
@@ -19,17 +19,10 @@ async function mapOpportunity(opp: Record<string, unknown>): Promise<Opportunity
         : requirements && typeof requirements === 'object'
             ? Object.values(requirements as Record<string, unknown>)
             : [];
-
     const requirementIds = rawRequirements
         .map((r) => (typeof r === 'object' && r && 'skillId' in (r as object) ? String((r as { skillId: string }).skillId) : null))
         .filter(Boolean) as string[];
-
-    const resolvedNames = requirementIds.length
-        ? await resolveSkillNames(requirementIds).catch(err => {
-            console.warn("Внимание: Неуспешно превеждане на умения за обява", err);
-            return rawRequirements.map(requirementLabel); // Връщаме оригиналните ID-та или имена като резервен вариант
-        })
-        : [];
+    const resolvedNames = requirementIds.length ? await resolveSkillNames(requirementIds) : [];
     const requirementList = resolvedNames.length
         ? resolvedNames
         : rawRequirements.map(requirementLabel);
@@ -37,7 +30,7 @@ async function mapOpportunity(opp: Record<string, unknown>): Promise<Opportunity
     return {
         id: String(opp.id),
         title: String(opp.title ?? ''),
-        company: String(opp.location ?? 'RecruitAI'), // Засега ползваме location
+        company: String(opp.location ?? 'RecruitAI'),
         location: opp.location ? String(opp.location) : undefined,
         description: opp.description ? String(opp.description) : undefined,
         requirements: requirementList,
@@ -46,36 +39,21 @@ async function mapOpportunity(opp: Record<string, unknown>): Promise<Opportunity
     };
 }
 
-export async function fetchOpportunities(searchTerm = '', mode: string = 'PROFESSIONAL', page = 0, size = 50): Promise<Opportunity[]> {
-
-    const response = await apiClient.get('/api/v1/opportunities/getAll', {
-        params: {
-            page: page,
-            size: size,
-            sortBy: 'createdAt',
-            direction: 'DESC',
-            nameFilter: searchTerm || undefined,
-            mode: mode.toUpperCase()
-        }
-    });
-
+export async function fetchOpportunities(page = 0, size = 50): Promise<Opportunity[]> {
+    const response = await apiClient.get(
+        `/api/v1/opportunities/getAll?page=${page}&size=${size}&sortBy=createdAt&direction=DESC&nameFilter=`
+    );
     const content = response.data?.content ?? [];
     return Promise.all(content.map((opp: Record<string, unknown>) => mapOpportunity(opp)));
 }
 
-export async function fetchOpportunityById(id: string): Promise<Opportunity> {
-    const response = await apiClient.get(`/api/v1/opportunities/get/${id}`);
-    return mapOpportunity(response.data);
-}
-
 export async function fetchOpportunitiesWithMatches(
     candidateUserId: string,
-    mode: string = 'PROFESSIONAL',
     page = 0,
     size = 50
 ): Promise<Opportunity[]> {
     const [opportunities, matches] = await Promise.all([
-        fetchOpportunities('', mode, page, size),
+        fetchOpportunities(page, size),
         fetchCandidateMatches(candidateUserId, size).catch(() => []),
     ]);
 
@@ -92,27 +70,9 @@ export async function fetchOpportunitiesWithMatches(
     });
 }
 
-export async function fetchOpportunityCount(mode: string = 'PROFESSIONAL'): Promise<number> {
-    const response = await apiClient.get('/api/v1/opportunities/getAll', {
-        params: {
-            page: 0,
-            size: 1,
-            sortBy: 'createdAt',
-            direction: 'DESC',
-            mode: mode.toUpperCase()
-        }
-    });
+export async function fetchOpportunityCount(): Promise<number> {
+    const response = await apiClient.get(
+        '/api/v1/opportunities/getAll?page=0&size=1&sortBy=createdAt&direction=DESC&nameFilter='
+    );
     return Number(response.data?.totalElements ?? 0);
-}
-
-export async function updateApplicationStatus(applicationId: string, status: string) {
-    const response = await apiClient.patch(`/api/v1/opportunities/${applicationId}/status`, null, {
-        params: { status }
-    });
-    return response.data;
-}
-
-export async function fetchMyApplications(candidateId: string) {
-    const response = await apiClient.get(`/api/v1/opportunities/applications/candidate/${candidateId}`);
-    return response.data;
 }
