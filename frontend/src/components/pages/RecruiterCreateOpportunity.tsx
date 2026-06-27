@@ -8,11 +8,14 @@ import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
 import {createOpportunity} from '@/lib/opportunities';
 
+import {Profile} from '@/lib/types';
+
 interface RecruiterCreateOpportunityProps {
     onBack: () => void;
+    profile?: Profile | null;
 }
 
-export default function RecruiterCreateOpportunity({onBack}: RecruiterCreateOpportunityProps) {
+export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterCreateOpportunityProps) {
 
     // @ts-ignore
     //todo use translation here
@@ -127,7 +130,7 @@ export default function RecruiterCreateOpportunity({onBack}: RecruiterCreateOppo
                         <div className="space-y-3 pt-2">
                             <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Тип на
                                 обявата</Label>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className={`grid ${profile?.isUniversity ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                                 <div
                                     onClick={() => setFormData({...formData, mode: 'PROFESSIONAL'})}
                                     className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center gap-2 transition-all ${formData.mode === 'PROFESSIONAL' ? 'border-brand-blue bg-brand-blue/5' : 'border-[#c6c6cd]/30 hover:border-brand-blue/50'}`}
@@ -137,15 +140,17 @@ export default function RecruiterCreateOpportunity({onBack}: RecruiterCreateOppo
                                     <span className="font-bold text-grey-dark">Професионална</span>
                                     <span className="text-xs text-center text-grey-muted">Работа, Стаж, Корпоративна позиция</span>
                                 </div>
-                                <div
-                                    onClick={() => setFormData({...formData, mode: 'ACADEMIC'})}
-                                    className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center gap-2 transition-all ${formData.mode === 'ACADEMIC' ? 'border-academic-purple bg-academic-purple/5' : 'border-[#c6c6cd]/30 hover:border-academic-purple/50'}`}
-                                >
-                                    <Target
-                                        className={`w-8 h-8 ${formData.mode === 'ACADEMIC' ? 'text-academic-purple' : 'text-grey-muted'}`}/>
-                                    <span className="font-bold text-grey-dark">Академична</span>
-                                    <span className="text-xs text-center text-grey-muted">Магистратура, Докторантура, Проект</span>
-                                </div>
+                                {profile?.isUniversity && (
+                                    <div
+                                        onClick={() => setFormData({...formData, mode: 'ACADEMIC'})}
+                                        className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center gap-2 transition-all ${formData.mode === 'ACADEMIC' ? 'border-academic-purple bg-academic-purple/5' : 'border-[#c6c6cd]/30 hover:border-academic-purple/50'}`}
+                                    >
+                                        <Target
+                                            className={`w-8 h-8 ${formData.mode === 'ACADEMIC' ? 'text-academic-purple' : 'text-grey-muted'}`}/>
+                                        <span className="font-bold text-grey-dark">Академична</span>
+                                        <span className="text-xs text-center text-grey-muted">Магистратура, Докторантура, Проект</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

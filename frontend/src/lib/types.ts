@@ -17,6 +17,7 @@ export interface Profile {
     currentMode?: 'professional' | 'academic';
     avatarUrl?: string;
     isCompleted?: boolean;
+    isUniversity?: boolean;
 }
 
 export interface Experience {

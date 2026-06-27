@@ -376,7 +376,7 @@ export default function App() {
                 )}
 
                 {currentTab === 'recruiter_create_opportunity' && (
-                    <RecruiterCreateOpportunity onBack={() => setCurrentTab('recruiter_dashboard')} />
+                    <RecruiterCreateOpportunity onBack={() => setCurrentTab('recruiter_dashboard')} profile={profile} />
                 )}
             </main>
         </div>
