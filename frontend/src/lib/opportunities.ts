@@ -118,6 +118,6 @@ export async function fetchMyApplications(candidateId: string) {
 }
 
 export async function createOpportunity(opportunityData: any): Promise<any> {
-    const response = await apiClient.post('/api/v1/opportunities/create', opportunityData);
+    const response = await apiClient.post('/api/v1/opportunities', opportunityData);
     return response.data;
 }

@@ -25,6 +25,7 @@ import AcademicDashboard from "@/components/pages/AcademicDashboard.tsx";
 import InstitutionOnboarding from "@/components/pages/InstitutionOnboarding.tsx";
 import ForgotPassword from "@/components/pages/ForgotPassword.tsx";
 import RecruiterCreateOpportunity from "@/components/pages/RecruiterCreateOpportunity.tsx";
+import GenericErrorPage from "@/components/pages/GenericErrorPage.tsx";
 
 
 
@@ -70,6 +71,21 @@ export default function App() {
         setIsAuthenticated(false);
         setProfile(null);
     };
+
+    // Global Axios Error Interceptor
+    useEffect(() => {
+        const interceptor = apiClient.interceptors.response.use(
+            (response) => response,
+            (err) => {
+                if (err.response && (err.response.status === 403 || err.response.status === 500)) {
+                    setError(`Системна грешка (${err.response.status}). Възникна проблем при обработката на заявката.`);
+                    setCurrentTab('error');
+                }
+                return Promise.reject(err);
+            }
+        );
+        return () => apiClient.interceptors.response.eject(interceptor);
+    }, []);
 
     // Main Data Fetching Hook
     useEffect(() => {
@@ -136,7 +152,8 @@ export default function App() {
                         isCompleted: false
                     });
                 } else {
-                    setError("Неуспешна връзка с Profile Service. Моля, проверете конзолата на бекенда.");
+                    setError("Възникна системна грешка. Моля, опитайте по-късно.");
+                    setCurrentTab('error');
                 }
                 setIsLoading(false);
             });
@@ -249,32 +266,19 @@ export default function App() {
             <div className="min-h-screen flex flex-col items-center justify-center bg-transparent z-10 relative">
                 <Sparkles className="w-12 h-12 text-brand-blue animate-pulse mb-4" />
                 <h2 className="text-xl font-display font-bold text-grey-dark tracking-widest uppercase">Зареждане на данни...</h2>
-                <p className="text-sm text-grey-muted mt-2 font-mono">Connecting to API Gateway</p>
+                <p className="text-sm text-grey-muted mt-2 font-mono">Подготовка на работното пространство...</p>
             </div>
         );
     }
 
-    if (error || !profile) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-transparent z-10 relative text-center px-4">
-                <div className="bg-red-500/10 border border-red-500/20 text-red-600 p-6 rounded-2xl max-w-md backdrop-blur-md">
-                    <h2 className="text-lg font-bold mb-2">Грешка в системата</h2>
-                    <p className="text-sm">{error || "Профилът не беше открит."}</p>
-                    <button
-                        onClick={handleLogout}
-                        className="mt-4 px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-bold shadow-sm hover:bg-red-50"
-                    >
-                        Изход
-                    </button>
-                </div>
-            </div>
-        );
+    if (!profile && !error) {
+        return null;
     }
 
     // ==========================================
     // 3. PROFILE ONBOARDING GATE
     // ==========================================
-    if (profile && profile.isCompleted === false) {
+    if (!error && profile && profile.isCompleted === false) {
 
         if (currentRole === 'recruiter') {
             return (
@@ -376,8 +380,19 @@ export default function App() {
                     </>
                 )}
 
-                {currentTab === 'recruiter_create_opportunity' && (
+                {currentTab === 'recruiter_create_opportunity' && !error && (
                     <RecruiterCreateOpportunity onBack={() => setCurrentTab('recruiter_dashboard')} profile={profile} />
+                )}
+
+                {(error || currentTab === 'error') && (
+                    <GenericErrorPage 
+                        message={error || undefined}
+                        onHome={() => {
+                            setError(null);
+                            setCurrentTab(currentRole === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
+                        }}
+                        onRetry={() => window.location.reload()}
+                    />
                 )}
             </main>
         </div>
