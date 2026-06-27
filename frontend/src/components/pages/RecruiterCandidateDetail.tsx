@@ -1,16 +1,17 @@
+import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     ArrowLeft,
-    Award,
+    BrainCircuit,
     Briefcase,
-    CheckCircle,
+    CheckCircle2,
     Clock,
-    Download,
-    GraduationCap,
+    ExternalLink,
+    FileText,
     Mail,
     MapPin,
-    PlayCircle,
-    Shield
+    UserCheck,
+    XCircle
 } from 'lucide-react';
 import {Applicant} from '@/lib/types';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
@@ -20,230 +21,269 @@ import {Badge} from "@/components/ui/badge";
 interface RecruiterCandidateDetailProps {
     applicant: Applicant;
     onBack: () => void;
-    onUpdateStatus: (id: string, status: "Ново" | "Интервю" | "Преглед") => void;
+    onUpdateStatus: (id: string, newStatus: Applicant['status']) => void;
 }
 
-export default function RecruiterCandidateDetail({
-                                                     applicant,
-                                                     onBack,
-                                                     onUpdateStatus
-                                                 }: RecruiterCandidateDetailProps) {
+const pipelineSteps: Applicant['status'][] = ['Ново', 'Преглед', 'Интервю', 'Приет'];
+
+export default function RecruiterCandidateDetail({applicant, onBack, onUpdateStatus}: RecruiterCandidateDetailProps) {
     const {t} = useTranslation();
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const isTopMatch = applicant.matchScore >= 80;
+
+    const handleStatusChange = (newStatus: Applicant['status']) => {
+        setIsUpdating(true);
+        // Симулираме мрежово забавяне за по-добро UX усещане
+        setTimeout(() => {
+            onUpdateStatus(applicant.id, newStatus);
+            setIsUpdating(false);
+        }, 500);
+    };
+
+    // Определяме докъде е стигнал кандидата в пайплайна
+    const currentStepIndex = pipelineSteps.indexOf(applicant.status);
+    const isRejected = applicant.status === 'Отказан';
 
     return (
-        <div className="space-y-6 animate-fade-in pb-12">
-            {/* Top Navigation Bar */}
-            <div
-                className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-[#c6c6cd]/30">
+        <div className="space-y-6 animate-fade-in max-w-5xl mx-auto pb-12">
+
+            {/* Header / Back Button */}
+            <div className="flex items-center justify-between border-b border-[#c6c6cd]/30 pb-4">
                 <Button
                     variant="ghost"
                     onClick={onBack}
-                    className="text-grey-dark hover:bg-white/50 w-fit gap-2 rounded-xl h-10 font-bold"
+                    className="text-grey-muted hover:text-brand-blue gap-2 -ml-4"
                 >
-                    <ArrowLeft className="w-4 h-4"/>
-                    {t('recruiterDetail.backToList')}
+                    <ArrowLeft className="w-4 h-4"/> {t('recruiter.backToRanking', 'Назад към списъка')}
                 </Button>
 
-                <div className="flex items-center gap-3">
-                    <Button variant="outline"
-                            className="border-[#c6c6cd]/50 bg-white/50 hover:bg-white rounded-xl gap-2 h-10 text-grey-dark font-bold shadow-xs">
-                        <Mail className="w-4 h-4"/>
-                        {t('recruiterDetail.contact')}
-                    </Button>
-                    <Button
-                        className="bg-[#1b1b1d] hover:bg-black text-white rounded-xl gap-2 h-10 font-bold shadow-sm">
-                        <Download className="w-4 h-4"/>
-                        {t('recruiterDetail.exportCv')}
-                    </Button>
+                <div className="flex items-center gap-2">
+                    <span
+                        className="text-xs text-grey-muted font-bold uppercase tracking-wider">{t('recruiter.appliedOn', 'Кандидатствал на')}:</span>
+                    <Badge variant="outline" className="bg-white text-grey-dark font-mono">
+                        <Clock className="w-3 h-3 mr-1"/> {applicant.appliedDate}
+                    </Badge>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-2">
 
-                {/* LEFT COLUMN: Profile Base Info & Actions */}
+                {/* ЛЯВА КОЛОНА: Профил и Статус */}
                 <div className="lg:col-span-4 space-y-6">
+                    {/* Карта на Кандидата */}
                     <Card
-                        className="rounded-3xl border-[#c6c6cd] shadow-xs bg-white/60 backdrop-blur-md overflow-hidden relative">
-                        {/* Background accent based on type */}
+                        className={`rounded-3xl border-0 shadow-lg overflow-hidden relative ${isTopMatch ? 'bg-gradient-to-b from-match-high/5 to-white' : 'bg-white'}`}>
                         <div
-                            className={`absolute top-0 w-full h-24 ${applicant.candidateMode === 'professional' ? 'bg-professional-emerald/10' : 'bg-academic-purple/10'}`}></div>
+                            className={`absolute top-0 left-0 w-full h-2 ${isTopMatch ? 'bg-match-high' : 'bg-brand-blue'}`}></div>
 
-                        <CardContent className="p-6 pt-12 relative">
-                            <div className="flex flex-col items-center text-center">
-                                <div
-                                    className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-md flex items-center justify-center font-display font-black text-3xl text-brand-blue mb-4 z-10 relative">
-                                    <div className="absolute inset-0 rounded-full bg-brand-blue/5"></div>
-                                    {applicant.name.split(' ').map(n => n[0]).join('')}
-                                </div>
-
-                                <h2 className="text-2xl font-display font-black text-grey-dark leading-tight">{applicant.name}</h2>
-                                <p className="text-brand-blue font-bold mt-1">{applicant.role}</p>
-
-                                <Badge variant="outline"
-                                       className={`mt-3 gap-1.5 border-transparent px-3 py-1 text-xs font-bold ${
-                                           applicant.candidateMode === 'professional'
-                                               ? 'bg-professional-emerald/10 text-professional-emerald'
-                                               : 'bg-academic-purple/10 text-academic-purple'
-                                       }`}>
-                                    {applicant.candidateMode === 'professional' ? <Briefcase className="w-3.5 h-3.5"/> :
-                                        <GraduationCap className="w-3.5 h-3.5"/>}
-                                    {applicant.candidateMode === 'professional' ? t('recruiterDetail.proProfile') : t('recruiterDetail.academicProfile')}
-                                </Badge>
+                        <CardContent className="pt-8 flex flex-col items-center text-center px-6 pb-6">
+                            <div
+                                className={`w-24 h-24 rounded-full flex items-center justify-center font-display font-black text-3xl shadow-inner mb-4 border-4 ${
+                                    isTopMatch ? 'bg-match-high/10 text-match-high border-white' : 'bg-brand-blue/10 text-brand-blue border-white'
+                                }`}>
+                                {applicant.name.charAt(0)}
                             </div>
 
-                            <div className="mt-8 space-y-4 pt-6 border-t border-[#f0edef]">
-                                <div className="flex items-center gap-3 text-sm text-grey-dark font-medium">
-                                    <Mail className="w-4.5 h-4.5 text-grey-muted"/>
-                                    {applicant.email}
+                            <h2 className="text-2xl font-bold text-grey-dark leading-tight mb-1">{applicant.name}</h2>
+                            <p className="text-brand-blue font-semibold text-sm mb-4">{applicant.role}</p>
+
+                            <div
+                                className="w-full space-y-3 mt-2 text-sm text-grey-muted text-left bg-[#fcf8fa]/50 p-4 rounded-2xl border border-[#c6c6cd]/30">
+                                <div className="flex items-center gap-3">
+                                    <Mail className="w-4 h-4 text-brand-blue"/>
+                                    <span className="truncate">{applicant.email}</span>
                                 </div>
-                                <div className="flex items-center gap-3 text-sm text-grey-dark font-medium">
-                                    <MapPin className="w-4.5 h-4.5 text-grey-muted"/>
-                                    {t('recruiterDetail.location')}
+                                <div className="flex items-center gap-3">
+                                    <MapPin className="w-4 h-4 text-brand-blue"/>
+                                    <span>Варна, България</span>
                                 </div>
-                                <div className="flex items-center gap-3 text-sm text-grey-dark font-medium">
-                                    <Clock className="w-4.5 h-4.5 text-grey-muted"/>
-                                    {t('recruiterDetail.appliedOn')} {applicant.appliedDate}
+                                <div className="flex items-center gap-3">
+                                    <Briefcase className="w-4 h-4 text-brand-blue"/>
+                                    <span>{applicant.candidateMode === 'professional' ? 'Професионалист' : 'Студент'}</span>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Workflow Status Controller */}
-                    <Card className="rounded-3xl border-[#c6c6cd] shadow-xs bg-[#f0edef]/40 backdrop-blur-md">
-                        <CardHeader className="pb-4 border-b border-[#c6c6cd]/20">
-                            <CardTitle className="text-sm font-bold text-grey-dark uppercase tracking-wider">
-                                {t('recruiterDetail.appStatus')}
+                    {/* Управление на Статуса */}
+                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-[#f0edef]/30 border-b border-[#f0edef] pb-4">
+                            <CardTitle className="text-base font-bold text-grey-dark flex items-center gap-2">
+                                <UserCheck className="w-5 h-5 text-brand-blue"/>
+                                {t('recruiter.statusWorkflow', 'Процес на наемане')}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-5 space-y-3">
-                            <Button
-                                onClick={() => onUpdateStatus(applicant.id, "Ново")}
-                                variant={applicant.status === "Ново" ? "default" : "outline"}
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-sm font-bold transition-all ${
-                                    applicant.status === "Ново"
-                                        ? "bg-brand-blue hover:bg-brand-blue-dark text-white shadow-md border-transparent"
-                                        : "bg-white hover:bg-brand-blue/5 border-[#c6c6cd]/50 text-grey-dark"
-                                }`}
-                            >
-                                <Clock
-                                    className={`w-5 h-5 ${applicant.status === "Ново" ? "text-white" : "text-brand-blue"}`}/>
-                                {t('recruiterDetail.statusNew')}
-                            </Button>
+                        <CardContent className="p-6 space-y-6">
 
-                            <Button
-                                onClick={() => onUpdateStatus(applicant.id, "Преглед")}
-                                variant={applicant.status === "Преглед" ? "default" : "outline"}
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-sm font-bold transition-all ${
-                                    applicant.status === "Преглед"
-                                        ? "bg-amber-500 hover:bg-amber-600 text-white shadow-md border-transparent"
-                                        : "bg-white hover:bg-amber-500/5 border-[#c6c6cd]/50 text-grey-dark"
-                                }`}
-                            >
-                                <PlayCircle
-                                    className={`w-5 h-5 ${applicant.status === "Преглед" ? "text-white" : "text-amber-500"}`}/>
-                                {t('recruiterDetail.statusReview')}
-                            </Button>
+                            {/* Pipeline Visualizer */}
+                            <div className="relative">
+                                {isRejected ? (
+                                    <div
+                                        className="bg-red-50 border border-red-200 rounded-xl p-4 flex flex-col items-center justify-center text-red-700 text-center">
+                                        <XCircle className="w-8 h-8 mb-2"/>
+                                        <p className="font-bold">{t('recruiter.statusRejected', 'Кандидатурата е отхвърлена')}</p>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-4">
+                                        {pipelineSteps.map((step, index) => {
+                                            const isCompleted = currentStepIndex >= index;
+                                            const isCurrent = currentStepIndex === index;
 
-                            <Button
-                                onClick={() => onUpdateStatus(applicant.id, "Интервю")}
-                                variant={applicant.status === "Интервю" ? "default" : "outline"}
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-sm font-bold transition-all ${
-                                    applicant.status === "Интервю"
-                                        ? "bg-professional-emerald hover:bg-green-600 text-white shadow-md border-transparent"
-                                        : "bg-white hover:bg-professional-emerald/5 border-[#c6c6cd]/50 text-grey-dark"
-                                }`}
-                            >
-                                <CheckCircle
-                                    className={`w-5 h-5 ${applicant.status === "Интервю" ? "text-white" : "text-professional-emerald"}`}/>
-                                {t('recruiterDetail.statusInterview')}
-                            </Button>
+                                            return (
+                                                <div key={step} className="flex items-center gap-4 relative">
+                                                    {/* Линия, свързваща стъпките */}
+                                                    {index !== pipelineSteps.length - 1 && (
+                                                        <div
+                                                            className={`absolute top-8 left-4 w-0.5 h-6 -ml-px ${currentStepIndex > index ? 'bg-professional-emerald' : 'bg-[#c6c6cd]/40'}`}></div>
+                                                    )}
+
+                                                    <div
+                                                        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 transition-colors ${
+                                                            isCompleted ? 'bg-professional-emerald text-white shadow-sm' : 'bg-[#f0edef] text-[#c6c6cd]'
+                                                        }`}>
+                                                        {isCompleted ? <CheckCircle2 className="w-5 h-5"/> :
+                                                            <span className="text-xs font-bold">{index + 1}</span>}
+                                                    </div>
+
+                                                    <div className="flex-1">
+                                                        <Button
+                                                            variant={isCurrent ? "default" : "outline"}
+                                                            onClick={() => handleStatusChange(step as any)}
+                                                            disabled={isUpdating || isCurrent}
+                                                            className={`w-full justify-start h-10 ${
+                                                                isCurrent
+                                                                    ? 'bg-brand-blue hover:bg-brand-blue text-white shadow-md'
+                                                                    : 'bg-white border-[#c6c6cd]/50 text-grey-dark hover:border-brand-blue hover:text-brand-blue'
+                                                            }`}
+                                                        >
+                                                            {step}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Отхвърляне (ако не е вече отхвърлен и не е приет) */}
+                            {!isRejected && currentStepIndex < pipelineSteps.length - 1 && (
+                                <div className="pt-4 border-t border-[#f0edef]">
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => handleStatusChange('Отказан')}
+                                        disabled={isUpdating}
+                                        className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    >
+                                        <XCircle className="w-4 h-4 mr-2"/> Отхвърли кандидата
+                                    </Button>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* RIGHT COLUMN: AI Match & Deep Data */}
+                {/* ДЯСНА КОЛОНА: AI Анализ и CV */}
                 <div className="lg:col-span-8 space-y-6">
 
-                    {/* Main AI Verdict Header */}
-                    <Card className="rounded-3xl border-brand-blue/20 bg-brand-blue/5 shadow-sm">
-                        <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-6">
-                            <div className="shrink-0 relative">
-                                <svg className="w-24 h-24 transform -rotate-90">
-                                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8"
-                                            fill="transparent" className="text-[#c6c6cd]/30"/>
-                                    <circle
-                                        cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent"
-                                        strokeDasharray="251.2"
-                                        strokeDashoffset={251.2 - (251.2 * applicant.matchScore) / 100}
-                                        className="text-brand-blue transition-all duration-1000 ease-out"
-                                    />
-                                </svg>
-                                <div className="absolute inset-0 flex items-center justify-center flex-col">
-                                    <span
-                                        className="text-2xl font-display font-black text-brand-blue">{applicant.matchScore}%</span>
+                    {/* AI Score Card */}
+                    <Card
+                        className="rounded-3xl border-slate-800 bg-slate-900 text-white shadow-xl overflow-hidden relative">
+                        <div
+                            className="absolute top-0 right-0 w-64 h-64 bg-match-high/10 blur-[80px] -z-1 pointer-events-none"></div>
+                        <CardContent
+                            className="p-8 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative z-10">
+
+                            <div className="flex flex-col items-center justify-center text-center shrink-0">
+                                <div className="relative">
+                                    <svg className="w-32 h-32 transform -rotate-90">
+                                        <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8"
+                                                fill="transparent" className="text-slate-700"/>
+                                        <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8"
+                                                fill="transparent"
+                                                strokeDasharray={351}
+                                                strokeDashoffset={351 - (351 * applicant.matchScore) / 100}
+                                                className={isTopMatch ? 'text-match-high' : 'text-brand-blue'}
+                                                strokeLinecap="round"
+                                        />
+                                    </svg>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className="text-4xl font-display font-black">{applicant.matchScore}</span>
+                                        <span
+                                            className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Match</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <h3 className="text-xl font-bold text-grey-dark flex items-center gap-2">
-                                    <Award className="w-5 h-5 text-match-high"/>
-                                    {t('recruiterDetail.excellentMatch')}
+
+                            <div className="flex-1 space-y-4">
+                                <h3 className="text-xl font-bold flex items-center gap-2">
+                                    <BrainCircuit className={isTopMatch ? 'text-match-high' : 'text-brand-blue'}/>
+                                    {t('recruiter.aiAnalysis', 'AI Анализ на съвпадението')}
                                 </h3>
-                                <p className="text-sm text-grey-muted mt-2 leading-relaxed">
-                                    {t('recruiterDetail.matchDescPart1')}
-                                    <strong>{applicant.matchScore}%</strong> {t('recruiterDetail.matchDescPart2')}
+
+                                <p className="text-sm text-slate-300 leading-relaxed bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
+                                    {isTopMatch
+                                        ? `Този кандидат е изключително подходящ. Притежава ${applicant.skills.length} от ключовите умения, които търсите, и опитът му съвпада с изискванията на позицията.`
+                                        : `Кандидатът покрива базовите изисквания, но липсват някои специфични технически умения. Препоръчваме преглед на CV-то за повече контекст.`
+                                    }
                                 </p>
+
+                                <div>
+                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('recruiter.matchedSkills', 'Съвпадащи умения')}</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {applicant.skills.map((skill, i) => (
+                                            <Badge key={i}
+                                                   className="bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600 font-medium">
+                                                <CheckCircle2 className="w-3 h-3 mr-1.5 text-professional-emerald"/>
+                                                {skill}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Skills Breakdown */}
-                    <Card className="rounded-3xl border-[#c6c6cd] shadow-xs bg-white/60 backdrop-blur-md">
-                        <CardHeader className="pb-4 border-b border-[#c6c6cd]/20">
-                            <CardTitle
-                                className="text-lg font-bold text-grey-dark">{t('recruiterDetail.verifiedSkills')}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <div className="flex flex-wrap gap-2.5">
-                                {applicant.skills.map((skill, index) => (
-                                    <Badge
-                                        key={index}
-                                        variant="secondary"
-                                        className="px-3 py-1.5 text-sm font-semibold bg-[#fcf8fa] text-grey-dark border border-[#c6c6cd]/50 rounded-xl shadow-xs hover:border-brand-blue/50 transition-colors cursor-default"
-                                    >
-                                        {skill}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* AI Security / Integrity Check */}
-                    <Card className="rounded-3xl border-[#c6c6cd] shadow-xs bg-[#f0edef]/40 backdrop-blur-md">
-                        <CardHeader className="pb-2">
-                            <CardTitle
-                                className="text-sm font-bold text-grey-dark flex items-center gap-2 uppercase tracking-wider">
-                                <Shield className="w-4 h-4 text-academic-purple"/>
-                                {t('recruiterDetail.authAssessment')}
+                    {/* Документи (CV) */}
+                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/60 backdrop-blur-md">
+                        <CardHeader className="border-b border-[#f0edef] pb-4">
+                            <CardTitle className="text-lg font-bold text-grey-dark flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-brand-blue"/>
+                                {t('recruiter.applicationDocuments', 'Прикачени документи')}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                                <div className="bg-white/80 p-4 rounded-xl border border-[#c6c6cd]/40">
-                                    <div
-                                        className="text-xs text-grey-muted font-bold uppercase mb-1">{t('recruiterDetail.plagiarismCheck')}</div>
-                                    <div
-                                        className="text-sm font-black text-professional-emerald flex items-center gap-1.5">
-                                        <CheckCircle className="w-4 h-4"/> {t('recruiterDetail.originalCv')}
+                        <CardContent className="p-6">
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Button
+                                    className="flex-1 bg-[#fcf8fa] hover:bg-[#f0edef] border border-[#c6c6cd]/40 text-grey-dark rounded-xl h-14 justify-start px-6 shadow-sm">
+                                    <div className="flex items-center gap-3 w-full">
+                                        <div
+                                            className="w-8 h-8 bg-brand-blue/10 text-brand-blue rounded-lg flex items-center justify-center shrink-0">
+                                            <FileText className="w-4 h-4"/>
+                                        </div>
+                                        <div className="flex-1 text-left">
+                                            <div className="text-sm font-bold">Автобиография (CV)</div>
+                                            <div className="text-xs text-grey-muted">PDF • 1.2 MB</div>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-grey-muted"/>
                                     </div>
-                                </div>
-                                <div className="bg-white/80 p-4 rounded-xl border border-[#c6c6cd]/40">
-                                    <div
-                                        className="text-xs text-grey-muted font-bold uppercase mb-1">{t('recruiterDetail.consistency')}</div>
-                                    <div
-                                        className="text-sm font-black text-professional-emerald flex items-center gap-1.5">
-                                        <CheckCircle className="w-4 h-4"/> {t('recruiterDetail.logicallyVerified')}
+                                </Button>
+
+                                <Button
+                                    className="flex-1 bg-[#fcf8fa] hover:bg-[#f0edef] border border-[#c6c6cd]/40 text-grey-dark rounded-xl h-14 justify-start px-6 shadow-sm">
+                                    <div className="flex items-center gap-3 w-full">
+                                        <div
+                                            className="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center shrink-0">
+                                            <Mail className="w-4 h-4"/>
+                                        </div>
+                                        <div className="flex-1 text-left">
+                                            <div className="text-sm font-bold">Мотивационно писмо</div>
+                                            <div className="text-xs text-grey-muted">Текст</div>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-grey-muted"/>
                                     </div>
-                                </div>
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>

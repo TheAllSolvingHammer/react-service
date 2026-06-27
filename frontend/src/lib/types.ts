@@ -50,7 +50,7 @@ export interface Applicant {
     role: string;
     email: string;
     matchScore: number;
-    status: "Ново" | "Интервю" | "Преглед";
+    status: "Ново" | "Преглед" | "Интервю" | "Приет" | "Отказан";
     appliedDate: string;
     skills: string[];
     candidateMode: 'academic' | 'professional';

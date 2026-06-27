@@ -16,21 +16,25 @@ import ProfileOnboarding from '@/components/pages/ProfileOnboarding';
 import apiClient from '@/lib/axios';
 import { Profile, Opportunity, Applicant } from '@/lib/types';
 import { parseApiMode, CandidateMode } from '@/lib/mode';
-import { switchCandidateMode, saveCandidateProfile } from '@/lib/profileApi';
-import { fetchOpportunitiesWithMatches, fetchOpportunityCount } from '@/lib/opportunities';
+import { switchCandidateMode } from '@/lib/profileApi';
+import {fetchOpportunitiesWithMatches, fetchOpportunityCount, updateApplicationStatus} from '@/lib/opportunities';
 import { fetchRecruiterApplicants } from '@/lib/applicants';
 import { resolveSkillNames } from '@/lib/skills';
 import { Sparkles } from 'lucide-react';
+import AcademicDashboard from "@/components/pages/AcademicDashboard.tsx";
+import InstitutionOnboarding from "@/components/pages/InstitutionOnboarding.tsx";
+import ForgotPassword from "@/components/pages/ForgotPassword.tsx";
+
+
 
 export default function App() {
-    // Check localStorage initially to survive page refreshes
     const savedToken = localStorage.getItem('jwt_token');
     const savedRole = localStorage.getItem('user_role') as 'candidate' | 'recruiter' | null;
-    const savedUserId = localStorage.getItem('user_id'); // <-- Retrieved the user ID
+    const savedUserId = localStorage.getItem('user_id');
 
     // Auth State
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!savedToken);
-    const [authView, setAuthView] = useState<'login' | 'register'>('login');
+    const [authView, setAuthView] = useState<'login' | 'register' | 'forgot-password'>('login');
 
     // App Navigation State
     const [currentRole, setCurrentRole] = useState<'candidate' | 'recruiter'>(savedRole || 'candidate');
@@ -47,16 +51,21 @@ export default function App() {
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [applicants, setApplicants] = useState<Applicant[]>([]);
     const [opportunityCount, setOpportunityCount] = useState(0);
-    const [appliedList, setAppliedList] = useState<any[]>([]);
 
     const [selectedOpportunityId, setSelectedOpportunityId] = useState<string | null>(null);
     const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+        document.documentElement.classList.toggle('dark', savedTheme ? savedTheme === 'dark' : prefersDark);
+    }, []);
 
     // Logout Handler
     const handleLogout = () => {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('user_role');
-        localStorage.removeItem('user_id'); // <-- Clear ID on logout
+        localStorage.removeItem('user_id');
         setIsAuthenticated(false);
         setProfile(null);
     };
@@ -112,7 +121,6 @@ export default function App() {
             .catch(err => {
                 console.error("Failed to load profile:", err);
                 if (err.response?.status === 404) {
-                    // Profile truly doesn't exist yet (fresh registration). Show the wizard!
                     setProfile({
                         id: savedUserId,
                         userId: savedUserId,
@@ -133,6 +141,7 @@ export default function App() {
 
     }, [isAuthenticated, currentRole, savedUserId]);
 
+    // Fetch Opportunities
     useEffect(() => {
         if (!isAuthenticated || currentRole !== 'candidate' || !profile?.isCompleted || !profile.userId) return;
 
@@ -141,6 +150,7 @@ export default function App() {
             .catch((err) => console.error('Failed to load opportunities:', err));
     }, [isAuthenticated, currentRole, profile?.isCompleted, profile?.userId]);
 
+    // Fetch Recruiter Data
     useEffect(() => {
         if (!isAuthenticated || currentRole !== 'recruiter' || !profile?.isCompleted) return;
 
@@ -169,8 +179,21 @@ export default function App() {
         }
     };
 
-    const handleUpdateApplicantStatus = (id: string, newStatus: "Ново" | "Интервю" | "Преглед") => {
-        setApplicants(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
+    const handleUpdateApplicantStatus = async (id: string, newStatus: "Ново" | "Интервю" | "Преглед" | "Приет" | "Отказан") => {
+        let backendStatus = "REVIEWING";
+        if (newStatus === "Ново") backendStatus = "PENDING";
+        if (newStatus === "Интервю") backendStatus = "INTERVIEW_SCHEDULED";
+        if (newStatus === "Приет") backendStatus = "ACCEPTED";
+        if (newStatus === "Отказан") backendStatus = "REJECTED";
+
+        try {
+            await updateApplicationStatus(id, backendStatus);
+
+            setApplicants(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
+        } catch (error) {
+            console.error("Грешка при смяна на статуса", error);
+            alert("Възникна грешка при запазване на статуса.");
+        }
     };
 
     const selectedApplicant = applicants.find(a => a.id === selectedApplicantId) || applicants[0];
@@ -183,6 +206,7 @@ export default function App() {
             return (
                 <Login
                     onNavigateToRegister={() => setAuthView('register')}
+                    onNavigateToForgotPassword={() => setAuthView('forgot-password')} // ДОБАВИ ТОВА
                     onLoginSuccess={() => {
                         setIsAuthenticated(true);
                         const role = (localStorage.getItem('user_role') as 'candidate' | 'recruiter') || 'candidate';
@@ -205,10 +229,18 @@ export default function App() {
                 />
             );
         }
+
+        if (authView === 'forgot-password') {
+            return (
+                <ForgotPassword
+                    onNavigateToLogin={() => setAuthView('login')}
+                />
+            );
+        }
     }
 
     // ==========================================
-    // 2. LOADING & ERROR STATES (Post-Login)
+    // 2. LOADING & ERROR STATES
     // ==========================================
     if (isLoading) {
         return (
@@ -241,6 +273,19 @@ export default function App() {
     // 3. PROFILE ONBOARDING GATE
     // ==========================================
     if (profile && profile.isCompleted === false) {
+
+        if (currentRole === 'recruiter') {
+            return (
+                <InstitutionOnboarding
+                    profile={profile}
+                    onComplete={(updatedProfile) => {
+                        setProfile({ ...updatedProfile, isCompleted: true });
+                    }}
+                    onLogout={handleLogout}
+                />
+            );
+        }
+
         return (
             <ProfileOnboarding
                 profile={profile}
@@ -274,14 +319,50 @@ export default function App() {
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {currentRole === 'candidate' && (
                     <>
-                        {currentTab === 'dashboard' && <CandidateDashboard profile={profile} candidateMode={candidateMode} setCurrentTab={setCurrentTab} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
-                        {currentTab === 'profile' && <CandidateProfile profile={profile} setProfile={setProfile as any} candidateMode={candidateMode} onSwitchMode={handleSwitchMode} isSwitchingMode={isSwitchingMode} onSaveProfile={async (updated) => {
-                            const saved = await saveCandidateProfile(updated);
-                            setProfile(saved);
-                            if (saved.currentMode) setCandidateMode(saved.currentMode);
-                        }} />}
-                        {currentTab === 'opportunities' && <CandidateOpportunities profile={profile} opportunities={opportunities} selectedOpportunityId={selectedOpportunityId} setSelectedOpportunityId={setSelectedOpportunityId} appliedList={appliedList} setAppliedList={setAppliedList} />}
-                        {currentTab === 'aimatches' && <CandidateAiMatches profile={profile} candidateMode={candidateMode} opportunities={opportunities} />}
+                        {currentTab === 'dashboard' && candidateMode === 'professional' && (
+                            <CandidateDashboard
+                                profile={profile}
+                                candidateMode={candidateMode}
+                                setCandidateMode={handleSwitchMode}
+                                setCurrentTab={setCurrentTab}
+                                setSelectedOpportunityId={setSelectedOpportunityId}
+                            />
+                        )}
+
+                        {currentTab === 'dashboard' && candidateMode === 'academic' && (
+                            <AcademicDashboard profile={profile} />
+                        )}
+                        {currentTab === 'profile' && (
+                            <CandidateProfile
+                                profile={profile}
+                                onSaveProfile={async (updatedData) => {
+                                    try {
+                                        // Тук ще извикаме бекенда, когато ендпоинтът е готов
+                                        // await saveCandidateProfile(profile.id, updatedData);
+
+                                        // Засега обновяваме локалния стейт, за да видим промените веднага
+                                        setProfile(prev => prev ? { ...prev, ...updatedData } : prev);
+                                    } catch (error) {
+                                        console.error("Грешка при запазване на профила", error);
+                                    }
+                                }}
+                            />
+                        )}
+                        {currentTab === 'opportunities' && (
+                            <CandidateOpportunities
+                                profile={profile}
+                                candidateMode={candidateMode}
+                                selectedOpportunityId={selectedOpportunityId}
+                                setSelectedOpportunityId={setSelectedOpportunityId}
+                            />
+                        )}
+                        {currentTab === 'aimatches' && (
+                            <CandidateAiMatches
+                                profile={profile}
+                                candidateMode={candidateMode}
+                                opportunities={opportunities}
+                            />
+                        )}
                     </>
                 )}
 

@@ -50,21 +50,24 @@ export default function CandidateAiMatches({
     }, [matches, selectedOpp]);
 
     const matchAnalysis = useMemo(() => {
-        const oppSkills = selectedOpp?.tags?.length
+        // Защитаваме се от null/undefined стойности с филтриране и безопасно конвертиране
+        const oppSkillsRaw = selectedOpp?.tags?.length
             ? selectedOpp.tags
             : selectedOpp?.requirements?.slice(0, 4) ?? [];
-        const userSkills = profile?.skills ? profile.skills.map(s => s.toLowerCase()) : [];
+
+        const oppSkills = oppSkillsRaw.filter(Boolean).map(s => String(s).toLowerCase());
+        const userSkills = (profile?.skills || []).filter(Boolean).map(s => String(s).toLowerCase());
 
         const breakdown = oppSkills.map(skill => {
-            const isPerfectMatch = userSkills.includes(skill.toLowerCase());
-            const isPartial = !isPerfectMatch && userSkills.some(us => us.includes(skill.toLowerCase()) || skill.toLowerCase().includes(us));
+            const isPerfectMatch = userSkills.includes(skill);
+            const isPartial = !isPerfectMatch && userSkills.some(us => us.includes(skill) || skill.includes(us));
 
             let statusKey = "statusMissing";
             if (isPerfectMatch) statusKey = "statusCovers";
             else if (isPartial) statusKey = "statusPartial";
 
             return {
-                skill,
+                skill, // тук вече skill е string
                 statusKey,
                 categoryKey: "catCloudInfra"
             };
@@ -90,7 +93,7 @@ export default function CandidateAiMatches({
                 ? Math.round(selectedMatch.manualScore)
                 : Math.max(60, finalScore - 8),
         };
-    }, [profile.skills, candidateMode, selectedOpp.tags, selectedOpp?.requirements, selectedMatch?.finalScore, selectedOpp?.matchScore, selectedMatch?.aiReasoning, selectedOpp?.aiReasoning, selectedMatch?.aiScore, selectedMatch?.manualScore]);
+    }, [profile.skills, candidateMode, selectedOpp, selectedMatch]);
 
     if (isLoading) {
         return (

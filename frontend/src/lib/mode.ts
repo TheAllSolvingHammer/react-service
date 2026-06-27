@@ -1,6 +1,6 @@
 export type CandidateMode = 'professional' | 'academic';
 
-export type ApiExperienceMode = 'Professional' | 'Academic';
+export type ApiExperienceMode = 'PROFESSIONAL' | 'ACADEMIC';
 
 export function parseApiMode(value: unknown): CandidateMode {
     if (value === 'Academic' || value === 'ACADEMIC' || value === 'academic') {
@@ -10,5 +10,5 @@ export function parseApiMode(value: unknown): CandidateMode {
 }
 
 export function toApiMode(mode: CandidateMode): ApiExperienceMode {
-    return mode === 'academic' ? 'Academic' : 'Professional';
+    return mode === 'academic' ? 'ACADEMIC' : 'PROFESSIONAL';
 }

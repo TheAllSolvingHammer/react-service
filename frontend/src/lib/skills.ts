@@ -7,10 +7,10 @@ export interface SkillRecord {
 
 let cachedSkills: SkillRecord[] | null = null;
 
-export async function fetchAllSkills(): Promise<SkillRecord[]> {
+export async function fetchAllSkills(): Promise<SkillRecord[] | null> {
     if (cachedSkills) return cachedSkills;
 
-    const response = await apiClient.get('/api/v1/utils/skills?page=0&size=200&sortBy=name&direction=ASC');
+    const response = await apiClient.get('/api/v1/utils/skills?page=0&size=100&sortBy=name&direction=ASC');
     const content = response.data?.content ?? [];
     cachedSkills = content.map((skill: Record<string, unknown>) => ({
         id: String(skill.id),
@@ -21,13 +21,13 @@ export async function fetchAllSkills(): Promise<SkillRecord[]> {
 
 export async function resolveSkillNames(skillIds: string[] | undefined): Promise<string[]> {
     if (!skillIds?.length) return [];
-    const skills = await fetchAllSkills();
+    const skills = await fetchAllSkills() ?? [];
     const byId = new Map(skills.map((skill) => [skill.id, skill.name]));
     return skillIds.map((id) => byId.get(id) ?? id);
 }
 
 export async function resolveSkillIds(skillNames: string[]): Promise<string[]> {
-    const skills = await fetchAllSkills();
+    const skills = await fetchAllSkills() ?? [];
     const byName = new Map(skills.map((skill) => [skill.name.toLowerCase(), skill.id]));
     const ids: string[] = [];
 
