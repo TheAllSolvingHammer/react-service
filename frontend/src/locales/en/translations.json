@@ -11,7 +11,9 @@
     "recruiterDashboard": "Dashboard",
     "pipeline": "Pipeline",
     "logout": "Log out",
-    "languageToggle": "Change language"
+    "languageToggle": "Change language",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode"
   },
   "mode": {
     "activeView": "Active view",
@@ -57,7 +59,33 @@
     "experience": "Experience",
     "education": "Education & Projects",
     "proMode": "Professional",
-    "academicMode": "Academic"
+    "academicMode": "Academic",
+    "title": "My Profile",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save changes",
+    "aboutMe": "About Me",
+    "keyTech": "Key Technologies",
+    "featuredProjects": "Featured Projects",
+    "skillProfile": "Skills Profile",
+    "unknownUser": "Unknown",
+    "defaultLocation": "Sofia, Bulgaria",
+    "defaultBio": "Passionate software engineer with experience in building scalable web applications...",
+    "saveError": "Error saving:",
+    "placeholders": {
+      "name": "Full Name",
+      "role": "Role (e.g. Full-Stack Developer)",
+      "bio": "Tell us a bit more about your experience..."
+    },
+    "projects": {
+      "thesis": "Thesis Project",
+      "openSource": "Open Source",
+      "sourceCode": "Source Code",
+      "article": "Article / Blog",
+      "recruitAiDesc": "Building an innovative recruitment platform based on microservices architecture. Implemented Spring Boot services, React frontend, and an AI matching algorithm.",
+      "wslDesc": "Extensive research and resolution of memory leak issues (\"vmmem\") in Docker Desktop after hibernation. Created scripts for automated management of .wslconfig."
+    }
   },
   "opportunities": {
     "title": "Open Positions",
@@ -161,6 +189,7 @@
     "loginTitle": "Sign In",
     "loginSubtitle": "Welcome back! Please enter your details.",
     "email": "Email Address",
+    "fullName": "Full Name",
     "password": "Password",
     "signIn": "Sign In",
     "noAccount": "Don't have an account?",
@@ -172,6 +201,7 @@
     "confirmPassword": "Confirm Password",
     "nextStep": "Continue",
     "hasAccount": "Already have an account?",
+    "haveAccount": "Already have an account?",
     "loginInstead": "Log in here",
     "roleSelectionTitle": "Select Your Role",
     "roleSelectionSubtitle": "How will you use the platform?",
@@ -187,6 +217,7 @@
     "shortName": "Name must be at least 3 characters.",
     "registrationFailed": "Registration failed. The email might already be in use.",
     "loadingDots" : "Loading...",
+    "registeringDots": "Creating account...",
     "awaitingOperation" : "Please wait while we process your request..",
     "loginSuccess": "Login successful! Redirecting...",
     "registerSuccess": "Registration successful! Redirecting...",
@@ -244,6 +275,6 @@
     "invalidEmail": "Please enter a valid email address",
     "passwordMin": "Password must contain at least 6 characters",
     "passwordsMatch": "Passwords dont match",
-    "otpLength": "Кодът трябва да е точно 6 символа"
+    "otpLength": "The code must be exactly 6 characters"
   }
 }

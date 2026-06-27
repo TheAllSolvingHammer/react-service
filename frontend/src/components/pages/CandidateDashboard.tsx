@@ -13,6 +13,7 @@ import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import apiClient from '@/lib/axios';
+import { fetchCandidateMatches } from '@/lib/matching';
 
 interface CandidateDashboardProps {
     profile: Profile;
@@ -48,17 +49,17 @@ export default function CandidateDashboard({
                 const appsData = await fetchCandidateApplications(candidateId);
                 setAppliedList(appsData.map(mapApplicationActivity));
 
-                const matchRes = await apiClient.get(`/api/v1/matching/candidate/${candidateId}?size=3`);
-                const matches = matchRes.data?.content || [];
+                //const matchRes = await apiClient.get(`/api/v1/matching/candidate/${candidateId}?size=3`);
+                const matches = await fetchCandidateMatches(candidateId, 3);
 
                 if (matches.length > 0) {
                     const detailedMatches = await Promise.all(
-                        matches.map(async (m: any) => {
+                        matches.map(async (m) => {
                             try {
                                 const oppRes = await apiClient.get(`/api/v1/opportunities/get/${m.opportunityId}`);
                                 return {
                                     ...oppRes.data,
-                                    matchScore: Math.round(m.finalScore),
+                                    matchScore: m.finalScore, // Вече е закръглено в matching.ts
                                     aiReasoning: m.aiReasoning,
                                     company: oppRes.data.location || t('dashboard.unknownCompany', 'Неизвестна Компания')
                                 };

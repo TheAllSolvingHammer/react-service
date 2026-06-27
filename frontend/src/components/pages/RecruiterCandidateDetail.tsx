@@ -24,7 +24,7 @@ interface RecruiterCandidateDetailProps {
     onUpdateStatus: (id: string, newStatus: Applicant['status']) => void;
 }
 
-const pipelineSteps = ['Ново', 'Преглед', 'Интервю', 'Приет'];
+const pipelineSteps: Applicant['status'][] = ['Ново', 'Преглед', 'Интервю', 'Приет'];
 
 export default function RecruiterCandidateDetail({applicant, onBack, onUpdateStatus}: RecruiterCandidateDetailProps) {
     const {t} = useTranslation();

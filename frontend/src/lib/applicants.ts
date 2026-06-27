@@ -60,7 +60,7 @@ export async function fetchRecruiterApplicants(): Promise<Applicant[]> {
             const currentMode = parseApiMode(profile.currentMode ?? profile.candidateType);
 
             return {
-                id: candidateUserId,
+                id: application.applicationId || candidateUserId,
                 name: `${firstName} ${lastName}`.trim(),
                 role: String(profile.headline ?? application.title ?? 'Кандидат'),
                 email: String(profile.email ?? ''),

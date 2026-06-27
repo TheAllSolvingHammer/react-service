@@ -11,7 +11,9 @@
     "recruiterDashboard": "Дашборд",
     "pipeline": "Пайплайн",
     "logout": "Изход",
-    "languageToggle": "Смяна на езика"
+    "languageToggle": "Смяна на езика",
+    "darkMode": "Тъмен режим",
+    "lightMode": "Светъл режим"
   },
   "mode": {
     "activeView": "Активен изглед",
@@ -57,7 +59,33 @@
     "experience": "Опит",
     "education": "Образование и Проекти",
     "proMode": "Професионален",
-    "academicMode": "Академичен"
+    "academicMode": "Академичен",
+    "title": "Моят Профил",
+    "edit": "Редактиране",
+    "cancel": "Отказ",
+    "saving": "Запазване...",
+    "saveChanges": "Запази промените",
+    "aboutMe": "За мен",
+    "keyTech": "Ключови Технологии",
+    "featuredProjects": "Представени Проекти",
+    "skillProfile": "Профил на Уменията",
+    "unknownUser": "Неизвестен",
+    "defaultLocation": "София, България",
+    "defaultBio": "Страстен софтуерен инженер с опит в изграждането на мащабируеми уеб приложения...",
+    "saveError": "Грешка при запазване:",
+    "placeholders": {
+      "name": "Име и фамилия",
+      "role": "Позиция (напр. Full-Stack Developer)",
+      "bio": "Разкажете малко повече за вашия опит..."
+    },
+    "projects": {
+      "thesis": "Дипломен Проект",
+      "openSource": "Open Source",
+      "sourceCode": "Изходен код",
+      "article": "Статия / Блог",
+      "recruitAiDesc": "Изграждане на иновативна платформа за подбор на кадри, базирана на микросървисна архитектура. Имплементирани Spring Boot сървиси, React фронтенд и алгоритъм за AI съвпадения (Matching).",
+      "wslDesc": "Мащабно изследване и решаване на проблеми с memory leaks (\"vmmem\") при Docker Desktop след хибернация. Създаване на скриптове за автоматично управление на .wslconfig."
+    }
   },
   "opportunities": {
     "title": "Отворени Позиции",
@@ -161,6 +189,7 @@
     "loginTitle": "Вход в системата",
     "loginSubtitle": "Добре дошли отново! Въведете вашите данни.",
     "email": "Имейл адрес",
+    "fullName": "Име и фамилия",
     "password": "Парола",
     "signIn": "Влез в профила",
     "noAccount": "Нямате акаунт?",
@@ -172,6 +201,7 @@
     "confirmPassword": "Потвърди парола",
     "nextStep": "Продължи напред",
     "hasAccount": "Вече имате акаунт?",
+    "haveAccount": "Вече имате акаунт?",
     "loginInstead": "Влезте тук",
     "roleSelectionTitle": "Изберете вашата роля",
     "roleSelectionSubtitle": "Как ще използвате платформата?",
@@ -187,6 +217,7 @@
     "shortName": "Името трябва да е поне 3 символа.",
     "registrationFailed": "Възникна грешка при регистрацията. Възможно е имейлът вече да се използва.",
     "loadingDots" : "Зареждане...",
+    "registeringDots": "Създаване на профил...",
     "awaitingOperation" : "Моля изчакайте..",
     "loginSuccess": "Успешен вход! Зареждане на профила...",
     "registerSuccess": "Успешна регистрация! Пренасочване...",

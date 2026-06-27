@@ -16,7 +16,7 @@ import ProfileOnboarding from '@/components/pages/ProfileOnboarding';
 import apiClient from '@/lib/axios';
 import { Profile, Opportunity, Applicant } from '@/lib/types';
 import { parseApiMode, CandidateMode } from '@/lib/mode';
-import { switchCandidateMode, saveCandidateProfile } from '@/lib/profileApi';
+import { switchCandidateMode } from '@/lib/profileApi';
 import {fetchOpportunitiesWithMatches, fetchOpportunityCount, updateApplicationStatus} from '@/lib/opportunities';
 import { fetchRecruiterApplicants } from '@/lib/applicants';
 import { resolveSkillNames } from '@/lib/skills';
@@ -54,6 +54,12 @@ export default function App() {
 
     const [selectedOpportunityId, setSelectedOpportunityId] = useState<string | null>(null);
     const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+        document.documentElement.classList.toggle('dark', savedTheme ? savedTheme === 'dark' : prefersDark);
+    }, []);
 
     // Logout Handler
     const handleLogout = () => {
@@ -174,9 +180,9 @@ export default function App() {
     };
 
     const handleUpdateApplicantStatus = async (id: string, newStatus: "Ново" | "Интервю" | "Преглед" | "Приет" | "Отказан") => {
-        let backendStatus = "REVIEW";
-        if (newStatus === "Ново") backendStatus = "NEW";
-        if (newStatus === "Интервю") backendStatus = "INTERVIEW";
+        let backendStatus = "REVIEWING";
+        if (newStatus === "Ново") backendStatus = "PENDING";
+        if (newStatus === "Интервю") backendStatus = "INTERVIEW_SCHEDULED";
         if (newStatus === "Приет") backendStatus = "ACCEPTED";
         if (newStatus === "Отказан") backendStatus = "REJECTED";
 
@@ -329,20 +335,23 @@ export default function App() {
                         {currentTab === 'profile' && (
                             <CandidateProfile
                                 profile={profile}
-                                setProfile={setProfile as any}
-                                candidateMode={candidateMode}
-                                onSwitchMode={handleSwitchMode}
-                                isSwitchingMode={isSwitchingMode}
-                                onSaveProfile={async (updated) => {
-                                    const saved = await saveCandidateProfile(updated);
-                                    setProfile(saved);
-                                    if (saved.currentMode) setCandidateMode(saved.currentMode);
+                                onSaveProfile={async (updatedData) => {
+                                    try {
+                                        // Тук ще извикаме бекенда, когато ендпоинтът е готов
+                                        // await saveCandidateProfile(profile.id, updatedData);
+
+                                        // Засега обновяваме локалния стейт, за да видим промените веднага
+                                        setProfile(prev => prev ? { ...prev, ...updatedData } : prev);
+                                    } catch (error) {
+                                        console.error("Грешка при запазване на профила", error);
+                                    }
                                 }}
                             />
                         )}
                         {currentTab === 'opportunities' && (
                             <CandidateOpportunities
                                 profile={profile}
+                                candidateMode={candidateMode}
                                 selectedOpportunityId={selectedOpportunityId}
                                 setSelectedOpportunityId={setSelectedOpportunityId}
                             />

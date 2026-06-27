@@ -21,13 +21,13 @@ export async function fetchAllSkills(): Promise<SkillRecord[] | null> {
 
 export async function resolveSkillNames(skillIds: string[] | undefined): Promise<string[]> {
     if (!skillIds?.length) return [];
-    const skills = await fetchAllSkills();
+    const skills = await fetchAllSkills() ?? [];
     const byId = new Map(skills.map((skill) => [skill.id, skill.name]));
     return skillIds.map((id) => byId.get(id) ?? id);
 }
 
 export async function resolveSkillIds(skillNames: string[]): Promise<string[]> {
-    const skills = await fetchAllSkills();
+    const skills = await fetchAllSkills() ?? [];
     const byName = new Map(skills.map((skill) => [skill.name.toLowerCase(), skill.id]));
     const ids: string[] = [];
 

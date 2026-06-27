@@ -106,7 +106,7 @@ export async function fetchOpportunityCount(mode: string = 'PROFESSIONAL'): Prom
 }
 
 export async function updateApplicationStatus(applicationId: string, status: string) {
-    const response = await apiClient.patch(`/api/v1/opportunities/applications/${applicationId}/status`, null, {
+    const response = await apiClient.patch(`/api/v1/opportunities/${applicationId}/status`, null, {
         params: { status }
     });
     return response.data;

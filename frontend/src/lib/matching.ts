@@ -14,6 +14,14 @@ export interface MatchResult {
     calculatedAt?: string;
 }
 
+export interface PaginatedMatchOutput {
+    content: MatchResult[];
+    totalPages: number;
+    totalElements: number;
+    currentPage: number;
+    isLast: boolean;
+}
+
 export async function fetchCandidateMatches(
     candidateUserId: string,
     size = 20

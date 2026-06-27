@@ -135,7 +135,7 @@ export default function RecruiterRanking({applicants, setCurrentTab, setSelected
                         <p className="text-sm text-grey-muted mt-1">{t('recruiter.tryAdjustingFilters', 'Опитайте да промените филтрите или критериите за търсене.')}</p>
                     </div>
                 ) : (
-                    filteredAndSortedApplicants.map((applicant, index) => {
+                    filteredAndSortedApplicants.map((applicant) => {
                         const isTopMatch = applicant.matchScore >= 80;
                         return (
                             <Card
