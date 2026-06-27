@@ -18,6 +18,7 @@ export interface Profile {
     avatarUrl?: string;
     isCompleted?: boolean;
     isUniversity?: boolean;
+    sectorType?: string;
 }
 
 export interface Experience {

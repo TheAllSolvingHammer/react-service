@@ -194,6 +194,7 @@ export default function RecruiterDashboard({
 
                             <Button
                                 variant="outline"
+                                onClick={() => setCurrentTab('recruiter_create_opportunity')}
                                 className="w-full bg-white border-[#c6c6cd] text-grey-dark hover:border-brand-blue hover:text-brand-blue rounded-xl h-14 justify-start px-6 font-bold shadow-sm transition-all group"
                             >
                                 <Briefcase className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform"/>

@@ -110,7 +110,8 @@ export default function App() {
                     educationType: p.educationType,
                     birthday: p.birthday,
                     currentMode: parseApiMode(p.currentMode),
-                    isCompleted: p.isCompleted !== undefined ? p.isCompleted : false
+                    isCompleted: p.isCompleted !== undefined ? p.isCompleted : false,
+                    isUniversity: p.isUniversity !== undefined ? p.isUniversity : (p.university !== undefined ? p.university : (p.sectorType === 'UNSPECIFIED' || false))
                 });
 
                 if (currentRole === 'candidate') {
