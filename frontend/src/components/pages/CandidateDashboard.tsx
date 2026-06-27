@@ -1,21 +1,13 @@
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
-    AlertCircle,
-    ArrowRight,
-    BrainCircuit,
-    Briefcase,
-    CheckCircle2,
-    Eye,
-    History,
-    Loader2,
-    Sparkles,
-    Target,
-    TrendingUp
+    AlertCircle, ArrowRight, BrainCircuit, Briefcase, CheckCircle2, Eye,
+    History, Loader2, Sparkles, Target, TrendingUp
 } from 'lucide-react';
 import {Profile} from '@/lib/types';
-import {CandidateMode} from '@/lib/mode';
+import {CandidateMode, toApiMode} from '@/lib/mode';
 import {applyToOpportunity, fetchCandidateApplications, mapApplicationActivity} from '@/lib/applications';
+import {fetchOpportunities} from '@/lib/opportunities'; // ИМПОРТИРАМЕ НОВАТА ФУНКЦИЯ
 import ModeToggle from '@/components/shared/ModeToggle';
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
@@ -44,23 +36,18 @@ export default function CandidateDashboard({
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [isAiMatch, setIsAiMatch] = useState(true);
 
-    const profileScore = profile?.isCompleted ? 100 : 40; // Simplified completeness logic
+    const profileScore = profile?.isCompleted ? 100 : 40;
 
     useEffect(() => {
-        // 1. Запазваме ID-то в локална константа
         const candidateId = profile?.id;
-
-        // 2. Правим проверката с локалната константа
         if (!candidateId) return;
 
         const loadDashboardData = async () => {
             setIsLoadingData(true);
             try {
-                // 1. Fetch Applications using your new helper
                 const appsData = await fetchCandidateApplications(candidateId);
                 setAppliedList(appsData.map(mapApplicationActivity));
 
-                // 4. Правим същото и за мачовете
                 const matchRes = await apiClient.get(`/api/v1/matching/candidate/${candidateId}?size=3`);
                 const matches = matchRes.data?.content || [];
 
@@ -83,13 +70,8 @@ export default function CandidateDashboard({
                     setTopMatches(detailedMatches.filter(m => m !== null));
                     setIsAiMatch(true);
                 } else {
-                    const fallbackRes = await apiClient.get(`/api/v1/opportunities/getAll?page=0&size=3&sortBy=createdAt&direction=DESC&nameFilter=`);
-                    const latestOpps = fallbackRes.data?.content?.map((opp: any) => ({
-                        ...opp,
-                        matchScore: null,
-                        aiReasoning: null,
-                        company: opp.location || t('dashboard.unknownCompany', 'Неизвестна Компания')
-                    })) || [];
+                    const latestOpps = await fetchOpportunities('', toApiMode(candidateMode), 0, 3);
+
                     setTopMatches(latestOpps);
                     setIsAiMatch(false);
                 }
@@ -101,19 +83,17 @@ export default function CandidateDashboard({
         };
 
         loadDashboardData();
-    }, [profile?.id, t]);
+    }, [profile?.id, candidateMode, t]);
 
     const handleApplyOneClick = async (opp: any) => {
         const exists = appliedList.some(item => item.id === opp.id);
         if (exists || !profile?.id) return;
 
         try {
-            // Using your new elegant helper method
             await applyToOpportunity(opp.id, profile.id, "Кандидатстване чрез бърз бутон от таблото.");
 
-            // Optimistically update the UI using the mapping standard
             const newApp = mapApplicationActivity({
-                applicationId: Math.random().toString(), // Temp ID
+                applicationId: Math.random().toString(),
                 candidateId: profile.id,
                 opportunityId: opp.id,
                 title: opp.title,
@@ -137,7 +117,6 @@ export default function CandidateDashboard({
             <div
                 className="absolute top-0 right-0 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
 
-            {/* Header & Mode Switch */}
             <header
                 className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 pb-6 border-b border-[#c6c6cd]/30">
                 <div className="relative">
@@ -253,7 +232,7 @@ export default function CandidateDashboard({
                                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-[#fcf8fa]/50 hover:bg-white hover:shadow-md transition-all duration-300 border border-transparent hover:border-[#c6c6cd]/40 group cursor-pointer gap-4">
                                         <div className="flex items-center gap-4">
                                             <div
-                                                className={`w-12 h-12 rounded-xl shadow-sm flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform duration-300 ${app.logoColor}`}>
+                                                className={`w-12 h-12 rounded-xl shadow-sm flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform duration-300 ${app.logoColor || 'bg-brand-blue'}`}>
                                                 {app.company.charAt(0)}
                                             </div>
                                             <div>

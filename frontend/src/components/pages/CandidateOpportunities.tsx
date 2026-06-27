@@ -5,6 +5,7 @@ import {
     ArrowLeft, CheckCircle2, Loader2, Sparkles, FileText
 } from 'lucide-react';
 import { Opportunity, Profile } from '@/lib/types';
+import { CandidateMode } from '@/lib/mode';
 import { fetchOpportunities, fetchOpportunityById } from '@/lib/opportunities';
 import { applyToOpportunity } from '@/lib/applications';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -12,41 +13,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
-// Този интерфейс перфектно съвпада с това, което подаваш в App.tsx!
 interface CandidateOpportunitiesProps {
     profile: Profile;
+    candidateMode: CandidateMode;
     selectedOpportunityId: string | null;
     setSelectedOpportunityId: (id: string | null) => void;
 }
 
-export default function CandidateOpportunities({ profile, selectedOpportunityId, setSelectedOpportunityId }: CandidateOpportunitiesProps) {
+export default function CandidateOpportunities({ profile, candidateMode, selectedOpportunityId, setSelectedOpportunityId }: CandidateOpportunitiesProps) {
     const { t } = useTranslation();
 
-    // Списък състояния
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Детайлен изглед състояния
     const [selectedOppDetails, setSelectedOppDetails] = useState<Opportunity | null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
     const [isApplying, setIsApplying] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
 
-    // Зареждане на всички обяви (и търсене)
+    // Зареждане на всички обяви с ТЪРСЕНЕ и РЕЖИМ
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             setIsLoading(true);
-            fetchOpportunities(searchTerm)
+            // Използваме новата подредба: (searchTerm, mode)
+            fetchOpportunities(searchTerm, candidateMode)
                 .then(setOpportunities)
                 .catch(err => console.error(t('opportunities.errorLoading', 'Грешка при зареждане на обяви:'), err))
                 .finally(() => setIsLoading(false));
         }, 300);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm, t]);
+    }, [searchTerm, candidateMode, t]);
 
-    // Ако има подаден ID от Дашборда (кликнато "Око"), зареждаме детайлите
+    // Детайлен изглед...
     useEffect(() => {
         if (!selectedOpportunityId) {
             setSelectedOppDetails(null);
@@ -61,7 +61,6 @@ export default function CandidateOpportunities({ profile, selectedOpportunityId,
             .finally(() => setIsLoadingDetails(false));
     }, [selectedOpportunityId, t]);
 
-    // Кандидатстване
     const handleApply = async () => {
         if (!selectedOppDetails || !profile.id) return;
 
@@ -80,7 +79,6 @@ export default function CandidateOpportunities({ profile, selectedOpportunityId,
         }
     };
 
-    // --- ИЗГЛЕД: ДЕТАЙЛИ НА ОБЯВА ---
     if (selectedOpportunityId) {
         return (
             <div className="space-y-6 animate-fade-in max-w-4xl mx-auto pb-12">
@@ -104,7 +102,7 @@ export default function CandidateOpportunities({ profile, selectedOpportunityId,
                             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                                 <div>
                                     <Badge className="bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20 border-0 mb-4 rounded-lg">
-                                        {t('opportunities.activePosition', 'Активна Позиция')}
+                                        {candidateMode === 'academic' ? 'Академична Програма' : t('opportunities.activePosition', 'Активна Позиция')}
                                     </Badge>
                                     <CardTitle className="text-3xl font-display font-extrabold text-grey-dark mb-2">
                                         {selectedOppDetails.title}
@@ -163,13 +161,12 @@ export default function CandidateOpportunities({ profile, selectedOpportunityId,
         );
     }
 
-    // --- ИЗГЛЕД: СПИСЪК С ОБЯВИ ---
     return (
         <div className="space-y-8 animate-fade-in pb-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-display font-extrabold text-grey-dark tracking-tight">
-                        {t('opportunities.title', 'Всички Обяви')}
+                        {candidateMode === 'academic' ? 'Академични Програми' : t('opportunities.title', 'Всички Обяви')}
                     </h1>
                     <p className="text-sm text-grey-muted mt-1">{t('opportunities.subtitle', 'Открийте следващата стъпка във вашата кариера.')}</p>
                 </div>

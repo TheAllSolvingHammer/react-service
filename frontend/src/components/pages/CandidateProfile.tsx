@@ -1,415 +1,224 @@
-import {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-    Briefcase,
-    Building,
-    Calendar,
-    Edit2,
-    GraduationCap,
-    Loader2,
-    Mail,
-    MapPin,
-    Plus,
-    Save,
-    Trash2,
-    X
-} from 'lucide-react';
-import {Experience, Profile} from '@/lib/types';
-import {CandidateMode, toApiMode} from '@/lib/mode';
-import ModeToggle from '@/components/shared/ModeToggle';
-import {fetchCandidateExperiences} from '@/lib/experiences';
+//this two are missing
+import {Calendar, Code2, Edit3, ExternalLink, Github, Linkedin, Mail, MapPin, ShieldCheck} from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Textarea} from "@/components/ui/textarea";
 import {Badge} from "@/components/ui/badge";
-import {Label} from "@/components/ui/label";
-import apiClient from '@/lib/axios';
+import {Profile} from '@/lib/types';
+import {PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer} from 'recharts';
 
 interface CandidateProfileProps {
     profile: Profile;
-    setProfile: (profile: Profile) => void;
-    candidateMode: CandidateMode;
-    onSwitchMode: (mode: CandidateMode) => void;
-    isSwitchingMode?: boolean;
-    onSaveProfile: (profile: Profile) => Promise<void>;
 }
 
-export default function CandidateProfile({
-                                             profile,
-                                             candidateMode,
-                                             onSwitchMode,
-                                             isSwitchingMode,
-                                             onSaveProfile
-                                         }: CandidateProfileProps) {
+export default function CandidateProfile({profile}: CandidateProfileProps) {
     const {t} = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [editedProfile, setEditedProfile] = useState<Profile>(profile);
 
-    // Experience State
-    const [experiences, setExperiences] = useState<Experience[]>([]);
-    const [isLoadingExperiences, setIsLoadingExperiences] = useState(true);
-    const [isAddingExperience, setIsAddingExperience] = useState(false);
-    const [newExperience, setNewExperience] = useState<Partial<Experience>>({currentlyActive: false});
+    const skillsData = [
+        {subject: 'Frontend', A: 85, fullMark: 100},
+        {subject: 'Backend', A: 90, fullMark: 100},
+        {subject: 'Database', A: 75, fullMark: 100},
+        {subject: 'AI / ML', A: 60, fullMark: 100},
+        {subject: 'DevOps', A: 70, fullMark: 100},
+        {subject: 'Soft Skills', A: 80, fullMark: 100},
+    ];
 
-    // Skills State
-    const [newSkill, setNewSkill] = useState('');
-
-    useEffect(() => {
-        setEditedProfile(profile);
-    }, [profile]);
-
-    const loadExperiences = () => {
-        if (!profile.id) return;
-        setIsLoadingExperiences(true);
-        fetchCandidateExperiences(profile.id, candidateMode)
-            .then(setExperiences)
-            .catch((err) => console.error('Failed to load experiences:', err))
-            .finally(() => setIsLoadingExperiences(false));
-    };
-
-    useEffect(() => {
-        loadExperiences();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [profile.id, candidateMode]);
-
-    const handleSaveProfile = async () => {
-        setIsSaving(true);
-        try {
-            await onSaveProfile(editedProfile);
-            setIsEditing(false);
-        } catch (err) {
-            console.error('Failed to save profile:', err);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    // --- EXPERIENCES CRUD ---
-
-    const handleCreateExperience = async () => {
-        if (!newExperience.title || !newExperience.organization || !newExperience.startDate) return;
-
-        try {
-            const payload = {
-                candidateId: profile.id,
-                title: newExperience.title,
-                organization: newExperience.organization,
-                description: newExperience.description,
-                startDate: newExperience.startDate,
-                endDate: newExperience.endDate,
-                currentlyActive: newExperience.currentlyActive,
-                mode: toApiMode(candidateMode) // "Academic" or "Professional"
-            };
-
-            await apiClient.post('/api/v1/experiences', payload);
-            setIsAddingExperience(false);
-            setNewExperience({currentlyActive: false});
-            loadExperiences(); // Refresh list
-        } catch (error) {
-            console.error('Failed to create experience:', error);
-        }
-    };
-
-    const handleDeleteExperience = async (expId: string) => {
-        try {
-            await apiClient.delete(`/api/v1/experiences/${expId}`);
-            setExperiences(prev => prev.filter(e => e.id !== expId));
-        } catch (error) {
-            console.error('Failed to delete experience:', error);
-        }
-    };
-
-    // --- SKILLS ---
-
-    const handleAddSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && newSkill.trim() !== '') {
-            e.preventDefault();
-            setEditedProfile({
-                ...editedProfile,
-                skills: [...(editedProfile.skills || []), newSkill.trim()]
-            });
-            setNewSkill('');
-        }
-    };
-
-    const removeSkill = (skillToRemove: string) => {
-        setEditedProfile({
-            ...editedProfile,
-            skills: (editedProfile.skills || []).filter(s => s !== skillToRemove)
-        });
+    const getInitials = (name: string) => {
+        if (!name || name.includes('Неизвестен')) return 'JD';
+        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     };
 
     return (
-        <div className="space-y-8 animate-fade-in pb-12">
-            {/* Header & Global Actions */}
+        <div className="space-y-6 animate-fade-in max-w-6xl mx-auto pb-12 relative">
             <div
-                className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#c6c6cd]/30 pb-6">
-                <div>
-                    <h1 className="text-3xl font-display font-extrabold text-grey-dark tracking-tight">
-                        {t('profile.title', 'Профил')}
-                    </h1>
-                    <p className="text-sm text-grey-muted mt-1">
-                        Управлявайте вашата идентичност и професионално развитие.
-                    </p>
-                </div>
+                className="absolute top-0 right-[-10%] w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px] -z-10"></div>
 
-                <div className="flex items-center gap-3">
-                    {isEditing ? (
-                        <Button onClick={handleSaveProfile} disabled={isSaving}
-                                className="bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl shadow-sm gap-2 px-6 h-10">
-                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin"/> : <Save className="w-4 h-4"/>}
-                            {t('profile.saveChanges', 'Запази')}
-                        </Button>
-                    ) : (
-                        <Button onClick={() => setIsEditing(true)} variant="outline"
-                                className="border-[#c6c6cd] text-grey-dark hover:bg-white rounded-xl shadow-xs gap-2 px-6 h-10">
-                            <Edit2 className="w-4 h-4"/>
-                            {t('profile.edit', 'Редактирай')}
-                        </Button>
-                    )}
-                </div>
+            <div className="flex justify-between items-center mb-2">
+                <h1 className="text-3xl font-display font-extrabold text-grey-dark tracking-tight">
+                    Моят Профил
+                </h1>
+                <Button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className="bg-white text-grey-dark border border-[#c6c6cd] hover:border-brand-blue hover:text-brand-blue rounded-xl shadow-sm transition-all"
+                >
+                    <Edit3 className="w-4 h-4 mr-2"/>
+                    {isEditing ? 'Запазване' : 'Редактиране'}
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* LEFT COLUMN: Basic Identity */}
-                <div className="lg:col-span-4 space-y-6">
-                    <Card
-                        className="rounded-3xl border-[#c6c6cd] shadow-xs bg-white/40 backdrop-blur-md overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="flex flex-col items-center mb-8">
-                                <div
-                                    className="w-24 h-24 rounded-full bg-brand-blue/10 border-2 border-brand-blue/20 flex items-center justify-center text-3xl font-display font-bold text-brand-blue mb-4 shadow-inner">
-                                    {editedProfile.name ? editedProfile.name.charAt(0) : 'U'}
-                                </div>
-                                {isEditing ? (
-                                    <div className="w-full space-y-4">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-xs font-bold text-grey-muted uppercase">Име</Label>
-                                            <Input value={editedProfile.name} onChange={e => setEditedProfile({
-                                                ...editedProfile,
-                                                name: e.target.value
-                                            })} className="rounded-xl border-[#c6c6cd]/50 bg-white/50"/>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label className="text-xs font-bold text-grey-muted uppercase">Заглавие
-                                                (Роля)</Label>
-                                            <Input value={editedProfile.role} onChange={e => setEditedProfile({
-                                                ...editedProfile,
-                                                role: e.target.value
-                                            })} className="rounded-xl border-[#c6c6cd]/50 bg-white/50"/>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="text-center">
-                                        <h2 className="text-xl font-bold text-grey-dark">{profile.name}</h2>
-                                        <p className="text-brand-blue font-medium mt-1">{profile.role}</p>
-                                    </div>
-                                )}
-                            </div>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-sm text-grey-dark">
-                                    <Mail className="w-4 h-4 text-grey-muted"/>
-                                    {isEditing ? <Input value={editedProfile.email} onChange={e => setEditedProfile({
-                                        ...editedProfile,
-                                        email: e.target.value
-                                    })} className="h-8 text-sm rounded-lg"/> : <span>{profile.email}</span>}
-                                </div>
-                                <div className="flex items-center gap-3 text-sm text-grey-dark">
-                                    <MapPin className="w-4 h-4 text-grey-muted"/>
-                                    {isEditing ? <Input value={editedProfile.location} onChange={e => setEditedProfile({
-                                        ...editedProfile,
-                                        location: e.target.value
-                                    })} className="h-8 text-sm rounded-lg"/> : <span>{profile.location}</span>}
+                {/* ЛЯВА КОЛОНА: Информация, Линкове и Радар */}
+                <div className="lg:col-span-4 space-y-6">
+                    {/* Визитка */}
+                    <Card className="rounded-3xl border-0 shadow-lg bg-white overflow-hidden relative">
+                        <div className="h-24 bg-gradient-to-r from-brand-blue to-purple-600"></div>
+                        <div className="px-6 pb-6 text-center relative">
+                            <div
+                                className="w-24 h-24 bg-white rounded-full p-1 mx-auto -mt-12 mb-3 shadow-md relative z-10">
+                                <div
+                                    className="w-full h-full rounded-full bg-gradient-to-br from-brand-blue to-purple-600 text-white flex items-center justify-center text-3xl font-black shadow-inner">
+                                    {getInitials(profile?.name || '')}
                                 </div>
                             </div>
+                            <h2 className="text-xl font-bold text-grey-dark">
+                                {profile?.name && !profile?.name.includes('Неизвестен') ? profile.name : 'Джон Доу'}
+                            </h2>
+                            <p className="text-sm text-brand-blue font-semibold mb-4">
+                                {profile?.title || 'Full-Stack Developer'}
+                            </p>
+
+                            <div className="flex flex-col gap-3 text-sm text-grey-muted text-left">
+                                <div className="flex items-center gap-3"><Mail
+                                    className="w-4 h-4 text-brand-blue"/> john.doe@example.com
+                                </div>
+                                <div className="flex items-center gap-3"><MapPin
+                                    className="w-4 h-4 text-brand-blue"/> София, България
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+
+                    {/* Социални Линкове */}
+                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md">
+                        <CardContent className="p-5 flex gap-4 justify-center">
+                            <a href="#"
+                               className="w-12 h-12 rounded-xl bg-[#fcf8fa] hover:bg-black hover:text-white text-grey-dark flex items-center justify-center transition-all shadow-sm border border-[#c6c6cd]/30 group">
+                                <Github className="w-6 h-6 group-hover:scale-110 transition-transform"/>
+                            </a>
+                            <a href="#"
+                               className="w-12 h-12 rounded-xl bg-[#fcf8fa] hover:bg-[#0077b5] hover:text-white text-grey-dark flex items-center justify-center transition-all shadow-sm border border-[#c6c6cd]/30 group">
+                                <Linkedin className="w-6 h-6 group-hover:scale-110 transition-transform"/>
+                            </a>
+                            <a href="#"
+                               className="w-12 h-12 rounded-xl bg-[#fcf8fa] hover:bg-brand-blue hover:text-white text-grey-dark flex items-center justify-center transition-all shadow-sm border border-[#c6c6cd]/30 group">
+                                <Code2 className="w-6 h-6 group-hover:scale-110 transition-transform"/>
+                            </a>
                         </CardContent>
                     </Card>
 
-                    <Card className="rounded-3xl border-[#c6c6cd] shadow-xs bg-white/40 backdrop-blur-md">
-                        <CardHeader className="pb-2"><CardTitle
-                            className="text-sm font-bold text-grey-dark uppercase tracking-wider">За
-                            мен</CardTitle></CardHeader>
-                        <CardContent>
-                            {isEditing ? (
-                                <Textarea value={editedProfile.bio}
-                                          onChange={e => setEditedProfile({...editedProfile, bio: e.target.value})}
-                                          className="min-h-[120px] text-sm rounded-xl resize-none"/>
-                            ) : (
-                                <p className="text-sm text-grey-muted leading-relaxed">{profile.bio || 'Няма добавена информация.'}</p>
-                            )}
+                    {/* Радарна графика на уменията */}
+                    <Card
+                        className="rounded-3xl border border-[#c6c6cd]/50 shadow-lg bg-gradient-to-b from-[#fcf8fa] to-white">
+                        <CardHeader className="pb-0">
+                            <CardTitle className="text-lg font-bold text-grey-dark text-center">Профил на
+                                Уменията</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-64 flex items-center justify-center">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={skillsData}>
+                                    <PolarGrid stroke="#c6c6cd" strokeDasharray="3 3"/>
+                                    <PolarAngleAxis dataKey="subject"
+                                                    tick={{fill: '#4b5563', fontSize: 11, fontWeight: 600}}/>
+                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false}/>
+                                    <Radar
+                                        name="Умения"
+                                        dataKey="A"
+                                        stroke="#10b981"
+                                        fill="#10b981"
+                                        fillOpacity={0.3}
+                                    />
+                                </RadarChart>
+                            </ResponsiveContainer>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* RIGHT COLUMN: Mode-Specific Data */}
+                {/* ДЯСНА КОЛОНА: Резюме, Опит и Проекти */}
                 <div className="lg:col-span-8 space-y-6">
-                    {/* Active Mode Indicator */}
-                    <div
-                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#f0edef]/50 p-4 rounded-2xl border border-[#c6c6cd]/30">
-                        <div className="flex items-center gap-3">
-                            <div
-                                className={`p-2 rounded-xl text-white ${candidateMode === 'professional' ? 'bg-professional-emerald' : 'bg-academic-purple'}`}>
-                                {candidateMode === 'professional' ? <Briefcase className="w-5 h-5"/> :
-                                    <GraduationCap className="w-5 h-5"/>}
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-bold text-grey-dark">
-                                    Активен изглед: {candidateMode === 'professional' ? 'Професионален' : 'Академичен'}
-                                </h3>
-                                <p className="text-xs text-grey-muted mt-0.5">Данните по-долу са филтрирани спрямо
-                                    режима.</p>
-                            </div>
-                        </div>
-                        <ModeToggle mode={candidateMode} onModeChange={onSwitchMode} isLoading={isSwitchingMode}/>
-                    </div>
 
-                    {/* Skills Card */}
-                    <Card className="rounded-3xl border-[#c6c6cd] shadow-xs bg-white/40 backdrop-blur-md">
-                        <CardHeader className="pb-4 border-b border-[#c6c6cd]/20">
-                            <CardTitle className="text-lg font-bold text-grey-dark">Умения</CardTitle>
+                    {/* Резюме */}
+                    <Card className="rounded-3xl border-0 shadow-md bg-white">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-bold text-grey-dark">За мен</CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-6">
-                            <div className="flex flex-wrap gap-2 mb-4">
-                                {(editedProfile.skills || []).map((skill, index) => (
-                                    <Badge key={index} variant="secondary"
-                                           className="px-3 py-1.5 text-sm font-medium bg-[#fcf8fa] text-brand-blue border border-[#c6c6cd]/40 rounded-xl gap-1.5 shadow-xs">
-                                        {skill}
-                                        {isEditing && (
-                                            <button onClick={() => removeSkill(skill)}
-                                                    className="hover:text-red-500 focus:outline-none transition-colors ml-1">
-                                                <X className="w-3.5 h-3.5"/></button>
-                                        )}
-                                    </Badge>
-                                ))}
-                            </div>
-                            {isEditing && (
-                                <div className="relative mt-2 max-w-sm">
-                                    <Input type="text" placeholder="Добави умение и натисни Enter..." value={newSkill}
-                                           onChange={(e) => setNewSkill(e.target.value)} onKeyDown={handleAddSkill}
-                                           className="pl-10 h-10 rounded-xl text-sm"/>
-                                    <Plus className="w-4 h-4 absolute left-3.5 top-3 text-grey-muted"/>
-                                </div>
-                            )}
+                        <CardContent>
+                            <p className="text-grey-dark leading-relaxed text-sm">
+                                Страстен софтуерен инженер с опит в изграждането на мащабируеми уеб приложения.
+                                Обичам да решавам сложни проблеми и да оптимизирам производителността.
+                                Имам силен интерес към изкуствения интелект и интегрирането на ML модели в реални
+                                продукти.
+                                Винаги търся нови предизвикателства и възможности за учене.
+                            </p>
                         </CardContent>
                     </Card>
 
-                    {/* Timeline / Experience Card */}
-                    <Card className="rounded-3xl border-[#c6c6cd] shadow-xs bg-white/40 backdrop-blur-md">
-                        <CardHeader
-                            className="pb-4 border-b border-[#c6c6cd]/20 flex flex-row justify-between items-center">
-                            <CardTitle className="text-lg font-bold text-grey-dark">
-                                {candidateMode === 'professional' ? 'Професионален опит' : 'Образование'}
-                            </CardTitle>
-                            <Button size="sm" onClick={() => setIsAddingExperience(!isAddingExperience)} variant="ghost"
-                                    className="text-brand-blue hover:bg-brand-blue/10">
-                                {isAddingExperience ? <X className="w-4 h-4 mr-2"/> : <Plus className="w-4 h-4 mr-2"/>}
-                                {isAddingExperience ? 'Отказ' : 'Добави'}
-                            </Button>
+                    {/* Топ Умения (Баджове) */}
+                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-lg font-bold text-grey-dark">Ключови Технологии</CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-6">
+                        <CardContent className="flex flex-wrap gap-2">
+                            {['Java', 'Spring Boot', 'React', 'TypeScript', 'PostgreSQL', 'Docker', 'AWS', 'Machine Learning'].map((skill) => (
+                                <Badge key={skill}
+                                       className="bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20 px-3 py-1.5 rounded-lg border-0 font-bold shadow-sm">
+                                    {skill}
+                                </Badge>
+                            ))}
+                        </CardContent>
+                    </Card>
 
-                            {/* Inline Form for New Experience */}
-                            {isAddingExperience && (
+                    {/* Проекти / Опит */}
+                    <Card className="rounded-3xl border-0 shadow-md bg-white">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-bold text-grey-dark flex items-center gap-2">
+                                <ShieldCheck className="w-5 h-5 text-professional-emerald"/>
+                                Представени Проекти
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+
+                            {/* Проект 1 */}
+                            <div
+                                className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-brand-blue transition-colors">
                                 <div
-                                    className="bg-white p-4 rounded-2xl border border-brand-blue/30 shadow-sm mb-8 space-y-4">
-                                    <h4 className="text-sm font-bold text-brand-blue mb-2">Нов запис
-                                        ({candidateMode === 'professional' ? 'Професионален' : 'Академичен'})</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <Label className="text-xs text-grey-muted">Заглавие / Позиция</Label>
-                                            <Input value={newExperience.title || ''} onChange={e => setNewExperience({
-                                                ...newExperience,
-                                                title: e.target.value
-                                            })} placeholder="напр. Junior Java Developer"/>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label className="text-xs text-grey-muted">Организация / Университет</Label>
-                                            <Input value={newExperience.organization || ''}
-                                                   onChange={e => setNewExperience({
-                                                       ...newExperience,
-                                                       organization: e.target.value
-                                                   })} placeholder="напр. Tech Corp"/>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label className="text-xs text-grey-muted">Начална дата</Label>
-                                            <Input type="date" value={newExperience.startDate || ''}
-                                                   onChange={e => setNewExperience({
-                                                       ...newExperience,
-                                                       startDate: e.target.value
-                                                   })}/>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label className="text-xs text-grey-muted">Крайна дата (Остави празно ако е
-                                                настояща)</Label>
-                                            <Input type="date" value={newExperience.endDate || ''}
-                                                   disabled={newExperience.currentlyActive}
-                                                   onChange={e => setNewExperience({
-                                                       ...newExperience,
-                                                       endDate: e.target.value
-                                                   })}/>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <Label className="text-xs text-grey-muted">Описание</Label>
-                                        <Textarea value={newExperience.description || ''}
-                                                  onChange={e => setNewExperience({
-                                                      ...newExperience,
-                                                      description: e.target.value
-                                                  })} placeholder="Опишете отговорностите си..."
-                                                  className="resize-none h-20"/>
-                                    </div>
-                                    <Button onClick={handleCreateExperience}
-                                            className="w-full bg-brand-blue text-white rounded-xl">Запази
-                                        записа</Button>
+                                    className="absolute w-3 h-3 bg-brand-blue rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
+                                <div className="flex justify-between items-start mb-1">
+                                    <h3 className="text-lg font-bold text-grey-dark">RecruitAI Платформа</h3>
+                                    <Badge variant="outline"
+                                           className="text-xs bg-academic-purple/5 text-academic-purple border-academic-purple/20">Дипломен
+                                        Проект</Badge>
                                 </div>
-                            )}
-
-                            {/* Experience Timeline */}
-                            {isLoadingExperiences ? (
-                                <div className="flex items-center justify-center py-8 text-grey-muted gap-2">
-                                    <Loader2 className="w-5 h-5 animate-spin"/> Зареждане...
+                                <div className="flex items-center gap-3 text-xs text-grey-muted mb-3 font-medium">
+                                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/> Окт 2025 - Настояще</span>
+                                    <a href="#"
+                                       className="flex items-center gap-1 text-brand-blue hover:underline"><Github
+                                        className="w-3 h-3"/> Изходен код</a>
                                 </div>
-                            ) : experiences.length === 0 ? (
-                                <p className="text-sm text-grey-muted text-center py-4">Все още няма добавен опит за
-                                    този режим.</p>
-                            ) : (
-                                <div className="relative border-l-2 border-[#c6c6cd]/40 ml-4 pl-6 space-y-8">
-                                    {experiences.map((experience) => (
-                                        <div key={experience.id} className="relative group">
-                                            <div
-                                                className={`absolute -left-[35px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${candidateMode === 'professional' ? 'bg-professional-emerald' : 'bg-academic-purple'}`}></div>
+                                <p className="text-sm text-grey-dark leading-relaxed">
+                                    Изграждане на иновативна платформа за подбор на кадри, базирана на микросървисна
+                                    архитектура.
+                                    Имплементирани Spring Boot сървиси, React фронтенд и алгоритъм за AI съвпадения
+                                    (Matching).
+                                </p>
+                            </div>
 
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h4 className="text-base font-bold text-grey-dark">{experience.title}</h4>
-                                                    <p className="text-sm font-medium text-brand-blue flex items-center gap-1.5 mt-0.5">
-                                                        <Building className="w-3.5 h-3.5"/> {experience.organization}
-                                                    </p>
-                                                    <p className="text-xs text-grey-muted flex items-center gap-1.5 mt-1.5 font-mono">
-                                                        <Calendar className="w-3.5 h-3.5"/>
-                                                        {experience.startDate ?? '—'} {' - '}
-                                                        {experience.currentlyActive ? 'Настояще' : (experience.endDate ?? '—')}
-                                                    </p>
-                                                </div>
-                                                <Button onClick={() => handleDeleteExperience(experience.id)}
-                                                        variant="ghost" size="icon"
-                                                        className="opacity-0 group-hover:opacity-100 text-red-500 hover:bg-red-50 transition-opacity">
-                                                    <Trash2 className="w-4 h-4"/>
-                                                </Button>
-                                            </div>
-
-                                            {experience.description && (
-                                                <p className="text-sm text-grey-muted mt-3 leading-relaxed bg-[#f0edef]/30 p-3 rounded-xl">
-                                                    {experience.description}
-                                                </p>
-                                            )}
-                                        </div>
-                                    ))}
+                            {/* Проект 2 */}
+                            <div
+                                className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-brand-blue transition-colors">
+                                <div
+                                    className="absolute w-3 h-3 bg-[#c6c6cd] group-hover:bg-brand-blue rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white] transition-colors"></div>
+                                <div className="flex justify-between items-start mb-1">
+                                    <h3 className="text-lg font-bold text-grey-dark">WSL2 / Docker Оптимизации</h3>
+                                    <Badge variant="outline"
+                                           className="text-xs bg-grey-muted/10 text-grey-dark border-grey-muted/20">Open
+                                        Source</Badge>
                                 </div>
-                            )}
+                                <div className="flex items-center gap-3 text-xs text-grey-muted mb-3 font-medium">
+                                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/> Март 2026</span>
+                                    <a href="#"
+                                       className="flex items-center gap-1 text-brand-blue hover:underline"><ExternalLink
+                                        className="w-3 h-3"/> Статия / Блог</a>
+                                </div>
+                                <p className="text-sm text-grey-dark leading-relaxed">
+                                    Мащабно изследване и решаване на проблеми с memory leaks ("vmmem") при Docker
+                                    Desktop след хибернация.
+                                    Създаване на скриптове за автоматично управление на .wslconfig.
+                                </p>
+                            </div>
+
                         </CardContent>
                     </Card>
                 </div>

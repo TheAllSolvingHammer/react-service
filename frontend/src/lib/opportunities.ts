@@ -46,22 +46,23 @@ async function mapOpportunity(opp: Record<string, unknown>): Promise<Opportunity
     };
 }
 
-// ОБНОВЕНО: Добавен параметър searchTerm за търсачката
-export async function fetchOpportunities(searchTerm = '', page = 0, size = 50): Promise<Opportunity[]> {
-    const params = new URLSearchParams({
-        page: page.toString(),
-        size: size.toString(),
-        sortBy: 'createdAt',
-        direction: 'DESC',
-        nameFilter: searchTerm
+export async function fetchOpportunities(searchTerm = '', mode: string = 'PROFESSIONAL', page = 0, size = 50): Promise<Opportunity[]> {
+
+    const response = await apiClient.get('/api/v1/opportunities/getAll', {
+        params: {
+            page: page,
+            size: size,
+            sortBy: 'createdAt',
+            direction: 'DESC',
+            nameFilter: searchTerm || undefined,
+            mode: mode.toUpperCase()
+        }
     });
 
-    const response = await apiClient.get(`/api/v1/opportunities/getAll?${params.toString()}`);
     const content = response.data?.content ?? [];
     return Promise.all(content.map((opp: Record<string, unknown>) => mapOpportunity(opp)));
 }
 
-// НОВО: Метод за извличане на детайлите на една конкретна обява
 export async function fetchOpportunityById(id: string): Promise<Opportunity> {
     const response = await apiClient.get(`/api/v1/opportunities/get/${id}`);
     return mapOpportunity(response.data);
@@ -69,11 +70,12 @@ export async function fetchOpportunityById(id: string): Promise<Opportunity> {
 
 export async function fetchOpportunitiesWithMatches(
     candidateUserId: string,
+    mode: string = 'PROFESSIONAL',
     page = 0,
     size = 50
 ): Promise<Opportunity[]> {
     const [opportunities, matches] = await Promise.all([
-        fetchOpportunities('', page, size), // Тук подаваме празен search, защото искаме всички за мачване
+        fetchOpportunities('', mode, page, size),
         fetchCandidateMatches(candidateUserId, size).catch(() => []),
     ]);
 
@@ -90,10 +92,16 @@ export async function fetchOpportunitiesWithMatches(
     });
 }
 
-export async function fetchOpportunityCount(): Promise<number> {
-    const response = await apiClient.get(
-        '/api/v1/opportunities/getAll?page=0&size=1&sortBy=createdAt&direction=DESC&nameFilter='
-    );
+export async function fetchOpportunityCount(mode: string = 'PROFESSIONAL'): Promise<number> {
+    const response = await apiClient.get('/api/v1/opportunities/getAll', {
+        params: {
+            page: 0,
+            size: 1,
+            sortBy: 'createdAt',
+            direction: 'DESC',
+            mode: mode.toUpperCase()
+        }
+    });
     return Number(response.data?.totalElements ?? 0);
 }
 
@@ -106,5 +114,5 @@ export async function updateApplicationStatus(applicationId: string, status: str
 
 export async function fetchMyApplications(candidateId: string) {
     const response = await apiClient.get(`/api/v1/opportunities/applications/candidate/${candidateId}`);
-    return response.data; // Очакваме масив от кандидатури
+    return response.data;
 }
