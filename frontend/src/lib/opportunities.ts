@@ -41,6 +41,7 @@ async function mapOpportunity(opp: Record<string, unknown>): Promise<Opportunity
         location: opp.location ? String(opp.location) : undefined,
         description: opp.description ? String(opp.description) : undefined,
         type: opp.type ? String(opp.type) : undefined,
+        jobStatus: opp.status ? String(opp.status) : undefined,
         requirements: requirementList,
         matchScore: 0,
         tags: requirementList.slice(0, 3),
@@ -121,4 +122,8 @@ export async function fetchMyApplications(candidateId: string) {
 export async function createOpportunity(opportunityData: any): Promise<any> {
     const response = await apiClient.post('/api/v1/opportunities', opportunityData);
     return response.data;
+}
+
+export async function archiveOpportunity(id: string): Promise<void> {
+    await apiClient.delete(`/api/v1/opportunities/${id}`);
 }

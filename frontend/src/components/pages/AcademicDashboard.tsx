@@ -35,19 +35,29 @@ export default function AcademicDashboard({ profile }: { profile: any }) {
 
     //зареждаме тук
     useEffect(() => {
-        if (profile?.id) {
+        if (profile?.userId) {
             setIsLoading(true);
-            fetchMyApplications(profile.id)
+            fetchMyApplications(profile.userId)
                 .then(response => {
+                    let rawApps = [];
                     if (Array.isArray(response)) {
-                        setApplications(response.filter((a: any) => !a.matchingMode || a.matchingMode === 'ACADEMIC' || a.mode === 'ACADEMIC'));
+                        rawApps = response;
                     } else if (response && Array.isArray(response.content)) {
-                        setApplications(response.content.filter((a: any) => !a.matchingMode || a.matchingMode === 'ACADEMIC' || a.mode === 'ACADEMIC'));
+                        rawApps = response.content;
                     } else if (response && Array.isArray(response.data)) {
-                        setApplications(response.data.filter((a: any) => !a.matchingMode || a.matchingMode === 'ACADEMIC' || a.mode === 'ACADEMIC'));
-                    } else {
-                        setApplications([]);
+                        rawApps = response.data;
                     }
+
+                    const mapped = rawApps
+                        .filter((a: any) => !a.matchingMode || a.matchingMode === 'ACADEMIC' || a.mode === 'ACADEMIC')
+                        .map((a: any) => ({
+                            id: a.applicationId || a.id,
+                            university: a.company || a.location || a.institutionName || 'Неизвестен университет',
+                            faculty: a.title || a.opportunityTitle || a.jobTitle || 'Неизвестна специалност',
+                            status: a.status,
+                            date: a.appliedAtDate || a.appliedAt ? new Date(a.appliedAtDate || a.appliedAt).toLocaleDateString('bg-BG') : new Date().toLocaleDateString('bg-BG')
+                        }));
+                    setApplications(mapped);
                     setIsLoading(false);
                 })
                 .catch(err => {
@@ -56,7 +66,7 @@ export default function AcademicDashboard({ profile }: { profile: any }) {
                     setIsLoading(false);
                 });
         }
-    }, [profile?.id]);
+    }, [profile?.userId]);
 
     const safeApplications = Array.isArray(applications) ? applications : [];
 

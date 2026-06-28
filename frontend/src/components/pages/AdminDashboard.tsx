@@ -89,52 +89,52 @@ export const AdminDashboard: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
-            <h1 className="text-3xl font-bold text-grey-dark mb-8">Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold text-grey-dark dark:text-white mb-8">{t('admin.dashboard', 'Админ панел')}</h1>
             
             <div className="flex gap-4 mb-8">
                 <button 
                     onClick={() => setActiveTab('users')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all ${activeTab === 'users' ? 'bg-brand-blue text-white shadow-md' : 'bg-white text-grey-dark border border-grey-muted/30 hover:bg-brand-blue/10'}`}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all ${activeTab === 'users' ? 'bg-brand-blue text-white shadow-md' : 'bg-white dark:bg-slate-800 text-grey-dark dark:text-white border border-grey-muted/30 dark:border-white/10 hover:bg-brand-blue/10 dark:hover:bg-white/5'}`}
                 >
                     <Users className="w-5 h-5" />
-                    Потребители
+                    {t('admin.users', 'Потребители')}
                 </button>
                 <button 
                     onClick={() => setActiveTab('skills')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all ${activeTab === 'skills' ? 'bg-brand-blue text-white shadow-md' : 'bg-white text-grey-dark border border-grey-muted/30 hover:bg-brand-blue/10'}`}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all ${activeTab === 'skills' ? 'bg-brand-blue text-white shadow-md' : 'bg-white dark:bg-slate-800 text-grey-dark dark:text-white border border-grey-muted/30 dark:border-white/10 hover:bg-brand-blue/10 dark:hover:bg-white/5'}`}
                 >
                     <Tags className="w-5 h-5" />
-                    Умения и Тагове
+                    {t('admin.skillsAndTags', 'Умения и Тагове')}
                 </button>
             </div>
 
             {activeTab === 'users' && (
-                <div className="bg-white/80 backdrop-blur-md rounded-3xl p-8 border border-grey-muted/20 shadow-xl">
-                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Shield className="text-brand-blue" /> Управление на потребители</h2>
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl p-8 border border-grey-muted/20 dark:border-white/10 shadow-xl">
+                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2 dark:text-white"><Shield className="text-brand-blue" /> {t('admin.userManagement', 'Управление на потребители')}</h2>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="border-b border-grey-muted/20 text-grey-muted">
-                                    <th className="p-4 font-semibold">Потребител</th>
-                                    <th className="p-4 font-semibold">Имейл</th>
-                                    <th className="p-4 font-semibold">Роля</th>
-                                    <th className="p-4 font-semibold">Статус</th>
-                                    <th className="p-4 font-semibold text-right">Действия</th>
+                                <tr className="border-b border-grey-muted/20 dark:border-white/10 text-grey-muted dark:text-slate-400">
+                                    <th className="p-4 font-semibold">{t('admin.user', 'Потребител')}</th>
+                                    <th className="p-4 font-semibold">{t('admin.email', 'Имейл')}</th>
+                                    <th className="p-4 font-semibold">{t('admin.role', 'Роля')}</th>
+                                    <th className="p-4 font-semibold">{t('admin.status', 'Статус')}</th>
+                                    <th className="p-4 font-semibold text-right">{t('admin.actions', 'Действия')}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {users.map(user => (
-                                    <tr key={user.id} className="border-b border-grey-muted/10 hover:bg-brand-blue/5 transition-colors">
-                                        <td className="p-4 font-medium text-grey-dark">{user.username}</td>
-                                        <td className="p-4 text-grey-dark">{user.email}</td>
+                                    <tr key={user.id} className="border-b border-grey-muted/10 dark:border-white/5 hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-colors">
+                                        <td className="p-4 font-medium text-grey-dark dark:text-slate-200">{user.username}</td>
+                                        <td className="p-4 text-grey-dark dark:text-slate-300">{user.email}</td>
                                         <td className="p-4">
                                             <span className="px-3 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-sm font-semibold">{user.role}</span>
                                         </td>
                                         <td className="p-4">
                                             {user.isRestricted ? (
-                                                <span className="flex items-center gap-1 text-red-500 text-sm font-semibold"><XCircle className="w-4 h-4"/> Ограничен</span>
+                                                <span className="flex items-center gap-1 text-red-500 text-sm font-semibold"><XCircle className="w-4 h-4"/> {t('admin.restricted', 'Ограничен')}</span>
                                             ) : (
-                                                <span className="flex items-center gap-1 text-green-500 text-sm font-semibold"><CheckCircle className="w-4 h-4"/> Активен</span>
+                                                <span className="flex items-center gap-1 text-green-500 text-sm font-semibold"><CheckCircle className="w-4 h-4"/> {t('admin.active', 'Активен')}</span>
                                             )}
                                         </td>
                                         <td className="p-4 text-right">
@@ -143,7 +143,7 @@ export const AdminDashboard: React.FC = () => {
                                                     onClick={() => handleToggleRestriction(user.id, user.isRestricted)}
                                                     className={`px-4 py-2 rounded-xl font-semibold transition-all ${user.isRestricted ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20' : 'bg-red-500/10 text-red-600 hover:bg-red-500/20'}`}
                                                 >
-                                                    {user.isRestricted ? 'Премахни ограничение' : 'Ограничи'}
+                                                    {user.isRestricted ? t('admin.removeRestriction', 'Премахни ограничение') : t('admin.restrict', 'Ограничи')}
                                                 </button>
                                             )}
                                         </td>
@@ -158,17 +158,17 @@ export const AdminDashboard: React.FC = () => {
             {activeTab === 'skills' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Skills */}
-                    <Card className="bg-white/80 backdrop-blur-md rounded-3xl border-0 shadow-xl p-2">
+                    <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border-0 shadow-xl p-2">
                         <CardHeader>
-                            <CardTitle className="text-xl flex items-center justify-between">
-                                Умения
+                            <CardTitle className="text-xl flex items-center justify-between dark:text-white">
+                                {t('admin.skills', 'Умения')}
                                 <div className="flex gap-2">
                                     <input 
                                         type="text" 
                                         value={newSkillName}
                                         onChange={e => setNewSkillName(e.target.value)}
-                                        className="text-sm px-4 py-2 rounded-xl border border-grey-muted/30 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none"
-                                        placeholder="Ново умение..."
+                                        className="text-sm px-4 py-2 rounded-xl border border-grey-muted/30 dark:border-white/10 dark:bg-slate-800 dark:text-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none"
+                                        placeholder={t('admin.newSkill', 'Ново умение...')}
                                     />
                                     <button onClick={handleCreateSkill} className="bg-brand-blue text-white p-2 rounded-xl hover:bg-blue-600 transition-colors">
                                         <PlusCircle className="w-5 h-5" />
@@ -191,17 +191,17 @@ export const AdminDashboard: React.FC = () => {
                     </Card>
 
                     {/* Tags */}
-                    <Card className="bg-white/80 backdrop-blur-md rounded-3xl border-0 shadow-xl p-2">
+                    <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border-0 shadow-xl p-2">
                         <CardHeader>
-                            <CardTitle className="text-xl flex items-center justify-between">
-                                Тагове
+                            <CardTitle className="text-xl flex items-center justify-between dark:text-white">
+                                {t('admin.tags', 'Тагове')}
                                 <div className="flex gap-2">
                                     <input 
                                         type="text" 
                                         value={newTagName}
                                         onChange={e => setNewTagName(e.target.value)}
-                                        className="text-sm px-4 py-2 rounded-xl border border-grey-muted/30 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none"
-                                        placeholder="Нов таг..."
+                                        className="text-sm px-4 py-2 rounded-xl border border-grey-muted/30 dark:border-white/10 dark:bg-slate-800 dark:text-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none"
+                                        placeholder={t('admin.newTag', 'Нов таг...')}
                                     />
                                     <button onClick={handleCreateTag} className="bg-brand-blue text-white p-2 rounded-xl hover:bg-blue-600 transition-colors">
                                         <PlusCircle className="w-5 h-5" />

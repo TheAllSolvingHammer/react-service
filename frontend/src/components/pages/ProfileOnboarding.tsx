@@ -87,15 +87,15 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
             {/* Background elements */}
-            <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-professional-emerald/15 rounded-full blur-[100px]"></div>
-            <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-brand-blue/20 rounded-full blur-[100px]"></div>
+            <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-professional-emerald/15 dark:bg-emerald-900/20 rounded-full blur-[100px]"></div>
+            <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-brand-blue/20 dark:bg-brand-blue/10 rounded-full blur-[100px]"></div>
 
             {/* Logout Button */}
             <div className="w-full max-w-3xl relative z-20 flex justify-end mb-4 animate-fade-in">
                 <Button
                     variant="ghost"
                     onClick={onLogout}
-                    className="text-grey-muted hover:text-red-600 hover:bg-red-50 font-bold uppercase tracking-wider text-xs rounded-xl"
+                    className="text-grey-muted dark:text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold uppercase tracking-wider text-xs rounded-xl"
                 >
                     <LogOut className="w-4 h-4 mr-2" /> Отказ и Изход
                 </Button>
@@ -106,15 +106,15 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
                     <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center shadow-inner mb-4">
                         <Sparkles className="w-7 h-7 text-white"/>
                     </div>
-                    <h1 className="text-3xl font-display font-black tracking-tight text-grey-dark">
+                    <h1 className="text-3xl font-display font-black tracking-tight text-grey-dark dark:text-white">
                         Добре дошли{firstName ? `, ${firstName}` : ''}!
                     </h1>
-                    <p className="text-grey-muted mt-2">Нека завършим вашия профил, за да активираме AI съвпаденията.</p>
+                    <p className="text-grey-muted dark:text-slate-400 mt-2">Нека завършим вашия профил, за да активираме AI съвпаденията.</p>
                 </div>
 
-                <Card className="rounded-3xl border-[#c6c6cd]/50 shadow-xl bg-white/70 backdrop-blur-xl">
-                    <CardHeader className="pb-4 border-b border-[#c6c6cd]/30">
-                        <CardTitle className="text-xl font-bold text-grey-dark">Основна Информация</CardTitle>
+                <Card className="rounded-3xl border-[#c6c6cd]/50 dark:border-white/10 shadow-xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
+                    <CardHeader className="pb-4 border-b border-[#c6c6cd]/30 dark:border-white/10">
+                        <CardTitle className="text-xl font-bold text-grey-dark dark:text-white">Основна Информация</CardTitle>
                         {error && <p className="text-red-500 text-sm font-semibold mt-2">{error}</p>}
                     </CardHeader>
                     <CardContent className="pt-6">
@@ -123,46 +123,46 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
                             {/* Row 1: Names */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="space-y-2 relative">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Име</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Име</Label>
                                     <div className="relative">
                                         <Input
                                             value={firstName}
                                             onChange={(e) => setFirstName(e.target.value)}
                                             placeholder="напр. Иван"
-                                            className="pl-10 h-12 rounded-xl border-[#c6c6cd]/60 bg-white/50"
+                                            className="pl-10 h-12 rounded-xl border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white"
                                             required
                                         />
                                         <User className="w-4.5 h-4.5 absolute left-3.5 top-3.5 text-grey-muted"/>
                                     </div>
                                 </div>
                                 <div className="space-y-2 relative">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Презиме (Опц.)</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Презиме (Опц.)</Label>
                                     <Input
                                         value={middleName}
                                         onChange={(e) => setMiddleName(e.target.value)}
                                         placeholder="напр. Георгиев"
-                                        className="h-12 rounded-xl border-[#c6c6cd]/60 bg-white/50 px-3"
+                                        className="h-12 rounded-xl border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white px-3"
                                     />
                                 </div>
                                 <div className="space-y-2 relative">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Фамилия</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Фамилия</Label>
                                     <Input
                                         value={lastName}
                                         onChange={(e) => setLastName(e.target.value)}
                                         placeholder="напр. Иванов"
-                                        className="h-12 rounded-xl border-[#c6c6cd]/60 bg-white/50 px-3"
+                                        className="h-12 rounded-xl border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white px-3"
                                         required
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2 relative">
-                                <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Дата на раждане</Label>
+                                <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Дата на раждане</Label>
                                 <Input
                                     type="date"
                                     value={birthday}
                                     onChange={(e) => setBirthday(e.target.value)}
-                                    className="h-12 rounded-xl border-[#c6c6cd]/60 bg-white/50 px-3"
+                                    className="h-12 rounded-xl border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white px-3"
                                     required // Add this if you keep @NotNull on the backend
                                 />
                             </div>
@@ -170,13 +170,13 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
                             {/* Row 2: Location & Headline */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2 relative">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Град / Държава</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Град / Държава</Label>
                                     <div className="relative">
                                         <Input
                                             value={location}
                                             onChange={(e) => setLocation(e.target.value)}
                                             placeholder="напр. София, България"
-                                            className="pl-10 h-12 rounded-xl border-[#c6c6cd]/60 bg-white/50"
+                                            className="pl-10 h-12 rounded-xl border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white"
                                             required
                                         />
                                         <MapPin className="w-4.5 h-4.5 absolute left-3.5 top-3.5 text-grey-muted"/>
@@ -184,13 +184,13 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
                                 </div>
 
                                 <div className="space-y-2 relative">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Текуща Позиция / Титла</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Текуща Позиция / Титла</Label>
                                     <div className="relative">
                                         <Input
                                             value={headline}
                                             onChange={(e) => setHeadline(e.target.value)}
                                             placeholder="напр. Junior Java Developer"
-                                            className="pl-10 h-12 rounded-xl border-[#c6c6cd]/60 bg-white/50"
+                                            className="pl-10 h-12 rounded-xl border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white"
                                             required
                                         />
                                         <Briefcase className="w-4.5 h-4.5 absolute left-3.5 top-3.5 text-grey-muted"/>
@@ -201,11 +201,11 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
                             {/* Row 3: Enums and Salary */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="space-y-2 relative">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Тип Кандидат</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Тип Кандидат</Label>
                                     <select
                                         value={candidateType}
                                         onChange={(e) => setCandidateType(e.target.value)}
-                                        className="flex h-12 w-full rounded-xl border border-[#c6c6cd]/60 bg-white/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                        className="flex h-12 w-full rounded-xl border border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                                     >
                                         <option value="PROFESSIONAL">Професионалист</option>
                                         <option value="ACADEMIC">Академик / Студент</option>
@@ -213,12 +213,12 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
                                     </select>
                                 </div>
                                 <div className="space-y-2 relative">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Образование</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Образование</Label>
                                     <div className="relative">
                                         <select
                                             value={educationType}
                                             onChange={(e) => setEducationType(e.target.value)}
-                                            className="flex h-12 w-full pl-10 rounded-xl border border-[#c6c6cd]/60 bg-white/50 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                            className="flex h-12 w-full pl-10 rounded-xl border border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                                         >
                                             <option value="HIGH_SCHOOL">Средно</option>
                                             <option value="PROFESSIONAL_BACHELOR">Професионален Бакалавър</option>
@@ -230,14 +230,14 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
                                     </div>
                                 </div>
                                 <div className="space-y-2 relative">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Очаквана Заплата</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Очаквана Заплата</Label>
                                     <div className="relative">
                                         <Input
                                             type="number"
                                             value={expectedSalary}
                                             onChange={(e) => setExpectedSalary(e.target.value)}
                                             placeholder="напр. 3000"
-                                            className="pl-10 h-12 rounded-xl border-[#c6c6cd]/60 bg-white/50"
+                                            className="pl-10 h-12 rounded-xl border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white"
                                         />
                                         <Banknote className="w-4.5 h-4.5 absolute left-3.5 top-3.5 text-grey-muted"/>
                                     </div>
@@ -246,12 +246,12 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
 
                             {/* Row 4: Bio */}
                             <div className="space-y-2">
-                                <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Относно мен (Biography)</Label>
+                                <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">Относно мен (Biography)</Label>
                                 <Textarea
                                     value={bio}
                                     onChange={(e) => setBio(e.target.value)}
                                     placeholder="Разкажете ни накратко за вашия опит и кариерни цели..."
-                                    className="min-h-[100px] rounded-xl border-[#c6c6cd]/60 bg-white/50 resize-none"
+                                    className="min-h-[100px] rounded-xl border-[#c6c6cd]/60 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white resize-none"
                                 />
                             </div>
 

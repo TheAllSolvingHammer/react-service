@@ -54,6 +54,7 @@ export interface Opportunity {
     salary?: string;
     postedDate?: string;
     aiReasoning?: string;
+    jobStatus?: string;
 }
 
 export interface Applicant {

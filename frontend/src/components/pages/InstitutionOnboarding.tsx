@@ -59,8 +59,8 @@ export default function InstitutionOnboarding({profile, onComplete, onLogout}: I
         : "from-blue-900 to-slate-900";
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-            <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden animate-fade-in">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4">
+            <div className="max-w-2xl w-full bg-white dark:bg-slate-800 rounded-3xl shadow-xl overflow-hidden animate-fade-in">
 
                 {/* Header */}
                 <div
@@ -83,18 +83,18 @@ export default function InstitutionOnboarding({profile, onComplete, onLogout}: I
                     )}
 
                     {/* Тип институция */}
-                    <div className="flex gap-4 p-2 bg-slate-100 rounded-xl">
+                    <div className="flex gap-4 p-2 bg-slate-100 dark:bg-slate-700 rounded-xl">
                         <button
                             type="button"
                             onClick={() => handleTypeChange(false)}
-                            className={`flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${!formData.isUniversity ? 'bg-white text-blue-900 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+                            className={`flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${!formData.isUniversity ? 'bg-white dark:bg-slate-600 text-blue-900 dark:text-blue-100 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600/50'}`}
                         >
                             <Building2 className="w-4 h-4"/> {t('institutionOnboarding.company', 'Компания')}
                         </button>
                         <button
                             type="button"
                             onClick={() => handleTypeChange(true)}
-                            className={`flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${formData.isUniversity ? 'bg-white text-purple-900 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+                            className={`flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${formData.isUniversity ? 'bg-white dark:bg-slate-600 text-purple-900 dark:text-purple-100 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600/50'}`}
                         >
                             <GraduationCap className="w-4 h-4"/> {t('institutionOnboarding.university', 'Университет')}
                         </button>
@@ -104,21 +104,21 @@ export default function InstitutionOnboarding({profile, onComplete, onLogout}: I
 
                         {/* Име */}
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-700">
+                            <label className="text-sm font-bold text-gray-700 dark:text-slate-300">
                                 {formData.isUniversity
                                     ? t('institutionOnboarding.uniName', 'Име на университета')
                                     : t('institutionOnboarding.compName', 'Име на компанията')}
                             </label>
                             <input required name="displayName" value={formData.displayName} onChange={handleChange}
-                                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 bg-transparent dark:bg-slate-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
                                    placeholder={formData.isUniversity ? "Технически Университет" : "Tech Solutions Ltd."}/>
                         </div>
 
                         {/* Сектор (САМО за компания) */}
                         {!formData.isUniversity && (
                             <div className="space-y-2 animate-fade-in">
-                                <label className="text-sm font-bold text-gray-700">{t('institutionOnboarding.sector', 'Индустриален сектор')}</label>
-                                <select name="sectorName" value={formData.sectorName} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white outline-none">
+                                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">{t('institutionOnboarding.sector', 'Индустриален сектор')}</label>
+                                <select name="sectorName" value={formData.sectorName} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-transparent dark:bg-slate-700 text-gray-900 dark:text-white outline-none">
                                     <option value="Service">{t('institutionOnboarding.sectors.service', 'Сфера на услугите (ИТ, Финанси, Търговия)')}</option>
                                     <option value="Secondary">{t('institutionOnboarding.sectors.secondary', 'Производство и Индустрия')}</option>
                                     <option value="Primary">{t('institutionOnboarding.sectors.primary', 'Суровини и Земеделие')}</option>
@@ -131,36 +131,36 @@ export default function InstitutionOnboarding({profile, onComplete, onLogout}: I
                         {/* Локация: Заема цял ред при компания, или е до името при университет */}
                         <div className={`space-y-2 ${!formData.isUniversity ? 'md:col-span-2' : ''}`}>
                             <label
-                                className="text-sm font-bold text-gray-700">{t('institutionOnboarding.location', 'Локация')}</label>
+                                className="text-sm font-bold text-gray-700 dark:text-slate-300">{t('institutionOnboarding.location', 'Локация')}</label>
                             <input required name="location" value={formData.location} onChange={handleChange}
-                                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 bg-transparent dark:bg-slate-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
                                    placeholder={t('institutionOnboarding.locationPlaceholder', 'Напр. Варна, България')}/>
                         </div>
                     </div>
 
                     <div className="space-y-2">
                         <label
-                            className="text-sm font-bold text-gray-700">{t('institutionOnboarding.website', 'Уебсайт')}</label>
+                            className="text-sm font-bold text-gray-700 dark:text-slate-300">{t('institutionOnboarding.website', 'Уебсайт')}</label>
                         <input name="websiteUrl" value={formData.websiteUrl} onChange={handleChange}
-                               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                               className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 bg-transparent dark:bg-slate-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
                                placeholder="https://..."/>
                     </div>
 
                     <div className="space-y-2">
                         <label
-                            className="text-sm font-bold text-gray-700">{t('institutionOnboarding.biography', 'Описание (Биография)')}</label>
+                            className="text-sm font-bold text-gray-700 dark:text-slate-300">{t('institutionOnboarding.biography', 'Описание (Биография)')}</label>
                         <textarea required name="biography" value={formData.biography} onChange={handleChange} rows={4}
-                                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all resize-none outline-none"
+                                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 bg-transparent dark:bg-slate-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all resize-none outline-none"
                                   placeholder={t('institutionOnboarding.bioPlaceholder', 'Кратко описание...')}/>
                     </div>
 
                     <div
-                        className="flex flex-col-reverse sm:flex-row justify-end items-center gap-3 pt-6 border-t border-gray-100">
+                        className="flex flex-col-reverse sm:flex-row justify-end items-center gap-3 pt-6 border-t border-gray-100 dark:border-white/10">
                         <Button
                             type="button"
                             variant="ghost"
                             onClick={onLogout}
-                            className="w-full sm:w-auto h-11 px-6 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                            className="w-full sm:w-auto h-11 px-6 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700"
                         >
                             {t('institutionOnboarding.cancel', 'Отказ')}
                         </Button>

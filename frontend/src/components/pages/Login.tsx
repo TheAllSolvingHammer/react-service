@@ -91,22 +91,22 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
             <AuthToolbar />
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-blue/20 rounded-full blur-[100px]"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-academic-purple/20 rounded-full blur-[100px]"></div>
+            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-blue/20 dark:bg-brand-blue/10 rounded-full blur-[100px]"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-academic-purple/20 dark:bg-academic-purple/10 rounded-full blur-[100px]"></div>
 
             <div className="w-full max-w-md relative z-10 animate-fade-in">
                 <div className="flex flex-col items-center mb-8">
                     <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center shadow-inner mb-4">
                         <Sparkles className="w-7 h-7 text-white" />
                     </div>
-                    <span className="text-3xl font-display font-black tracking-tight text-grey-dark">
+                    <span className="text-3xl font-display font-black tracking-tight text-grey-dark dark:text-white">
                         Recruit<span className="text-brand-blue">AI</span>
                     </span>
                 </div>
 
-                <Card className="rounded-3xl border-[#c6c6cd]/50 shadow-xl bg-white/70 backdrop-blur-xl">
+                <Card className="rounded-3xl border-[#c6c6cd]/50 dark:border-white/10 shadow-xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
                     <CardHeader className="text-center pb-2">
-                        <CardTitle className="text-2xl font-bold text-grey-dark">{t('auth.loginTitle')}</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-grey-dark dark:text-white">{t('auth.loginTitle')}</CardTitle>
                         <p className="text-sm text-grey-muted mt-2">{t('auth.loginSubtitle')}</p>
                     </CardHeader>
                     <CardContent className="pt-6">
@@ -129,13 +129,13 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                             <div className="space-y-2 relative">
-                                <Label htmlFor="username" className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.username', 'Потребителско име')}</Label>
+                                <Label htmlFor="username" className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.username', 'Потребителско име')}</Label>
                                 <div className="relative">
                                     <Input
                                         id="username"
                                         type="text"
                                         {...register('username')}
-                                        className={`pl-10 h-12 rounded-xl bg-white/50 focus-visible:ring-brand-blue shadow-sm ${errors.username ? 'border-red-400 focus-visible:ring-red-400' : 'border-[#c6c6cd]/60'}`}
+                                        className={`pl-10 h-12 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white focus-visible:ring-brand-blue shadow-sm ${errors.username ? 'border-red-400 focus-visible:ring-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                     />
                                     <Mail className={`w-4.5 h-4.5 absolute left-3.5 top-3.5 ${errors.username ? 'text-red-400' : 'text-grey-muted'}`} />
                                 </div>
@@ -149,7 +149,7 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
 
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center">
-                                    <Label htmlFor="password" className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.password')}</Label>
+                                    <Label htmlFor="password" className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.password')}</Label>
                                     <button
                                         type="button"
                                         onClick={onNavigateToForgotPassword}
@@ -163,7 +163,7 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
                                         id="password"
                                         type="password"
                                         {...register('password')}
-                                        className={`pl-10 h-12 rounded-xl bg-white/50 focus-visible:ring-brand-blue shadow-sm ${errors.password ? 'border-red-400 focus-visible:ring-red-400' : 'border-[#c6c6cd]/60'}`}
+                                        className={`pl-10 h-12 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white focus-visible:ring-brand-blue shadow-sm ${errors.password ? 'border-red-400 focus-visible:ring-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                     />
                                     <Lock className={`w-4.5 h-4.5 absolute left-3.5 top-3.5 ${errors.password ? 'text-red-400' : 'text-grey-muted'}`} />
                                 </div>

@@ -7,7 +7,8 @@ import {Input} from "@/components/ui/input";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import {Loader2, Search, Plus, Edit2, Archive, Building2, Eye, LayoutGrid, List as ListIcon} from 'lucide-react';
 import {Opportunity, Profile} from '@/lib/types';
-import {fetchOpportunities} from '@/lib/opportunities';
+import {archiveOpportunity, fetchOpportunities} from '@/lib/opportunities';
+import {toast} from "sonner";
 
 interface RecruiterOpportunitiesProps {
     profile: Profile;
@@ -42,6 +43,27 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
         opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         opp.company?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const handleArchive = async (id: string) => {
+        if (!confirm(t('recruiterOpps.confirmArchive', 'Сигурни ли сте, че искате да архивирате тази обява?'))) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await archiveOpportunity(id);
+            setOpportunities(prev => prev.map(opp => opp.id === id ? { ...opp, jobStatus: 'ARCHIVED' } : opp));
+            toast.success(t('recruiterOpps.archiveSuccess', 'Обявата е успешно архивирана.'));
+        } catch (error) {
+            toast.error(t('recruiterOpps.archiveError', 'Грешка при архивиране на обявата.'));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleEdit = () => {
+        toast.info(t('recruiterOpps.editUnavailable', 'Редакцията на обяви ще бъде налична в следваща версия.'));
+    };
 
     return (
         <div className="space-y-6 animate-fade-in max-w-7xl mx-auto pb-12 relative">
@@ -163,12 +185,14 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                                                     <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg text-brand-blue border-brand-blue/20 hover:bg-brand-blue hover:text-white">
                                                         <Eye className="w-4 h-4" />
                                                     </Button>
-                                                    <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg text-amber-600 border-amber-600/20 hover:bg-amber-600 hover:text-white dark:hover:border-amber-600">
+                                                    <Button variant="outline" size="sm" onClick={handleEdit} className="h-8 w-8 p-0 rounded-lg text-amber-600 border-amber-600/20 hover:bg-amber-600 hover:text-white dark:hover:border-amber-600">
                                                         <Edit2 className="w-4 h-4" />
                                                     </Button>
-                                                    <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg text-red-600 border-red-600/20 hover:bg-red-600 hover:text-white dark:hover:border-red-600" title="Архивиране">
-                                                        <Archive className="w-4 h-4" />
-                                                    </Button>
+                                                    {opp.jobStatus !== 'ARCHIVED' && opp.jobStatus !== 'Archived' && (
+                                                        <Button variant="outline" size="sm" onClick={() => handleArchive(opp.id)} className="h-8 w-8 p-0 rounded-lg text-red-600 border-red-600/20 hover:bg-red-600 hover:text-white dark:hover:border-red-600" title={t('recruiterOpps.archive', 'Архивиране')}>
+                                                            <Archive className="w-4 h-4" />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -185,9 +209,15 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                                             <CardTitle className="text-lg font-bold text-grey-dark dark:text-slate-200 leading-tight group-hover:text-brand-blue transition-colors">
                                                 {opp.title}
                                             </CardTitle>
-                                            <Badge variant="outline" className="bg-[#f0edef] dark:bg-slate-800 border-transparent text-xs whitespace-nowrap text-grey-dark dark:text-slate-200">
-                                                {t('recruiterOpps.active', 'Активна')}
-                                            </Badge>
+                                            {opp.jobStatus === 'ARCHIVED' || opp.jobStatus === 'Archived' ? (
+                                                <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 border-transparent text-xs whitespace-nowrap text-slate-500 dark:text-slate-400">
+                                                    {t('recruiterOpps.archivedLabel', 'Архивирана')}
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-xs whitespace-nowrap text-green-700 dark:text-green-400">
+                                                    {t('recruiterOpps.active', 'Активна')}
+                                                </Badge>
+                                            )}
                                         </div>
                                         {opp.type && (
                                             <div className="mt-2">
@@ -212,12 +242,14 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                                             <Button variant="ghost" size="sm" className="h-8 px-2 text-brand-blue hover:bg-brand-blue/10 rounded-lg">
                                                 <Eye className="w-4 h-4 mr-1.5" /> {t('recruiterOpps.view', 'Преглед')}
                                             </Button>
-                                            <Button variant="ghost" size="sm" className="h-8 px-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg">
+                                            <Button variant="ghost" size="sm" onClick={handleEdit} className="h-8 px-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg">
                                                 <Edit2 className="w-4 h-4 mr-1.5" /> {t('recruiterOpps.edit', 'Редакция')}
                                             </Button>
-                                            <Button variant="ghost" size="sm" className="h-8 px-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title={t('recruiterOpps.archive', 'Архивиране')}>
-                                                <Archive className="w-4 h-4 mr-1.5" /> {t('recruiterOpps.archive', 'Архив')}
-                                            </Button>
+                                            {opp.jobStatus !== 'ARCHIVED' && opp.jobStatus !== 'Archived' && (
+                                                <Button variant="ghost" size="sm" onClick={() => handleArchive(opp.id)} className="h-8 px-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title={t('recruiterOpps.archive', 'Архивиране')}>
+                                                    <Archive className="w-4 h-4 mr-1.5" /> {t('recruiterOpps.archive', 'Архив')}
+                                                </Button>
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>

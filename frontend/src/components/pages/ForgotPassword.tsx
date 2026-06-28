@@ -86,22 +86,22 @@ export default function ForgotPassword({ onNavigateToLogin }: { onNavigateToLogi
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
             <AuthToolbar />
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-blue/20 rounded-full blur-[100px]"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-academic-purple/20 rounded-full blur-[100px]"></div>
+            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-blue/20 dark:bg-brand-blue/10 rounded-full blur-[100px]"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-academic-purple/20 dark:bg-academic-purple/10 rounded-full blur-[100px]"></div>
 
             <div className="w-full max-w-md relative z-10 animate-fade-in">
                 <div className="flex flex-col items-center mb-6">
                     <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center shadow-inner mb-4">
                         <KeyRound className="w-7 h-7 text-white" />
                     </div>
-                    <span className="text-3xl font-display font-black tracking-tight text-grey-dark">
+                    <span className="text-3xl font-display font-black tracking-tight text-grey-dark dark:text-white">
                         Recruit<span className="text-brand-blue">AI</span>
                     </span>
                 </div>
 
-                <Card className="rounded-3xl border-[#c6c6cd]/50 shadow-xl bg-white/70 backdrop-blur-xl">
+                <Card className="rounded-3xl border-[#c6c6cd]/50 dark:border-white/10 shadow-xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
                     <CardHeader className="text-center pb-2">
-                        <CardTitle className="text-2xl font-bold text-grey-dark">
+                        <CardTitle className="text-2xl font-bold text-grey-dark dark:text-white">
                             {step === 1 ? t('auth.forgotTitle', 'Забравена парола') : t('auth.resetTitle', 'Въвеждане на нов код')}
                         </CardTitle>
                         <p className="text-sm text-grey-muted mt-2">
@@ -130,12 +130,12 @@ export default function ForgotPassword({ onNavigateToLogin }: { onNavigateToLogi
                         {step === 1 && (
                             <form onSubmit={formStep1.handleSubmit(onStep1Submit)} className="space-y-5">
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.email')}</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.email')}</Label>
                                     <div className="relative">
                                         <Input
                                             type="email"
                                             {...formStep1.register('email')}
-                                            className={`pl-10 h-12 rounded-xl bg-white/50 focus-visible:ring-brand-blue ${formStep1.formState.errors.email ? 'border-red-400' : 'border-[#c6c6cd]/60'}`}
+                                            className={`pl-10 h-12 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white focus-visible:ring-brand-blue ${formStep1.formState.errors.email ? 'border-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                         />
                                         <Mail className="w-4.5 h-4.5 absolute left-3.5 top-3.5 text-grey-muted" />
                                     </div>
@@ -153,25 +153,25 @@ export default function ForgotPassword({ onNavigateToLogin }: { onNavigateToLogi
                             <form onSubmit={formStep2.handleSubmit(onStep2Submit)} className="space-y-4">
                                 {/* OTP Код */}
                                 <div className="space-y-1">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.otpCode', '6-символен код')}</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.otpCode', '6-символен код')}</Label>
                                     <Input
                                         type="text"
                                         maxLength={6}
                                         placeholder="A1B2C3"
                                         {...formStep2.register('otpCode')}
-                                        className={`h-11 rounded-xl bg-white/50 text-center font-mono text-lg font-bold tracking-widest uppercase focus-visible:ring-brand-blue ${formStep2.formState.errors.otpCode ? 'border-red-400' : 'border-[#c6c6cd]/60'}`}
+                                        className={`h-11 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white text-center font-mono text-lg font-bold tracking-widest uppercase focus-visible:ring-brand-blue ${formStep2.formState.errors.otpCode ? 'border-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                     />
                                     {formStep2.formState.errors.otpCode && <p className="text-xs text-red-500 font-bold mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{formStep2.formState.errors.otpCode.message}</p>}
                                 </div>
 
                                 {/* Нова Парола */}
                                 <div className="space-y-1">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.newPassword', 'Нова парола')}</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.newPassword', 'Нова парола')}</Label>
                                     <div className="relative">
                                         <Input
                                             type="password"
                                             {...formStep2.register('newPassword')}
-                                            className={`pl-10 h-11 rounded-xl bg-white/50 focus-visible:ring-brand-blue ${formStep2.formState.errors.newPassword ? 'border-red-400' : 'border-[#c6c6cd]/60'}`}
+                                            className={`pl-10 h-11 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white focus-visible:ring-brand-blue ${formStep2.formState.errors.newPassword ? 'border-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                         />
                                         <Lock className="w-4 h-4 absolute left-3.5 top-3.5 text-grey-muted" />
                                     </div>
@@ -180,12 +180,12 @@ export default function ForgotPassword({ onNavigateToLogin }: { onNavigateToLogi
 
                                 {/* Потвърди Парола */}
                                 <div className="space-y-1">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.confirmPassword')}</Label>
+                                    <Label className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.confirmPassword')}</Label>
                                     <div className="relative">
                                         <Input
                                             type="password"
                                             {...formStep2.register('confirmPassword')}
-                                            className={`pl-10 h-11 rounded-xl bg-white/50 focus-visible:ring-brand-blue ${formStep2.formState.errors.confirmPassword ? 'border-red-400' : 'border-[#c6c6cd]/60'}`}
+                                            className={`pl-10 h-11 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white focus-visible:ring-brand-blue ${formStep2.formState.errors.confirmPassword ? 'border-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                         />
                                         <Lock className="w-4 h-4 absolute left-3.5 top-3.5 text-grey-muted" />
                                     </div>

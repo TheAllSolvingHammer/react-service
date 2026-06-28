@@ -84,7 +84,7 @@ export default function CandidateDashboard({
         };
 
         loadDashboardData();
-    }, [profile?.id, candidateMode, t]);
+    }, [profile?.userId, candidateMode, t]);
 
     const handleApplyOneClick = async (opp: any) => {
         const exists = appliedList.some(item => item.id === opp.id);
@@ -117,9 +117,9 @@ export default function CandidateDashboard({
                 className="absolute top-0 right-0 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
 
             <header
-                className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 pb-6 border-b border-[#c6c6cd]/30">
+                className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 pb-6 border-b border-[#c6c6cd]/30 dark:border-white/10">
                 <div className="relative">
-                    <h1 className="text-4xl font-display font-extrabold text-grey-dark tracking-tight leading-tight">
+                    <h1 className="text-4xl font-display font-extrabold text-grey-dark dark:text-white tracking-tight leading-tight">
                         {t('dashboard.welcome', 'Здравейте')}, <span
                         className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-purple-600">{firstName}</span>!
                     </h1>
@@ -131,7 +131,7 @@ export default function CandidateDashboard({
                 </div>
 
                 <div
-                    className="bg-white/60 p-2 rounded-2xl border border-[#c6c6cd]/40 inline-flex items-center shadow-sm backdrop-blur-md">
+                    className="bg-white/60 dark:bg-slate-800/60 p-2 rounded-2xl border border-[#c6c6cd]/40 dark:border-white/10 inline-flex items-center shadow-sm backdrop-blur-md">
                     <ModeToggle
                         mode={candidateMode}
                         onModeChange={setCandidateMode}
@@ -142,7 +142,7 @@ export default function CandidateDashboard({
             {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card
-                    className={`md:col-span-2 rounded-2xl border-0 shadow-sm flex flex-col justify-center p-5 relative overflow-hidden ${profileScore === 100 ? 'bg-gradient-to-r from-professional-emerald/10 to-teal-500/10' : 'bg-white dark:bg-slate-900'}`}>
+                    className={`md:col-span-2 rounded-2xl border-0 shadow-sm flex flex-col justify-center p-5 relative overflow-hidden ${profileScore === 100 ? 'bg-gradient-to-r from-professional-emerald/10 to-teal-500/10 dark:from-professional-emerald/20 dark:to-teal-500/20' : 'bg-white dark:bg-slate-900'}`}>
                     <div className="flex justify-between items-center mb-2 z-10">
                         <span className="text-sm font-bold text-grey-dark flex items-center gap-2">
                             <Target
@@ -160,7 +160,7 @@ export default function CandidateDashboard({
                         <p className="text-xs text-grey-muted z-10">
                             {t('dashboard.completenessHint', 'Добавете опит и умения, за да отключите пълния потенциал на AI.')}{" "}
                             <button onClick={() => setCurrentTab('profile')}
-                                    className="text-brand-blue font-bold hover:underline">Добавете сега
+                                    className="text-brand-blue font-bold hover:underline">{t('dashboard.addNow', 'Добавете сега')}
                             </button>
                         </p>
                     ) : (
@@ -195,7 +195,7 @@ export default function CandidateDashboard({
                         </div>
                     </div>
                     <span className="text-3xl font-black text-grey-dark">0</span>
-                    <span className="text-[10px] text-grey-muted font-medium mt-1">От институции</span>
+                    <span className="text-[10px] text-grey-muted font-medium mt-1">{t('dashboard.fromInstitutions', 'От институции')}</span>
                 </Card>
             </div>
 
@@ -263,10 +263,10 @@ export default function CandidateDashboard({
                 {/* Sidebar matches */}
                 <aside className="lg:col-span-4 flex flex-col">
                     <Card
-                        className="flex-1 rounded-3xl border border-[#c6c6cd]/50 shadow-lg bg-gradient-to-b from-[#fcf8fa] to-white flex flex-col overflow-hidden">
-                        <CardHeader className="pb-4 border-b border-[#f0edef] bg-white/50 backdrop-blur-sm">
+                        className="flex-1 rounded-3xl border border-[#c6c6cd]/50 dark:border-white/10 shadow-lg bg-gradient-to-b from-[#fcf8fa] to-white dark:from-slate-900 dark:to-slate-900 flex flex-col overflow-hidden">
+                        <CardHeader className="pb-4 border-b border-[#f0edef] dark:border-white/10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
                             <CardTitle
-                                className="text-lg font-display font-bold text-grey-dark flex items-center gap-2">
+                                className="text-lg font-display font-bold text-grey-dark dark:text-white flex items-center gap-2">
                                 {isAiMatch ? (
                                     <><BrainCircuit
                                         className="w-5 h-5 text-match-high animate-pulse"/> {t('dashboard.topMatches', 'AI Препоръки')}</>
@@ -287,17 +287,16 @@ export default function CandidateDashboard({
                                 <>
                                     {!isAiMatch && profileScore < 100 && (
                                         <div
-                                            className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-3 items-start mb-2">
+                                            className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/30 rounded-xl p-3 flex gap-3 items-start mb-2">
                                             <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5"/>
-                                            <p className="text-[11px] text-amber-800 leading-tight">Показваме ви
-                                                последните обяви, тъй като нямате достатъчно данни за AI съвпадения.</p>
+                                            <p className="text-[11px] text-amber-800 dark:text-amber-200 leading-tight">{t('dashboard.noAiHint', 'Показваме ви последните обяви, тъй като нямате достатъчно данни за AI съвпадения.')}</p>
                                         </div>
                                     )}
                                     {topMatches.map((opp) => {
                                         const alreadyApplied = appliedList.some(item => item.id === opp.id);
                                         return (
                                             <div key={opp.id}
-                                                 className="bg-white rounded-2xl p-5 border border-[#c6c6cd]/40 relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                                 className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#c6c6cd]/40 dark:border-white/10 relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                                 {isAiMatch && opp.matchScore && (
                                                     <div
                                                         className="absolute top-0 right-0 bg-gradient-to-bl from-match-high to-emerald-500 text-white text-xs font-mono font-black px-3 py-1.5 rounded-bl-2xl shadow-sm z-10 flex items-center gap-1">
@@ -306,13 +305,13 @@ export default function CandidateDashboard({
                                                     </div>
                                                 )}
 
-                                                <h3 className={`text-base font-bold text-grey-dark leading-tight mb-1 ${isAiMatch ? 'pr-12' : ''}`}>{opp.title}</h3>
+                                                <h3 className={`text-base font-bold text-grey-dark dark:text-white leading-tight mb-1 ${isAiMatch ? 'pr-12' : ''}`}>{opp.title}</h3>
                                                 <p className="text-xs text-grey-muted font-medium mb-3">{opp.company}</p>
 
                                                 {isAiMatch && opp.aiReasoning && (
                                                     <div
-                                                        className="bg-brand-blue/5 border border-brand-blue/10 rounded-lg p-2.5 mb-4">
-                                                        <p className="text-[10px] leading-relaxed text-grey-dark italic">"{opp.aiReasoning}"</p>
+                                                        className="bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/10 dark:border-brand-blue/20 rounded-lg p-2.5 mb-4">
+                                                        <p className="text-[10px] leading-relaxed text-grey-dark dark:text-slate-300 italic">"{opp.aiReasoning}"</p>
                                                     </div>
                                                 )}
 
@@ -343,10 +342,10 @@ export default function CandidateDashboard({
                                 </>
                             )}
                         </CardContent>
-                        <CardFooter className="pt-4 border-t border-[#f0edef] bg-white/50 pb-4">
+                        <CardFooter className="pt-4 border-t border-[#f0edef] dark:border-white/10 bg-white/50 dark:bg-slate-800/50 pb-4">
                             <Button variant="ghost" onClick={() => setCurrentTab('opportunities')}
                                     className="w-full text-xs font-bold text-brand-blue hover:bg-brand-blue/5 h-10 rounded-xl">
-                                Разгледай всички обяви <ArrowRight className="w-4 h-4 ml-2"/>
+                                {t('dashboard.viewAllOpps', 'Разгледай всички обяви')} <ArrowRight className="w-4 h-4 ml-2"/>
                             </Button>
                         </CardFooter>
                     </Card>

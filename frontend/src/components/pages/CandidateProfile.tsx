@@ -310,12 +310,12 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                     />
                                     {selectedFile && (
                                         <p className="text-xs text-professional-emerald font-bold flex items-center gap-1">
-                                            Готов за качване: {selectedFile.name}
+                                            {t('profile.readyToUpload', 'Готов за качване:')} {selectedFile.name}
                                         </p>
                                     )}
                                     {!selectedFile && editForm.resumeUrl && (
                                         <p className="text-xs text-grey-muted italic">
-                                            Изберете нов файл, ако искате да замените текущото си CV.
+                                            {t('profile.chooseNewCv', 'Изберете нов файл, ако искате да замените текущото си CV.')}
                                         </p>
                                     )}
                                 </div>
@@ -328,11 +328,11 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                             rel="noopener noreferrer"
                                             className="flex items-center gap-2 px-4 py-2 bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue font-bold rounded-xl transition-colors w-full justify-center"
                                         >
-                                            <Download className="w-4 h-4" /> Изтегли CV
+                                            <Download className="w-4 h-4" /> {t('profile.downloadCv', 'Изтегли CV')}
                                         </a>
                                     ) : (
                                         <p className="text-sm text-grey-muted bg-slate-50 dark:bg-slate-800 p-3 rounded-xl text-center w-full">
-                                            Все още няма качено CV.
+                                            {t('profile.noCvUploaded', 'Все още няма качено CV.')}
                                         </p>
                                     )}
                                 </div>
@@ -416,15 +416,15 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                     onClick={() => setIsExperienceModalOpen(true)}
                                     className="text-brand-blue hover:text-brand-blue-dark hover:bg-brand-blue/10"
                                 >
-                                    <PlusCircle className="w-4 h-4 mr-1" /> Добави
+                                    <PlusCircle className="w-4 h-4 mr-1" /> {t('profile.addExperience', 'Добави')}
                                 </Button>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             {loadingExp ? (
-                                <p className="text-sm text-grey-muted">Зареждане...</p>
+                                <p className="text-sm text-grey-muted">{t('profile.loading', 'Зареждане...')}</p>
                             ) : experiences.length === 0 ? (
-                                <p className="text-sm text-grey-muted">Все още няма добавен опит.</p>
+                                <p className="text-sm text-grey-muted">{t('profile.noExperienceAdded', 'Все още няма добавен опит.')}</p>
                             ) : (
                                 experiences.map((exp) => (
                                     <div key={exp.id} className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-brand-blue transition-colors">
@@ -433,7 +433,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                             <div className="flex flex-col">
                                                 <h3 className="text-lg font-bold text-grey-dark flex items-center gap-2">
                                                     {exp.title}
-                                                    <Badge variant="outline" className="text-xs">{exp.mode === 'PROFESSIONAL' || exp.mode === 'Professional' ? 'Професионален' : exp.mode === 'ACADEMIC' || exp.mode === 'Academic' ? 'Академичен' : exp.mode || ''}</Badge>
+                                                    <Badge variant="outline" className="text-xs">{exp.mode?.toUpperCase() === 'PROFESSIONAL' ? t('profile.modeProfessional', 'Професионален') : exp.mode?.toUpperCase() === 'ACADEMIC' ? t('profile.modeAcademic', 'Академичен') : exp.mode || ''}</Badge>
                                                 </h3>
                                                 <p className="text-sm text-grey-dark font-semibold">{exp.organization}</p>
                                             </div>

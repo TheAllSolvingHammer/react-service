@@ -88,9 +88,9 @@ export default function Register({onNavigateToLogin, onRegisterSuccess}: {
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
             <AuthToolbar />
             <div
-                className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-brand-blue/20 rounded-full blur-[100px]"></div>
+                className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-brand-blue/20 dark:bg-brand-blue/10 rounded-full blur-[100px]"></div>
             <div
-                className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-academic-purple/20 rounded-full blur-[100px]"></div>
+                className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-academic-purple/20 dark:bg-academic-purple/10 rounded-full blur-[100px]"></div>
 
             <div className="w-full max-w-md relative z-10 animate-fade-in">
                 <div className="flex flex-col items-center mb-6">
@@ -98,14 +98,14 @@ export default function Register({onNavigateToLogin, onRegisterSuccess}: {
                         className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center shadow-inner mb-4">
                         <Sparkles className="w-7 h-7 text-white"/>
                     </div>
-                    <span className="text-3xl font-display font-black tracking-tight text-grey-dark">
+                    <span className="text-3xl font-display font-black tracking-tight text-grey-dark dark:text-white">
                         Recruit<span className="text-brand-blue">AI</span>
                     </span>
                 </div>
 
-                <Card className="rounded-3xl border-[#c6c6cd]/50 shadow-xl bg-white/70 backdrop-blur-xl">
+                <Card className="rounded-3xl border-[#c6c6cd]/50 dark:border-white/10 shadow-xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
                     <CardHeader className="text-center pb-2">
-                        <CardTitle className="text-2xl font-bold text-grey-dark">{t('auth.registerTitle')}</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-grey-dark dark:text-white">{t('auth.registerTitle')}</CardTitle>
                         <p className="text-sm text-grey-muted mt-2">{t('auth.registerSubtitle')}</p>
                     </CardHeader>
                     <CardContent className="pt-4">
@@ -127,18 +127,18 @@ export default function Register({onNavigateToLogin, onRegisterSuccess}: {
                         )}
 
                         {/* Избор на роля */}
-                        <div className="flex gap-2 p-1 bg-slate-100 rounded-xl mb-6">
+                        <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-6">
                             <button
                                 type="button"
                                 onClick={() => setSelectedRole('CANDIDATE')}
-                                className={`flex-1 py-2 px-3 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-2 ${selectedRole === 'CANDIDATE' ? 'bg-white text-blue-900 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+                                className={`flex-1 py-2 px-3 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-2 ${selectedRole === 'CANDIDATE' ? 'bg-white dark:bg-slate-700 text-blue-900 dark:text-blue-100 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50'}`}
                             >
                                 <User className="w-4 h-4"/> {t('auth.roleCandidate')}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setSelectedRole('INSTITUTION')}
-                                className={`flex-1 py-2 px-3 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-2 ${selectedRole === 'INSTITUTION' ? 'bg-white text-purple-900 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+                                className={`flex-1 py-2 px-3 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-2 ${selectedRole === 'INSTITUTION' ? 'bg-white dark:bg-slate-700 text-purple-900 dark:text-purple-100 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50'}`}
                             >
                                 <Building2 className="w-4 h-4"/> {t('auth.roleInstitution')}
                             </button>
@@ -149,12 +149,12 @@ export default function Register({onNavigateToLogin, onRegisterSuccess}: {
                             {/* Име */}
                             <div className="space-y-1">
                                 <Label
-                                    className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.fullName')}</Label>
+                                    className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.fullName')}</Label>
                                 <div className="relative">
                                     <Input
                                         type="text"
                                         {...register('username')}
-                                        className={`pl-10 h-11 rounded-xl bg-white/50 focus-visible:ring-brand-blue ${errors.username ? 'border-red-400' : 'border-[#c6c6cd]/60'}`}
+                                        className={`pl-10 h-11 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white focus-visible:ring-brand-blue ${errors.username ? 'border-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                     />
                                     <User
                                         className={`w-4 h-4 absolute left-3.5 top-3.5 ${errors.username ? 'text-red-400' : 'text-grey-muted'}`}/>
@@ -167,12 +167,12 @@ export default function Register({onNavigateToLogin, onRegisterSuccess}: {
                             {/* Имейл */}
                             <div className="space-y-1">
                                 <Label
-                                    className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.email')}</Label>
+                                    className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.email')}</Label>
                                 <div className="relative">
                                     <Input
                                         type="email"
                                         {...register('email')}
-                                        className={`pl-10 h-11 rounded-xl bg-white/50 focus-visible:ring-brand-blue ${errors.email ? 'border-red-400' : 'border-[#c6c6cd]/60'}`}
+                                        className={`pl-10 h-11 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white focus-visible:ring-brand-blue ${errors.email ? 'border-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                     />
                                     <Mail
                                         className={`w-4 h-4 absolute left-3.5 top-3.5 ${errors.email ? 'text-red-400' : 'text-grey-muted'}`}/>
@@ -185,12 +185,12 @@ export default function Register({onNavigateToLogin, onRegisterSuccess}: {
                             {/* Парола */}
                             <div className="space-y-1">
                                 <Label
-                                    className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.password')}</Label>
+                                    className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.password')}</Label>
                                 <div className="relative">
                                     <Input
                                         type="password"
                                         {...register('password')}
-                                        className={`pl-10 h-11 rounded-xl bg-white/50 focus-visible:ring-brand-blue ${errors.password ? 'border-red-400' : 'border-[#c6c6cd]/60'}`}
+                                        className={`pl-10 h-11 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white focus-visible:ring-brand-blue ${errors.password ? 'border-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                     />
                                     <Lock
                                         className={`w-4 h-4 absolute left-3.5 top-3.5 ${errors.password ? 'text-red-400' : 'text-grey-muted'}`}/>
@@ -203,12 +203,12 @@ export default function Register({onNavigateToLogin, onRegisterSuccess}: {
                             {/* Потвърди Парола */}
                             <div className="space-y-1">
                                 <Label
-                                    className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.confirmPassword')}</Label>
+                                    className="text-xs font-bold text-grey-dark dark:text-slate-300 uppercase tracking-wider">{t('auth.confirmPassword')}</Label>
                                 <div className="relative">
                                     <Input
                                         type="password"
                                         {...register('confirmPassword')}
-                                        className={`pl-10 h-11 rounded-xl bg-white/50 focus-visible:ring-brand-blue ${errors.confirmPassword ? 'border-red-400' : 'border-[#c6c6cd]/60'}`}
+                                        className={`pl-10 h-11 rounded-xl bg-white/50 dark:bg-slate-800/50 text-grey-dark dark:text-white focus-visible:ring-brand-blue ${errors.confirmPassword ? 'border-red-400' : 'border-[#c6c6cd]/60 dark:border-white/10'}`}
                                     />
                                     <Lock
                                         className={`w-4 h-4 absolute left-3.5 top-3.5 ${errors.confirmPassword ? 'text-red-400' : 'text-grey-muted'}`}/>
