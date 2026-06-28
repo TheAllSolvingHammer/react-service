@@ -4,7 +4,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import {Loader2, Search, Plus, Edit2, Trash2, Building2, Eye, LayoutGrid, List as ListIcon} from 'lucide-react';
 import {Opportunity, Profile} from '@/lib/types';
 import {fetchOpportunities} from '@/lib/opportunities';

@@ -59,19 +59,22 @@ export async function saveCandidateProfile(profile: Profile): Promise<Profile> {
 export async function updateCandidateProfile(profile: Profile): Promise<Profile> {
     const skillIds = await resolveSkillIds(profile.skills ?? []);
 
+    // Convert empty strings to null so backend validation doesn't reject them
+    const clean = (v?: string) => v?.trim() || null;
+
     const payload = {
         firstName: profile.firstName,
+        middleName: clean(profile.middleName),
         lastName: profile.lastName,
-        headline: profile.headline,
-        biography: profile.biography,
+        headline: clean(profile.headline),
+        biography: clean(profile.biography),
         location: profile.location,
-        resumeUrl: profile.resumeUrl,
-        portfolioUrl: profile.portfolioUrl,
-        linkedinUrl: profile.linkedinUrl,
+        resumeUrl: clean(profile.resumeUrl),
+        portfolioUrl: clean(profile.portfolioUrl),
+        linkedinUrl: clean(profile.linkedinUrl),
         skills: skillIds,
     };
 
-    // @ts-ignore
     const response = await apiClient.put('/api/v1/profiles/candidates/update', payload);
 
     return { ...profile, skillIds };

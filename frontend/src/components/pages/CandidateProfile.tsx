@@ -15,6 +15,25 @@ import {PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, Responsiv
 import { fetchCandidateExperiences } from '@/lib/experiences';
 import {uploadCandidateCv} from "@/lib/profileApi.ts";
 
+const ensureUrl = (url: string | undefined): string => {
+    if (!url || url === '#') return '#';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return 'https://' + url;
+};
+
+const fixResumeUrl = (url: string | undefined): string | undefined => {
+    if (!url) return undefined;
+    // Transform internal Docker URLs to gateway-relative paths
+    const internalPatterns = ['http://opportunity-service', 'http://profile-service'];
+    for (const pattern of internalPatterns) {
+        if (url.startsWith(pattern)) {
+            const pathStart = url.indexOf('/api/');
+            if (pathStart !== -1) return url.substring(pathStart);
+        }
+    }
+    return url;
+};
+
 
 interface CandidateProfileProps {
     profile: Profile;
@@ -250,11 +269,11 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                 </div>
                             ) : (
                                 <div className="flex gap-4 justify-center">
-                                    <a href={profile?.portfolioUrl || '#'} target="_blank" rel="noreferrer"
+                                    <a href={ensureUrl(profile?.portfolioUrl)} target="_blank" rel="noreferrer"
                                        className="w-12 h-12 rounded-xl bg-[#fcf8fa] dark:bg-slate-800 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black text-grey-dark flex items-center justify-center transition-all shadow-sm border border-[#c6c6cd]/30 group">
                                         <Code2 className="w-6 h-6 group-hover:scale-110 transition-transform"/>
                                     </a>
-                                    <a href={profile?.linkedinUrl || '#'} target="_blank" rel="noreferrer"
+                                    <a href={ensureUrl(profile?.linkedinUrl)} target="_blank" rel="noreferrer"
                                        className="w-12 h-12 rounded-xl bg-[#fcf8fa] dark:bg-slate-800 hover:bg-[#0077b5] hover:text-white text-grey-dark flex items-center justify-center transition-all shadow-sm border border-[#c6c6cd]/30 group">
                                         <ExternalLink className="w-6 h-6 group-hover:scale-110 transition-transform"/>
                                     </a>
@@ -295,7 +314,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                 <div className="flex justify-center">
                                     {profile?.resumeUrl ? (
                                         <a
-                                            href={profile.resumeUrl}
+                                            href={fixResumeUrl(profile.resumeUrl)}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center gap-2 px-4 py-2 bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue font-bold rounded-xl transition-colors w-full justify-center"
@@ -403,7 +422,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                         <div className="absolute w-3 h-3 bg-brand-blue rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
                                         <div className="flex justify-between items-start mb-1">
                                             <h3 className="text-lg font-bold text-grey-dark">{exp.title}</h3>
-                                            <Badge variant="outline" className="text-xs">{exp.mode}</Badge>
+                                            <Badge variant="outline" className="text-xs">{exp.mode === 'PROFESSIONAL' || exp.mode === 'Professional' ? 'Професионален' : exp.mode === 'ACADEMIC' || exp.mode === 'Academic' ? 'Академичен' : exp.mode || ''}</Badge>
                                         </div>
                                         <div className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
                                             <span className="flex items-center gap-1">

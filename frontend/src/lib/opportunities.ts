@@ -37,7 +37,7 @@ async function mapOpportunity(opp: Record<string, unknown>): Promise<Opportunity
     return {
         id: String(opp.id),
         title: String(opp.title ?? ''),
-        company: String(opp.location ?? 'RecruitAI'), // Засега ползваме location
+        company: String(opp.institutionName ?? opp.companyName ?? ''),
         location: opp.location ? String(opp.location) : undefined,
         description: opp.description ? String(opp.description) : undefined,
         requirements: requirementList,

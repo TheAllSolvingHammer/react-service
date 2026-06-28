@@ -232,7 +232,7 @@ export default function CandidateOpportunities({ profile, candidateMode, selecte
                         <Card key={opp.id} className="rounded-3xl border border-[#c6c6cd]/40 shadow-sm bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group cursor-pointer" onClick={() => setSelectedOpportunityId(opp.id)}>
                             <CardHeader className="pb-3 relative">
                                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-blue to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-sm mb-4 group-hover:scale-110 transition-transform">
-                                    {opp.company.charAt(0)}
+                                    {(opp.company || opp.location || opp.title || '?').charAt(0)}
                                 </div>
                                 <CardTitle className="text-lg font-bold text-grey-dark leading-tight group-hover:text-brand-blue transition-colors line-clamp-2">
                                     {opp.title}

@@ -40,11 +40,11 @@ export default function AcademicDashboard({ profile }: { profile: any }) {
             fetchMyApplications(profile.id)
                 .then(response => {
                     if (Array.isArray(response)) {
-                        setApplications(response);
+                        setApplications(response.filter((a: any) => !a.matchingMode || a.matchingMode === 'ACADEMIC' || a.mode === 'ACADEMIC'));
                     } else if (response && Array.isArray(response.content)) {
-                        setApplications(response.content);
+                        setApplications(response.content.filter((a: any) => !a.matchingMode || a.matchingMode === 'ACADEMIC' || a.mode === 'ACADEMIC'));
                     } else if (response && Array.isArray(response.data)) {
-                        setApplications(response.data);
+                        setApplications(response.data.filter((a: any) => !a.matchingMode || a.matchingMode === 'ACADEMIC' || a.mode === 'ACADEMIC'));
                     } else {
                         setApplications([]);
                     }
@@ -166,7 +166,7 @@ export default function AcademicDashboard({ profile }: { profile: any }) {
 
             {/* Applications List */}
             <div className="space-y-4">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 px-2">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 px-2">
                     <Library
                         className="w-5 h-5 text-purple-600"/> {t('academic.yourApplications', 'Твоите кандидатури')}
                 </h2>
@@ -188,8 +188,8 @@ export default function AcademicDashboard({ profile }: { profile: any }) {
                                         <GraduationCap className="w-7 h-7"/>
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900">{app.university}</h3>
-                                        <p className="text-sm text-gray-500 font-medium">{app.faculty}</p>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{app.university}</h3>
+                                        <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">{app.faculty}</p>
                                         <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
                                             <span className="flex items-center gap-1"><Clock
                                                 className="w-3 h-3"/> {app.date}</span>

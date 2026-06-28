@@ -29,12 +29,14 @@ function mapStatus(status: string): string {
     }
 }
 
-export function mapApplicationActivity(app: ApplicationRecord): ApplicationActivity {
+export function mapApplicationActivity(app: any): ApplicationActivity {
     const dateSource = app.appliedAtDate || app.appliedAt;
+    const title = app.title || app.opportunityTitle || app.jobTitle || 'Неизвестна позиция';
+    const company = app.company || app.location || app.institutionName || 'Неизвестна компания';
     return {
-        id: app.opportunityId,
-        title: app.title,
-        company: app.company,
+        id: app.opportunityId || app.applicationId || app.id,
+        title,
+        company,
         status: mapStatus(app.status),
         date: dateSource
             ? new Date(dateSource).toLocaleDateString('bg-BG')

@@ -142,7 +142,7 @@ export default function CandidateDashboard({
             {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card
-                    className={`md:col-span-2 rounded-2xl border-0 shadow-sm flex flex-col justify-center p-5 relative overflow-hidden ${profileScore === 100 ? 'bg-gradient-to-r from-professional-emerald/10 to-teal-500/10' : 'bg-white'}`}>
+                    className={`md:col-span-2 rounded-2xl border-0 shadow-sm flex flex-col justify-center p-5 relative overflow-hidden ${profileScore === 100 ? 'bg-gradient-to-r from-professional-emerald/10 to-teal-500/10' : 'bg-white dark:bg-slate-900'}`}>
                     <div className="flex justify-between items-center mb-2 z-10">
                         <span className="text-sm font-bold text-grey-dark flex items-center gap-2">
                             <Target
@@ -172,7 +172,7 @@ export default function CandidateDashboard({
 
                 <Card
                     onClick={() => setCurrentTab('applications')}
-                    className="cursor-pointer rounded-2xl border-0 shadow-sm bg-white p-5 flex flex-col justify-center gap-1 group hover:shadow-md transition-shadow">
+                    className="cursor-pointer rounded-2xl border-0 shadow-sm bg-white dark:bg-slate-900 p-5 flex flex-col justify-center gap-1 group hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-center">
                         <span
                             className="text-xs font-bold text-grey-muted uppercase tracking-wider">{t('dashboard.statsApps', 'Кандидатствания')}</span>
@@ -185,7 +185,7 @@ export default function CandidateDashboard({
                 </Card>
 
                 <Card
-                    className="rounded-2xl border-0 shadow-sm bg-white p-5 flex flex-col justify-center gap-1 group hover:shadow-md transition-shadow">
+                    className="rounded-2xl border-0 shadow-sm bg-white dark:bg-slate-900 p-5 flex flex-col justify-center gap-1 group hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-center">
                         <span
                             className="text-xs font-bold text-grey-muted uppercase tracking-wider">{t('dashboard.statsViews', 'Разглеждания')}</span>
@@ -203,7 +203,7 @@ export default function CandidateDashboard({
                 {/* Recent Applications Summary */}
                 <div className="lg:col-span-8 flex flex-col gap-6">
                     <Card
-                        className="flex-1 rounded-3xl border-0 shadow-lg bg-white/80 backdrop-blur-xl flex flex-col overflow-hidden relative">
+                        className="flex-1 rounded-3xl border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex flex-col overflow-hidden relative">
                         <div
                             className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-blue to-purple-500"></div>
                         <CardHeader
@@ -229,7 +229,8 @@ export default function CandidateDashboard({
                             ) : (
                                 appliedList.slice(0, 5).map((app, index) => (
                                     <div key={index}
-                                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-[#fcf8fa]/50 hover:bg-white hover:shadow-md transition-all duration-300 border border-transparent hover:border-[#c6c6cd]/40 group cursor-pointer gap-4">
+                                         onClick={() => setCurrentTab('applications')}
+                                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-[#fcf8fa]/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all duration-300 border border-transparent hover:border-[#c6c6cd]/40 dark:hover:border-white/10 group cursor-pointer gap-4">
                                         <div className="flex items-center gap-4">
                                             <div
                                                 className={`w-12 h-12 rounded-xl shadow-sm flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform duration-300 ${app.logoColor || 'bg-brand-blue'}`}>

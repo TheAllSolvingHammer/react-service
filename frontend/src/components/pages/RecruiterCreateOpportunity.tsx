@@ -120,7 +120,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
 
             <form onSubmit={handleSubmit}>
                 <Card
-                    className="rounded-3xl border border-[#c6c6cd] shadow-lg bg-white dark:bg-slate-900">
+                    className="rounded-3xl border border-[#c6c6cd] shadow-lg bg-white dark:bg-slate-900 overflow-visible">
                     <CardHeader className="bg-brand-blue/5 border-b border-[#c6c6cd]/20 pb-6 rounded-t-3xl">
                         <CardTitle className="text-xl flex items-center gap-2">
                             <Briefcase className="w-5 h-5 text-brand-blue"/>
@@ -214,21 +214,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                             </div>
                         </div>
 
-                        {/* Описание */}
-                        <div className="space-y-2 pt-2">
-                            <Label
-                                className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1"><FileText
-                                className="w-3 h-3"/> Описание</Label>
-                            <Textarea
-                                required
-                                value={formData.description}
-                                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                placeholder="Опишете позицията, отговорностите и какво предлагате..."
-                                className="min-h-[150px] rounded-xl resize-none bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
-                            />
-                        </div>
-
-                        {/* Умения и Изисквания */}
+                        {/* Умения и Изисквания - MOVED ABOVE Description */}
                         <div className="space-y-3 pt-2">
                             <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Изисквани умения</Label>
                             
@@ -244,7 +230,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                     className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                 />
                                 {isDropdownOpen && skillInput && (
-                                    <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-[#c6c6cd] bg-white dark:bg-slate-800 p-1 shadow-lg">
+                                    <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-[#c6c6cd] bg-white dark:bg-slate-800 p-1 shadow-lg">
                                         {filteredSkills.length > 0 ? (
                                             filteredSkills.map(skill => (
                                                 <li
@@ -283,6 +269,20 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                     ))}
                                 </div>
                             )}
+                        </div>
+
+                        {/* Описание - MOVED BELOW Skills */}
+                        <div className="space-y-2 pt-2">
+                            <Label
+                                className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1"><FileText
+                                className="w-3 h-3"/> Описание</Label>
+                            <Textarea
+                                required
+                                value={formData.description}
+                                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                placeholder="Опишете позицията, отговорностите и какво предлагате..."
+                                className="min-h-[150px] rounded-xl resize-none bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
+                            />
                         </div>
 
                     </CardContent>

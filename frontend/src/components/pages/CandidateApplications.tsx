@@ -55,7 +55,7 @@ export default function CandidateApplications({ profile, candidateMode }: Candid
                 </p>
             </div>
 
-            <Card className="rounded-3xl border-0 shadow-lg bg-white/80 backdrop-blur-xl relative overflow-hidden">
+            <Card className="rounded-3xl border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl relative overflow-hidden">
                 <div className={`absolute top-0 left-0 w-full h-1 ${candidateMode === 'professional' ? 'bg-gradient-to-r from-brand-blue to-professional-emerald' : 'bg-gradient-to-r from-academic-purple to-purple-400'}`}></div>
                 <CardHeader className="pb-4 border-b border-[#f0edef]/80">
                     <CardTitle className="text-xl font-display font-bold text-grey-dark flex items-center gap-2.5">
@@ -73,13 +73,13 @@ export default function CandidateApplications({ profile, candidateMode }: Candid
                             <div className="w-20 h-20 bg-grey-muted/10 rounded-full flex items-center justify-center mb-4">
                                 <History className="w-10 h-10 text-grey-muted opacity-50"/>
                             </div>
-                            <h3 className="text-lg font-bold text-grey-dark mb-2">Нямате активни кандидатствания</h3>
-                            <p className="text-grey-muted text-sm max-w-sm">Все още не сте подали кандидатури за наличните възможности. Разгледайте таблото за предложения!</p>
+                            <h3 className="text-lg font-bold text-grey-dark dark:text-white mb-2">Нямате активни кандидатствания</h3>
+                            <p className="text-grey-muted dark:text-slate-400 text-sm max-w-sm">Все още не сте подали кандидатури за наличните възможности. Разгледайте таблото за предложения!</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
                             {applications.map((app, index) => (
-                                <div key={app.id || index} className="flex flex-col md:flex-row items-start md:items-center justify-between p-5 rounded-2xl bg-[#fcf8fa]/40 hover:bg-white hover:shadow-md transition-all duration-300 border border-[#c6c6cd]/30 group">
+                                <div key={app.id || index} className="flex flex-col md:flex-row items-start md:items-center justify-between p-5 rounded-2xl bg-[#fcf8fa]/40 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all duration-300 border border-[#c6c6cd]/30 dark:border-white/10 group">
                                     <div className="flex items-start gap-4 mb-4 md:mb-0">
                                         <div className={`w-14 h-14 rounded-xl shadow-sm flex items-center justify-center text-white font-bold text-xl flex-shrink-0 group-hover:scale-110 transition-transform duration-300 ${app.logoColor || (candidateMode === 'professional' ? 'bg-brand-blue' : 'bg-academic-purple')}`}>
                                             {app.company.charAt(0)}

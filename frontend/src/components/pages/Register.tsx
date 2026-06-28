@@ -6,6 +6,7 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import apiClient from '@/lib/axios';
+import AuthToolbar from '@/components/shared/AuthToolbar';
 
 import {z} from 'zod';
 import {useForm} from 'react-hook-form';
@@ -85,6 +86,7 @@ export default function Register({onNavigateToLogin, onRegisterSuccess}: {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+            <AuthToolbar />
             <div
                 className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-brand-blue/20 rounded-full blur-[100px]"></div>
             <div

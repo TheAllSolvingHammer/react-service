@@ -9,7 +9,8 @@ import RecruiterDashboard from '@/components/pages/RecruiterDashboard';
 import RecruiterRanking from '@/components/pages/RecruiterRanking';
 import RecruiterCandidateDetail from '@/components/pages/RecruiterCandidateDetail';
 import RecruiterOpportunities from '@/components/pages/RecruiterOpportunities';
-
+import { AdminDashboard } from '@/components/pages/AdminDashboard';
+import { Footer } from '@/components/shared/Footer';
 // Auth & Onboarding Components
 import Login from '@/components/pages/Login';
 import Register from '@/components/pages/Register';
@@ -22,7 +23,7 @@ import { switchCandidateMode, updateCandidateProfile } from '@/lib/profileApi';
 import {fetchOpportunitiesWithMatches, fetchOpportunityCount, updateApplicationStatus} from '@/lib/opportunities';
 import { fetchRecruiterApplicants } from '@/lib/applicants';
 import { resolveSkillNames } from '@/lib/skills';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, AlertCircle } from 'lucide-react';
 import AcademicDashboard from "@/components/pages/AcademicDashboard.tsx";
 import InstitutionOnboarding from "@/components/pages/InstitutionOnboarding.tsx";
 import ForgotPassword from "@/components/pages/ForgotPassword.tsx";
@@ -41,8 +42,9 @@ export default function App() {
     const [authView, setAuthView] = useState<'login' | 'register' | 'forgot-password'>('login');
 
     // App Navigation State
-    const [currentRole, setCurrentRole] = useState<'candidate' | 'recruiter'>(savedRole || 'candidate');
+    const [currentRole, setCurrentRole] = useState<'candidate' | 'recruiter' | 'admin'>(savedRole as 'candidate' | 'recruiter' | 'admin' || 'candidate');
     const [currentTab, setCurrentTab] = useState<string>('dashboard');
+    const [isRestricted, setIsRestricted] = useState<boolean>(localStorage.getItem('is_restricted') === 'true');
     const [candidateMode, setCandidateMode] = useState<CandidateMode>('professional');
     const [isSwitchingMode, setIsSwitchingMode] = useState(false);
 
@@ -70,8 +72,10 @@ export default function App() {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('user_role');
         localStorage.removeItem('user_id');
+        localStorage.removeItem('is_restricted');
         setIsAuthenticated(false);
         setProfile(null);
+        setIsRestricted(false);
     };
 
     // Global Axios Error Interceptor
@@ -95,6 +99,12 @@ export default function App() {
 
         setIsLoading(true);
         setError(null);
+
+        if (currentRole === 'admin') {
+            setIsLoading(false);
+            setProfile({ id: savedUserId, userId: savedUserId, name: 'Admin', role: 'ADMIN', isCompleted: true } as any);
+            return;
+        }
 
         const profileEndpoint = currentRole === 'recruiter'
             ? `/api/v1/profiles/institution/${savedUserId}`
@@ -141,9 +151,11 @@ export default function App() {
             .catch(err => {
                 console.error("Failed to load profile:", err);
                 if (err.response?.status === 404) {
+
                     setProfile({
                         id: savedUserId,
                         userId: savedUserId,
+                        // @ts-ignore
                         name: '',
                         role: '',
                         email: '',
@@ -227,12 +239,14 @@ export default function App() {
             return (
                 <Login
                     onNavigateToRegister={() => setAuthView('register')}
-                    onNavigateToForgotPassword={() => setAuthView('forgot-password')} // ДОБАВИ ТОВА
+                    onNavigateToForgotPassword={() => setAuthView('forgot-password')}
                     onLoginSuccess={() => {
                         setIsAuthenticated(true);
-                        const role = (localStorage.getItem('user_role') as 'candidate' | 'recruiter') || 'candidate';
+                        const role = (localStorage.getItem('user_role') as 'candidate' | 'recruiter' | 'admin') || 'candidate';
                         setCurrentRole(role);
-                        setCurrentTab(role === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
+                        const restricted = localStorage.getItem('is_restricted') === 'true';
+                        setIsRestricted(restricted);
+                        setCurrentTab(role === 'candidate' ? 'dashboard' : (role === 'admin' ? 'admin_dashboard' : 'recruiter_dashboard'));
                     }}
                 />
             );
@@ -280,7 +294,7 @@ export default function App() {
     // ==========================================
     // 3. PROFILE ONBOARDING GATE
     // ==========================================
-    if (!error && profile && profile.isCompleted === false) {
+    if (!error && profile && profile.isCompleted === false && currentRole !== 'admin') {
 
         if (currentRole === 'recruiter') {
             return (
@@ -310,10 +324,25 @@ export default function App() {
     // ==========================================
     return (
         <div className="min-h-screen flex flex-col bg-transparent relative overflow-x-hidden z-10">
+            {isRestricted && currentRole !== 'admin' && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl p-8 max-w-md text-center shadow-2xl border border-red-200">
+                        <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-grey-dark mb-2">Достъпът е ограничен</h2>
+                        <p className="text-grey-muted mb-6">
+                            Вашият акаунт е ограничен от системен администратор. Моля, свържете се с поддръжката за повече информация.
+                        </p>
+                        <button onClick={handleLogout} className="bg-brand-blue text-white font-bold py-3 px-6 rounded-xl shadow-md hover:bg-brand-blue-dark transition-all">
+                            Изход
+                        </button>
+                    </div>
+                </div>
+            )}
+            
             <Header
-                currentRole={currentRole}
+                currentRole={currentRole as any}
                 setCurrentRole={(role) => {
-                    setCurrentRole(role);
+                    setCurrentRole(role as any);
                     setCurrentTab(role === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
                 }}
                 currentTab={currentTab}
@@ -395,6 +424,10 @@ export default function App() {
                     <RecruiterCreateOpportunity onBack={() => setCurrentTab('recruiter_dashboard')} profile={profile} />
                 )}
 
+                {currentRole === 'admin' && (
+                    <AdminDashboard />
+                )}
+
                 {(error || currentTab === 'error') && (
                     <GenericErrorPage
                         message={error || undefined}
@@ -406,6 +439,8 @@ export default function App() {
                     />
                 )}
             </main>
+            
+            <Footer />
         </div>
     );
 }
