@@ -65,6 +65,7 @@ export interface Applicant {
     appliedDate: string;
     skills: string[];
     candidateMode: 'academic' | 'professional';
+    resumeUrl?: string;
 }
 
 export interface ApplicationActivity {

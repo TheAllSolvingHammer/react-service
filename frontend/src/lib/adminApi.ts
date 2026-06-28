@@ -3,42 +3,42 @@ import apiClient from '@/lib/axios';
 export const adminApi = {
     // Users
     async getAllUsers() {
-        const response = await apiClient.get('/admin/users');
+        const response = await apiClient.get('/api/v1/admin/users');
         return response.data;
     },
 
     async toggleUserRestriction(userId: string, isRestricted: boolean) {
-        const response = await apiClient.put(`/admin/users/${userId}/restrict`, { isRestricted });
+        const response = await apiClient.put(`/api/v1/admin/users/${userId}/restrict`, { isRestricted });
         return response.data;
     },
 
     // Skills
     async getAllSkills() {
-        const response = await apiClient.get('/admin/skills');
+        const response = await apiClient.get('/api/v1/admin/skills');
         return response.data;
     },
 
     async createSkill(name: string) {
-        const response = await apiClient.post('/admin/skills', { name });
+        const response = await apiClient.post('/api/v1/admin/skills', { name });
         return response.data;
     },
 
     async deleteSkill(id: string) {
-        await apiClient.delete(`/admin/skills/${id}`);
+        await apiClient.delete(`/api/v1/admin/skills/${id}`);
     },
 
     // Tags
     async getAllTags() {
-        const response = await apiClient.get('/admin/skills/tags');
+        const response = await apiClient.get('/api/v1/admin/skills/tags');
         return response.data;
     },
 
     async createTag(name: string) {
-        const response = await apiClient.post('/admin/skills/tags', { name });
+        const response = await apiClient.post('/api/v1/admin/skills/tags', { name });
         return response.data;
     },
 
     async deleteTag(id: string) {
-        await apiClient.delete(`/admin/skills/tags/${id}`);
+        await apiClient.delete(`/api/v1/admin/skills/tags/${id}`);
     }
 };

@@ -5,10 +5,12 @@
   },
   "nav": {
     "dashboard": "Табло",
+    "applications": "Кандидатствания",
     "profile": "Профил",
     "opportunities": "Позиции",
     "aiMatches": "AI Анализ",
     "recruiterDashboard": "Дашборд",
+    "recruiterOpportunities": "Обяви",
     "pipeline": "Пайплайн",
     "logout": "Изход",
     "languageToggle": "Смяна на езика",

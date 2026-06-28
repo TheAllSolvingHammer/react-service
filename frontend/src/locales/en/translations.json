@@ -5,10 +5,12 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "applications": "Applications",
     "profile": "Profile",
     "opportunities": "Positions",
     "aiMatches": "AI Analysis",
     "recruiterDashboard": "Dashboard",
+    "recruiterOpportunities": "Opportunities",
     "pipeline": "Pipeline",
     "logout": "Log out",
     "languageToggle": "Change language",

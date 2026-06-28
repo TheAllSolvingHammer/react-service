@@ -129,7 +129,7 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                             <div className="space-y-2 relative">
-                                <Label htmlFor="username" className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.email')}</Label>
+                                <Label htmlFor="username" className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.username', 'Потребителско име')}</Label>
                                 <div className="relative">
                                     <Input
                                         id="username"
