@@ -45,12 +45,14 @@ export default function Header({
     const navItems = currentRole === 'candidate'
         ? [
             {id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard},
+            {id: 'applications', label: t('nav.applications', 'Кандидатствания'), icon: ListFilter},
             {id: 'profile', label: t('nav.profile'), icon: User},
             {id: 'opportunities', label: t('nav.opportunities'), icon: Search},
             {id: 'aimatches', label: t('nav.aiMatches'), icon: Sparkles},
         ]
         : [
             {id: 'recruiter_dashboard', label: t('nav.recruiterDashboard'), icon: LayoutDashboard},
+            {id: 'recruiter_my_opportunities', label: t('nav.recruiterOpportunities', 'Обяви'), icon: Search},
             {id: 'recruiter_applicants', label: t('nav.pipeline'), icon: ListFilter},
         ];
 

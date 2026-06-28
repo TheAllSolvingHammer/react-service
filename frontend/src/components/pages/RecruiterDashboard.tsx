@@ -49,7 +49,8 @@ export default function RecruiterDashboard({
             {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card
-                    className="rounded-3xl border-0 shadow-sm bg-white p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
+                    onClick={() => setCurrentTab('recruiter_my_opportunities')}
+                    className="cursor-pointer rounded-3xl border-0 shadow-sm bg-white p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
                     <div
                         className="absolute -right-4 -top-4 w-24 h-24 bg-brand-blue/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                     <div className="flex justify-between items-center z-10">

@@ -3,17 +3,22 @@
 export interface Profile {
     id?: string;
     userId?: string;
-    name: string;
-    role: string;
+    firstName?: string;
+    middleName?: string;
+    lastName?: string;
+    fullName?: string;
+    initials?: string;
+    headline?: string;
+    biography?: string;
     email: string;
-    location: string;
-    bio: string;
+    location?: string;
     skills: string[];
     skillIds?: string[];
     type?: 'academic' | 'professional' | 'institution';
     candidateType?: string;
     educationType?: string;
     birthday?: string;
+    expectedSalary?: number;
     currentMode?: 'professional' | 'academic';
     avatarUrl?: string;
     isCompleted?: boolean;

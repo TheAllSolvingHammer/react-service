@@ -4,9 +4,11 @@ import CandidateDashboard from '@/components/pages/CandidateDashboard';
 import CandidateProfile from '@/components/pages/CandidateProfile';
 import CandidateOpportunities from '@/components/pages/CandidateOpportunities';
 import CandidateAiMatches from '@/components/pages/CandidateAiMatches';
+import CandidateApplications from '@/components/pages/CandidateApplications';
 import RecruiterDashboard from '@/components/pages/RecruiterDashboard';
 import RecruiterRanking from '@/components/pages/RecruiterRanking';
 import RecruiterCandidateDetail from '@/components/pages/RecruiterCandidateDetail';
+import RecruiterOpportunities from '@/components/pages/RecruiterOpportunities';
 
 // Auth & Onboarding Components
 import Login from '@/components/pages/Login';
@@ -16,7 +18,7 @@ import ProfileOnboarding from '@/components/pages/ProfileOnboarding';
 import apiClient from '@/lib/axios';
 import { Profile, Opportunity, Applicant } from '@/lib/types';
 import { parseApiMode, CandidateMode } from '@/lib/mode';
-import { switchCandidateMode } from '@/lib/profileApi';
+import { switchCandidateMode, updateCandidateProfile } from '@/lib/profileApi';
 import {fetchOpportunitiesWithMatches, fetchOpportunityCount, updateApplicationStatus} from '@/lib/opportunities';
 import { fetchRecruiterApplicants } from '@/lib/applicants';
 import { resolveSkillNames } from '@/lib/skills';
@@ -114,7 +116,7 @@ export default function App() {
                     ...p,
                     id: p.id || savedUserId,
                     userId: savedUserId,
-                    name: p.firstName ? `${p.firstName} ${p.lastName}` : (p.displayName || p.fullName || 'Неизвестен Потребител'),
+                    name: p.firstName ? [p.firstName, p.middleName, p.lastName].filter(Boolean).join(' ') : (p.displayName || p.fullName || 'Неизвестен Потребител'),
                     role: p.headline || p.role || 'Специалист',
                     email: p.email || '',
                     location: p.location || '',
@@ -343,22 +345,12 @@ export default function App() {
                                 profile={profile}
                                 onSaveProfile={async (updatedData) => {
                                     try {
-                                        // 1. Форматираме данните за новото DTO
-                                        const payload = {
-                                            firstName: updatedData.name?.split(' ')[0],
-                                            lastName: updatedData.name?.split(' ').slice(1).join(' '),
-                                            headline: updatedData.role,
-                                            biography: updatedData.bio,
-                                            resumeUrl: updatedData.resumeUrl,
-                                            portfolioUrl: updatedData.portfolioUrl,
-                                            linkedinUrl: updatedData.linkedinUrl,
-                                        };
+                                        const fullProfile = { ...profile, ...updatedData } as Profile;
+                                        await updateCandidateProfile(fullProfile);
 
-                                        // 2. Извикваме ендпоинта за ЪПДЕЙТ (когато го направиш в бекенда)
-                                        await apiClient.put('/api/v1/profiles/candidates/update', payload);
-
-                                        // 3. Обновяваме локалния стейт
-                                        setProfile(prev => prev ? { ...prev, ...updatedData } : prev);
+                                        // Update local state
+                                        const fullName = [fullProfile.firstName, fullProfile.middleName, fullProfile.lastName].filter(Boolean).join(' ');
+                                        setProfile(prev => prev ? { ...prev, ...fullProfile, fullName } : prev);
                                     } catch (error) {
                                         console.error("Грешка при запазване на профила", error);
                                         throw error;
@@ -381,6 +373,12 @@ export default function App() {
                                 opportunities={opportunities}
                             />
                         )}
+                        {currentTab === 'applications' && (
+                            <CandidateApplications
+                                profile={profile}
+                                candidateMode={candidateMode}
+                            />
+                        )}
                     </>
                 )}
 
@@ -388,6 +386,7 @@ export default function App() {
                     <>
                         {currentTab === 'recruiter_dashboard' && <RecruiterDashboard applicants={applicants} opportunityCount={opportunityCount} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
                         {currentTab === 'recruiter_applicants' && <RecruiterRanking applicants={applicants} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
+                        {currentTab === 'recruiter_my_opportunities' && <RecruiterOpportunities profile={profile} setCurrentTab={setCurrentTab} />}
                         {currentTab === 'recruiter_applicant_detail' && selectedApplicant && <RecruiterCandidateDetail applicant={selectedApplicant} onBack={() => setCurrentTab('recruiter_dashboard')} onUpdateStatus={handleUpdateApplicantStatus} />}
                     </>
                 )}

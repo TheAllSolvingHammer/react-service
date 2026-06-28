@@ -16,21 +16,20 @@ export async function switchCandidateMode(
 }
 
 export async function saveCandidateProfile(profile: Profile): Promise<Profile> {
-    const nameParts = profile.name.trim().split(/\s+/);
-    const firstName = nameParts[0] || 'Candidate';
-    const lastName = nameParts.slice(1).join(' ') || firstName;
     const skillIds = await resolveSkillIds(profile.skills ?? []);
 
     const payload = {
-        firstName,
-        lastName,
+        firstName: profile.firstName,
+        middleName: profile.middleName,
+        lastName: profile.lastName,
         location: profile.location,
-        headline: profile.role,
-        biography: profile.bio,
+        headline: profile.headline,
+        biography: profile.biography,
         birthday: profile.birthday || '2000-01-01',
         candidateType: profile.candidateType || 'Professional',
         educationType: profile.educationType || 'Bachelor',
         currentMode: toApiMode(profile.currentMode ?? 'professional'),
+        expectedSalary: profile.expectedSalary,
         skills: skillIds,
     };
 
@@ -41,16 +40,41 @@ export async function saveCandidateProfile(profile: Profile): Promise<Profile> {
         ...profile,
         id: saved.id || profile.id,
         userId: saved.userId || profile.userId,
-        name: `${saved.firstName ?? firstName} ${saved.lastName ?? lastName}`.trim(),
-        role: saved.headline ?? profile.role,
-        bio: saved.biography ?? profile.bio,
+        firstName: saved.firstName ?? profile.firstName,
+        lastName: saved.lastName ?? profile.lastName,
+        middleName: saved.middleName ?? profile.middleName,
+        fullName: saved.fullName ?? profile.fullName,
+        headline: saved.headline ?? profile.headline,
+        biography: saved.biography ?? profile.biography,
         location: saved.location ?? profile.location,
         candidateType: saved.candidateType ?? profile.candidateType,
         educationType: saved.educationType ?? profile.educationType,
+        expectedSalary: saved.expectedSalary ?? profile.expectedSalary,
         currentMode: parseApiMode(saved.currentMode ?? profile.currentMode),
         skillIds,
         isCompleted: saved.isCompleted ?? true,
     };
+}
+
+export async function updateCandidateProfile(profile: Profile): Promise<Profile> {
+    const skillIds = await resolveSkillIds(profile.skills ?? []);
+
+    const payload = {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        headline: profile.headline,
+        biography: profile.biography,
+        location: profile.location,
+        resumeUrl: profile.resumeUrl,
+        portfolioUrl: profile.portfolioUrl,
+        linkedinUrl: profile.linkedinUrl,
+        skills: skillIds,
+    };
+
+    // @ts-ignore
+    const response = await apiClient.put('/api/v1/profiles/candidates/update', payload);
+
+    return { ...profile, skillIds };
 }
 
 export async function createInstitutionProfile(data: any) {

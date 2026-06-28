@@ -109,9 +109,7 @@ export default function CandidateDashboard({
         }
     };
 
-    const firstName = profile?.name?.includes('Неизвестен')
-        ? t('dashboard.candidateDefault', 'Кандидат')
-        : profile?.name?.split(' ')[0] || 'Кандидат';
+    const firstName = profile?.firstName || t('dashboard.candidateDefault', 'Кандидат');
 
     return (
         <div className="space-y-6 animate-fade-in relative">
@@ -173,7 +171,8 @@ export default function CandidateDashboard({
                 </Card>
 
                 <Card
-                    className="rounded-2xl border-0 shadow-sm bg-white p-5 flex flex-col justify-center gap-1 group hover:shadow-md transition-shadow">
+                    onClick={() => setCurrentTab('applications')}
+                    className="cursor-pointer rounded-2xl border-0 shadow-sm bg-white p-5 flex flex-col justify-center gap-1 group hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-center">
                         <span
                             className="text-xs font-bold text-grey-muted uppercase tracking-wider">{t('dashboard.statsApps', 'Кандидатствания')}</span>

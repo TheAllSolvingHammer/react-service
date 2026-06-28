@@ -32,9 +32,12 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     const [editForm, setEditForm] = useState({
-        name: profile?.name || '',
-        role: profile?.role || '',
-        bio: profile?.bio || '',
+        firstName: profile?.firstName || '',
+        middleName: profile?.middleName || '',
+        lastName: profile?.lastName || '',
+        headline: profile?.headline || '',
+        biography: profile?.biography || '',
+        location: profile?.location || '',
         portfolioUrl: profile?.portfolioUrl || '',
         linkedinUrl: profile?.linkedinUrl || '',
         resumeUrl: profile?.resumeUrl || ''
@@ -56,9 +59,12 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
     // Рестартираме формата, ако профилът се промени отвън или отменим редакцията
     useEffect(() => {
         setEditForm({
-            name: profile?.name || '',
-            role: profile?.role || '',
-            bio: profile?.bio || t('profile.defaultBio', 'Страстен софтуерен инженер...'),
+            firstName: profile?.firstName || '',
+            middleName: profile?.middleName || '',
+            lastName: profile?.lastName || '',
+            headline: profile?.headline || '',
+            biography: profile?.biography || t('profile.defaultBio', 'Страстен софтуерен инженер...'),
+            location: profile?.location || '',
             portfolioUrl: profile?.portfolioUrl || '',
             linkedinUrl: profile?.linkedinUrl || '',
             resumeUrl: profile?.resumeUrl || ''
@@ -102,9 +108,11 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
         fullMark: 100
     }));
 
-    const getInitials = (name: string) => {
-        if (!name || name.includes(t('profile.unknownUser', 'Неизвестен'))) return 'JD';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const getInitials = (firstName?: string, lastName?: string) => {
+        if (!firstName && !lastName) return 'JD';
+        const f = firstName ? firstName[0] : '';
+        const l = lastName ? lastName[0] : '';
+        return (f + l).toUpperCase() || 'JD';
     };
 
     return (
@@ -156,32 +164,52 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                         <div className="px-6 pb-6 text-center relative">
                             <div className="w-24 h-24 bg-white dark:bg-slate-900 rounded-full p-1 mx-auto -mt-12 mb-3 shadow-md relative z-10">
                                 <div className="w-full h-full rounded-full bg-gradient-to-br from-brand-blue to-purple-600 text-white flex items-center justify-center text-3xl font-black shadow-inner">
-                                    {getInitials(editForm.name)}
+                                    {profile?.initials || getInitials(editForm.firstName, editForm.lastName)}
                                 </div>
                             </div>
 
                             {isEditing ? (
                                 <div className="space-y-3 mt-4">
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={editForm.firstName}
+                                            onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                                            placeholder={t('profile.placeholders.firstName', 'Име')}
+                                            className="text-center font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                        />
+                                        <Input
+                                            value={editForm.middleName}
+                                            onChange={(e) => setEditForm({...editForm, middleName: e.target.value})}
+                                            placeholder={t('profile.placeholders.middleName', 'Презиме (опц.)')}
+                                            className="text-center font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                        />
+                                        <Input
+                                            value={editForm.lastName}
+                                            onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                                            placeholder={t('profile.placeholders.lastName', 'Фамилия')}
+                                            className="text-center font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                        />
+                                    </div>
                                     <Input
-                                        value={editForm.name}
-                                        onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                                        placeholder={t('profile.placeholders.name', 'Име и фамилия')}
-                                        className="text-center font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                                    />
-                                    <Input
-                                        value={editForm.role}
-                                        onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                                        value={editForm.headline}
+                                        onChange={(e) => setEditForm({...editForm, headline: e.target.value})}
                                         placeholder={t('profile.placeholders.role', 'Позиция (напр. Full-Stack Developer)')}
                                         className="text-center text-sm text-brand-blue bg-white dark:bg-slate-800"
+                                    />
+                                    <Input
+                                        value={editForm.location}
+                                        onChange={(e) => setEditForm({...editForm, location: e.target.value})}
+                                        placeholder={t('profile.placeholders.location', 'Локация (напр. София, България)')}
+                                        className="text-center text-sm text-grey-muted bg-white dark:bg-slate-800"
                                     />
                                 </div>
                             ) : (
                                 <>
                                     <h2 className="text-xl font-bold text-grey-dark mt-2">
-                                        {profile?.name && !profile?.name.includes(t('profile.unknownUser', 'Неизвестен')) ? profile.name : 'Джон Доу'}
+                                        {profile?.fullName || 'Джон Доу'}
                                     </h2>
                                     <p className="text-sm text-brand-blue font-semibold mb-4">
-                                        {profile?.role || 'Full-Stack Developer'}
+                                        {profile?.headline || 'Няма посочена позиция'}
                                     </p>
                                 </>
                             )}
@@ -190,9 +218,11 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                 <div className="flex items-center gap-3">
                                     <Mail className="w-4 h-4 text-brand-blue"/> {profile?.email || 'email@example.com'}
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <MapPin className="w-4 h-4 text-brand-blue"/> {profile?.location || t('profile.defaultLocation', 'София, България')}
-                                </div>
+                                {!isEditing && (
+                                    <div className="flex items-center gap-3">
+                                        <MapPin className="w-4 h-4 text-brand-blue"/> {profile?.location || t('profile.defaultLocation', 'Непосочена локация')}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </Card>
@@ -319,14 +349,14 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                         <CardContent>
                             {isEditing ? (
                                 <Textarea
-                                    value={editForm.bio}
-                                    onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                                    value={editForm.biography}
+                                    onChange={(e) => setEditForm({...editForm, biography: e.target.value})}
                                     className="min-h-[120px] bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                                     placeholder={t('profile.placeholders.bio', 'Разкажете малко повече за вашия опит...')}
                                 />
                             ) : (
                                 <p className="text-grey-dark leading-relaxed text-sm">
-                                    {editForm.bio}
+                                    {editForm.biography}
                                 </p>
                             )}
                         </CardContent>
