@@ -60,12 +60,14 @@ export async function fetchLatestApplications(): Promise<ApplicationRecord[]> {
 export async function applyToOpportunity(
     opportunityId: string,
     candidateUserId: string,
-    coverLetter = ''
+    coverLetter = '',
+    resumeUrl = ''
 ): Promise<void> {
     const applicationData = {
         opportunityId,
         facultyNumber: candidateUserId,
         coverLetter,
+        cvUrl: resumeUrl
     };
 
     const formData = new FormData();
@@ -73,11 +75,9 @@ export async function applyToOpportunity(
         'applicationData',
         new Blob([JSON.stringify(applicationData)], { type: 'application/json' })
     );
-    formData.append(
-        'cvFile',
-        new Blob(['RecruitAI generated CV placeholder'], { type: 'application/pdf' }),
-        `${candidateUserId}-cv.pdf`
-    );
+    
+    // We only send a fake file if absolutely required by backend, but we made it optional.
+    // So we don't need to append cvFile anymore if we have resumeUrl.
 
     await apiClient.post('/api/v1/opportunities/apply', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

@@ -50,7 +50,7 @@ export default function RecruiterDashboard({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card
                     onClick={() => setCurrentTab('recruiter_my_opportunities')}
-                    className="cursor-pointer rounded-3xl border-0 shadow-sm bg-white p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
+                    className="cursor-pointer rounded-3xl border-0 shadow-sm bg-white dark:bg-slate-900 p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
                     <div
                         className="absolute -right-4 -top-4 w-24 h-24 bg-brand-blue/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                     <div className="flex justify-between items-center z-10">
@@ -65,7 +65,7 @@ export default function RecruiterDashboard({
                 </Card>
 
                 <Card
-                    className="rounded-3xl border-0 shadow-sm bg-white p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
+                    className="rounded-3xl border-0 shadow-sm bg-white dark:bg-slate-900 p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
                     <div
                         className="absolute -right-4 -top-4 w-24 h-24 bg-match-high/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                     <div className="flex justify-between items-center z-10">
@@ -80,7 +80,7 @@ export default function RecruiterDashboard({
                 </Card>
 
                 <Card
-                    className="rounded-3xl border-0 shadow-sm bg-white p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
+                    className="rounded-3xl border-0 shadow-sm bg-white dark:bg-slate-900 p-6 flex flex-col justify-center gap-2 group hover:shadow-md transition-shadow relative overflow-hidden">
                     <div
                         className="absolute -right-4 -top-4 w-24 h-24 bg-professional-emerald/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                     <div className="flex justify-between items-center z-10">
@@ -99,7 +99,7 @@ export default function RecruiterDashboard({
                 {/* Pipeline Summary */}
                 <div className="lg:col-span-8 flex flex-col gap-6">
                     <Card
-                        className="flex-1 rounded-3xl border border-[#c6c6cd]/30 shadow-lg bg-white/80 backdrop-blur-xl flex flex-col overflow-hidden relative">
+                        className="flex-1 rounded-3xl border border-[#c6c6cd]/30 dark:border-white/10 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex flex-col overflow-hidden relative">
                         <div
                             className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-blue to-purple-500"></div>
                         <CardHeader
@@ -122,7 +122,7 @@ export default function RecruiterDashboard({
                             ) : (
                                 recentApplicants.map((applicant, index) => (
                                     <div key={`${applicant.id}-${index}`}
-                                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-[#fcf8fa]/50 hover:bg-white hover:shadow-md transition-all duration-300 border border-transparent hover:border-[#c6c6cd]/40 group gap-4">
+                                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-[#fcf8fa]/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all duration-300 border border-transparent hover:border-[#c6c6cd]/40 dark:hover:border-white/10 group gap-4">
                                         <div className="flex items-center gap-4">
                                             <div
                                                 className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue/20 to-purple-600/20 text-brand-blue border border-brand-blue/30 flex items-center justify-center font-bold text-lg shadow-inner shrink-0">
@@ -150,7 +150,7 @@ export default function RecruiterDashboard({
                                             <Button
                                                 variant="outline"
                                                 onClick={() => handleViewApplicant(applicant.id)}
-                                                className="rounded-xl border-[#c6c6cd] hover:border-brand-blue hover:text-brand-blue transition-colors h-10 px-4"
+                                                className="rounded-xl border-[#c6c6cd] dark:border-white/20 hover:border-brand-blue hover:text-brand-blue dark:hover:border-brand-blue transition-colors h-10 px-4"
                                             >
                                                 <Eye className="w-4 h-4 mr-2"/> Профил
                                             </Button>
@@ -160,7 +160,7 @@ export default function RecruiterDashboard({
                             )}
                         </CardContent>
                         {recentApplicants.length > 0 && (
-                            <CardFooter className="pt-2 pb-4 bg-[#fcf8fa]/30 border-t border-[#f0edef]/80">
+                            <CardFooter className="pt-2 pb-4 bg-[#fcf8fa]/30 dark:bg-slate-900/30 border-t border-[#f0edef]/80 dark:border-white/10">
                                 <Button
                                     variant="ghost"
                                     onClick={() => setCurrentTab('recruiter_applicants')}
@@ -176,8 +176,8 @@ export default function RecruiterDashboard({
                 {/* Quick Actions Sidebar */}
                 <aside className="lg:col-span-4 flex flex-col">
                     <Card
-                        className="flex-1 rounded-3xl border border-[#c6c6cd]/50 shadow-lg bg-gradient-to-b from-[#fcf8fa] to-white flex flex-col overflow-hidden">
-                        <CardHeader className="pb-4 border-b border-[#f0edef] bg-white/50 backdrop-blur-sm">
+                        className="flex-1 rounded-3xl border border-[#c6c6cd]/50 dark:border-white/10 shadow-lg bg-gradient-to-b from-[#fcf8fa] to-white dark:from-slate-800 dark:to-slate-900 flex flex-col overflow-hidden">
+                        <CardHeader className="pb-4 border-b border-[#f0edef] dark:border-white/10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
                             <CardTitle
                                 className="text-lg font-display font-bold text-grey-dark flex items-center gap-2">
                                 <TrendingUp className="w-5 h-5 text-brand-blue"/>
@@ -196,7 +196,7 @@ export default function RecruiterDashboard({
                             <Button
                                 variant="outline"
                                 onClick={() => setCurrentTab('recruiter_create_opportunity')}
-                                className="w-full bg-white border-[#c6c6cd] text-grey-dark hover:border-brand-blue hover:text-brand-blue rounded-xl h-14 justify-start px-6 font-bold shadow-sm transition-all group"
+                                className="w-full bg-white dark:bg-slate-800 border-[#c6c6cd] dark:border-white/10 text-grey-dark dark:text-white hover:border-brand-blue hover:text-brand-blue rounded-xl h-14 justify-start px-6 font-bold shadow-sm transition-all group"
                             >
                                 <Briefcase className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform"/>
                                 Публикувай нова обява

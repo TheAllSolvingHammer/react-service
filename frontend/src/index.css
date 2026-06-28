@@ -1,6 +1,8 @@
 /*@import "../node_modules/.pnpm/tailwindcss@4.3.0/node_modules/tailwindcss/dist/lib.d.mts";*/
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*@plugin "tailwindcss-animate";*/
 
 /* 1. Our Custom Glassmorphism Theme */

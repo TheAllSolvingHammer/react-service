@@ -50,6 +50,7 @@ export interface Opportunity {
     requirements?: string[];
     matchScore: number;
     tags: string[];
+    type?: string;
     salary?: string;
     postedDate?: string;
     aiReasoning?: string;
@@ -60,6 +61,7 @@ export interface Applicant {
     name: string;
     role: string;
     email: string;
+    location?: string;
     matchScore: number;
     status: "Ново" | "Преглед" | "Интервю" | "Приет" | "Отказан";
     appliedDate: string;

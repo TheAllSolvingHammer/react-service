@@ -5,7 +5,7 @@ import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import {Loader2, Search, Plus, Edit2, Trash2, Building2, Eye, LayoutGrid, List as ListIcon} from 'lucide-react';
+import {Loader2, Search, Plus, Edit2, Archive, Building2, Eye, LayoutGrid, List as ListIcon} from 'lucide-react';
 import {Opportunity, Profile} from '@/lib/types';
 import {fetchOpportunities} from '@/lib/opportunities';
 
@@ -51,7 +51,7 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                         {t('recruiterOpps.title', 'Моите Обяви')}
                     </h1>
                     <p className="text-grey-muted mt-1">
-                        Управлявайте вашите активни обяви и кампании.
+                        {t('recruiterOpps.subtitle', 'Управлявайте вашите активни обяви и кампании.')}
                     </p>
                 </div>
 
@@ -61,29 +61,29 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                         className="bg-brand-blue hover:bg-indigo-600 text-white font-bold rounded-xl shadow-md transition-all h-11"
                     >
                         <Plus className="w-5 h-5 mr-2" />
-                        Създай нова обява
+                        {t('recruiterOpps.create', 'Създай нова обява')}
                     </Button>
                 </div>
             </div>
 
-            <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white overflow-hidden">
-                <CardHeader className="border-b border-[#f0edef] bg-slate-50/50 pb-4">
+            <Card className="rounded-3xl border border-[#c6c6cd]/50 dark:border-white/10 shadow-sm bg-white dark:bg-slate-900 overflow-hidden">
+                <CardHeader className="border-b border-[#f0edef] dark:border-white/10 bg-slate-50/50 dark:bg-slate-800/50 pb-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="relative max-w-md w-full">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-grey-muted" />
                             <Input
-                                placeholder="Търсене на обяви..."
+                                placeholder={t('recruiterOpps.search', 'Търсене на обяви...')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9 bg-white border-[#c6c6cd]/50 rounded-xl focus-visible:ring-brand-blue/20"
+                                className="pl-9 bg-white dark:bg-slate-900 border-[#c6c6cd]/50 dark:border-white/10 rounded-xl focus-visible:ring-brand-blue/20"
                             />
                         </div>
-                        <div className="flex gap-2 bg-[#f0edef]/50 p-1 rounded-xl">
+                        <div className="flex gap-2 bg-[#f0edef]/50 dark:bg-slate-800 p-1 rounded-xl">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setViewMode('table')}
-                                className={`rounded-lg px-3 ${viewMode === 'table' ? 'bg-white shadow-sm text-brand-blue' : 'text-grey-muted'}`}
+                                className={`rounded-lg px-3 ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-brand-blue' : 'text-grey-muted dark:text-slate-400'}`}
                             >
                                 <ListIcon className="w-4 h-4" />
                             </Button>
@@ -91,7 +91,7 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setViewMode('grid')}
-                                className={`rounded-lg px-3 ${viewMode === 'grid' ? 'bg-white shadow-sm text-brand-blue' : 'text-grey-muted'}`}
+                                className={`rounded-lg px-3 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 shadow-sm text-brand-blue' : 'text-grey-muted dark:text-slate-400'}`}
                             >
                                 <LayoutGrid className="w-4 h-4" />
                             </Button>
@@ -105,31 +105,39 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                         </div>
                     ) : filteredOpps.length === 0 ? (
                         <div className="text-center py-16">
-                            <div className="w-16 h-16 bg-[#f0edef] rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Building2 className="w-8 h-8 text-grey-muted" />
+                            <div className="w-16 h-16 bg-[#f0edef] dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Building2 className="w-8 h-8 text-grey-muted dark:text-slate-500" />
                             </div>
-                            <h3 className="text-lg font-bold text-grey-dark mb-1">Няма намерени обяви</h3>
-                            <p className="text-grey-muted text-sm">Опитайте с друго търсене или създайте нова обява.</p>
+                            <h3 className="text-lg font-bold text-grey-dark dark:text-slate-200 mb-1">{t('recruiterOpps.noOpps', 'Няма намерени обяви')}</h3>
+                            <p className="text-grey-muted dark:text-slate-400 text-sm">{t('recruiterOpps.noOppsDesc', 'Опитайте с друго търсене или създайте нова обява.')}</p>
                         </div>
                     ) : viewMode === 'table' ? (
                         <div className="overflow-x-auto">
                             <Table>
-                                <TableHeader className="bg-slate-50/50">
-                                    <TableRow className="border-[#f0edef]">
-                                        <TableHead className="font-bold text-grey-muted">Позиция / Заглавие</TableHead>
-                                        <TableHead className="font-bold text-grey-muted">Локация</TableHead>
-                                        <TableHead className="font-bold text-grey-muted">Изисквания</TableHead>
-                                        <TableHead className="text-right font-bold text-grey-muted">Действия</TableHead>
+                                <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
+                                    <TableRow className="border-[#f0edef] dark:border-white/10">
+                                        <TableHead className="font-bold text-grey-muted dark:text-slate-400">{t('recruiterOpps.colRole', 'Позиция / Заглавие')}</TableHead>
+                                        <TableHead className="font-bold text-grey-muted dark:text-slate-400">{t('recruiterOpps.colType', 'Тип')}</TableHead>
+                                        <TableHead className="font-bold text-grey-muted dark:text-slate-400">{t('recruiterOpps.colLocation', 'Локация')}</TableHead>
+                                        <TableHead className="font-bold text-grey-muted dark:text-slate-400">{t('recruiterOpps.colReqs', 'Изисквания')}</TableHead>
+                                        <TableHead className="text-right font-bold text-grey-muted dark:text-slate-400">{t('recruiterOpps.colActions', 'Действия')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {filteredOpps.map((opp) => (
-                                        <TableRow key={opp.id} className="border-[#f0edef] hover:bg-[#fcf8fa]/40 transition-colors group">
+                                        <TableRow key={opp.id} className="border-[#f0edef] dark:border-white/10 hover:bg-[#fcf8fa]/40 dark:hover:bg-slate-800/40 transition-colors group">
                                             <TableCell className="font-medium">
                                                 <div className="flex flex-col">
-                                                    <span className="text-grey-dark font-bold">{opp.title}</span>
-                                                    <span className="text-xs text-grey-muted">ID: {opp.id.substring(0, 8)}...</span>
+                                                    <span className="text-grey-dark dark:text-slate-200 font-bold">{opp.title}</span>
+                                                    <span className="text-xs text-grey-muted dark:text-slate-500">ID: {opp.id.substring(0, 8)}...</span>
                                                 </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {opp.type && (
+                                                    <Badge variant="outline" className="bg-blue-50/50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 text-[10px] whitespace-nowrap">
+                                                        {opp.type.replace('_', ' ')}
+                                                    </Badge>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <span className="inline-flex items-center gap-1 text-sm text-grey-dark">
@@ -139,12 +147,12 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                                             <TableCell>
                                                 <div className="flex flex-wrap gap-1">
                                                     {opp.requirements?.slice(0, 2).map((req, i) => (
-                                                        <Badge key={i} variant="outline" className="text-[10px] bg-white border-[#c6c6cd]/40">
+                                                        <Badge key={i} variant="outline" className="text-[10px] bg-white dark:bg-slate-800 border-[#c6c6cd]/40 dark:border-white/10 text-slate-700 dark:text-slate-300">
                                                             {req}
                                                         </Badge>
                                                     ))}
                                                     {(opp.requirements?.length || 0) > 2 && (
-                                                        <Badge variant="outline" className="text-[10px] bg-[#f0edef] border-transparent">
+                                                        <Badge variant="outline" className="text-[10px] bg-[#f0edef] dark:bg-slate-700 border-transparent text-slate-700 dark:text-slate-300">
                                                             +{(opp.requirements?.length || 0) - 2}
                                                         </Badge>
                                                     )}
@@ -155,11 +163,11 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                                                     <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg text-brand-blue border-brand-blue/20 hover:bg-brand-blue hover:text-white">
                                                         <Eye className="w-4 h-4" />
                                                     </Button>
-                                                    <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg text-amber-600 border-amber-600/20 hover:bg-amber-600 hover:text-white">
+                                                    <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg text-amber-600 border-amber-600/20 hover:bg-amber-600 hover:text-white dark:hover:border-amber-600">
                                                         <Edit2 className="w-4 h-4" />
                                                     </Button>
-                                                    <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg text-red-600 border-red-600/20 hover:bg-red-600 hover:text-white">
-                                                        <Trash2 className="w-4 h-4" />
+                                                    <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg text-red-600 border-red-600/20 hover:bg-red-600 hover:text-white dark:hover:border-red-600" title="Архивиране">
+                                                        <Archive className="w-4 h-4" />
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -171,16 +179,23 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
                             {filteredOpps.map((opp) => (
-                                <Card key={opp.id} className="rounded-2xl border border-[#c6c6cd]/40 shadow-sm hover:shadow-md transition-shadow group flex flex-col">
-                                    <CardHeader className="pb-3 border-b border-[#f0edef]/50">
+                                <Card key={opp.id} className="rounded-2xl border border-[#c6c6cd]/40 dark:border-white/10 dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow group flex flex-col">
+                                    <CardHeader className="pb-3 border-b border-[#f0edef]/50 dark:border-white/10">
                                         <div className="flex justify-between items-start gap-2">
-                                            <CardTitle className="text-lg font-bold text-grey-dark leading-tight group-hover:text-brand-blue transition-colors">
+                                            <CardTitle className="text-lg font-bold text-grey-dark dark:text-slate-200 leading-tight group-hover:text-brand-blue transition-colors">
                                                 {opp.title}
                                             </CardTitle>
-                                            <Badge variant="outline" className="bg-[#f0edef] border-transparent text-xs whitespace-nowrap">
-                                                Активна
+                                            <Badge variant="outline" className="bg-[#f0edef] dark:bg-slate-800 border-transparent text-xs whitespace-nowrap text-grey-dark dark:text-slate-200">
+                                                {t('recruiterOpps.active', 'Активна')}
                                             </Badge>
                                         </div>
+                                        {opp.type && (
+                                            <div className="mt-2">
+                                                <Badge variant="outline" className="bg-blue-50/50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 text-[10px]">
+                                                    {opp.type.replace('_', ' ')}
+                                                </Badge>
+                                            </div>
+                                        )}
                                         <p className="text-sm text-grey-muted flex items-center gap-1.5 mt-2">
                                             <Building2 className="w-4 h-4" /> {opp.company || opp.location}
                                         </p>
@@ -193,12 +208,15 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                                                 </Badge>
                                             ))}
                                         </div>
-                                        <div className="flex justify-end gap-2 pt-2 border-t border-[#f0edef]/50">
+                                        <div className="flex justify-end gap-2 pt-2 border-t border-[#f0edef]/50 dark:border-white/10">
                                             <Button variant="ghost" size="sm" className="h-8 px-2 text-brand-blue hover:bg-brand-blue/10 rounded-lg">
-                                                <Eye className="w-4 h-4 mr-1.5" /> Преглед
+                                                <Eye className="w-4 h-4 mr-1.5" /> {t('recruiterOpps.view', 'Преглед')}
                                             </Button>
-                                            <Button variant="ghost" size="sm" className="h-8 px-2 text-amber-600 hover:bg-amber-50 rounded-lg">
-                                                <Edit2 className="w-4 h-4 mr-1.5" /> Редакция
+                                            <Button variant="ghost" size="sm" className="h-8 px-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg">
+                                                <Edit2 className="w-4 h-4 mr-1.5" /> {t('recruiterOpps.edit', 'Редакция')}
+                                            </Button>
+                                            <Button variant="ghost" size="sm" className="h-8 px-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title={t('recruiterOpps.archive', 'Архивиране')}>
+                                                <Archive className="w-4 h-4 mr-1.5" /> {t('recruiterOpps.archive', 'Архив')}
                                             </Button>
                                         </div>
                                     </CardContent>

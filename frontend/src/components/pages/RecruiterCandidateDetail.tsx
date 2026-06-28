@@ -96,7 +96,7 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <MapPin className="w-4 h-4 text-brand-blue"/>
-                                    <span>Варна, България</span>
+                                    <span>{applicant.location || 'Няма локация'}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <Briefcase className="w-4 h-4 text-brand-blue"/>
@@ -107,8 +107,8 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                     </Card>
 
                     {/* Управление на Статуса */}
-                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white overflow-hidden">
-                        <CardHeader className="bg-[#f0edef]/30 border-b border-[#f0edef] pb-4">
+                    <Card className="rounded-3xl border border-[#c6c6cd]/50 dark:border-white/10 shadow-sm bg-white dark:bg-slate-900 overflow-hidden">
+                        <CardHeader className="bg-[#f0edef]/30 dark:bg-slate-800/50 border-b border-[#f0edef] dark:border-white/10 pb-4">
                             <CardTitle className="text-base font-bold text-grey-dark flex items-center gap-2">
                                 <UserCheck className="w-5 h-5 text-brand-blue"/>
                                 {t('recruiter.statusWorkflow', 'Процес на наемане')}
@@ -140,7 +140,7 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
 
                                                     <div
                                                         className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 transition-colors ${
-                                                            isCompleted ? 'bg-professional-emerald text-white shadow-sm' : 'bg-[#f0edef] text-[#c6c6cd]'
+                                                            isCompleted ? 'bg-professional-emerald text-white shadow-sm' : 'bg-[#f0edef] dark:bg-slate-800 text-[#c6c6cd] dark:text-slate-400'
                                                         }`}>
                                                         {isCompleted ? <CheckCircle2 className="w-5 h-5"/> :
                                                             <span className="text-xs font-bold">{index + 1}</span>}
@@ -154,7 +154,7 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                                                             className={`w-full justify-start h-10 ${
                                                                 isCurrent
                                                                     ? 'bg-brand-blue hover:bg-brand-blue text-white shadow-md'
-                                                                    : 'bg-white border-[#c6c6cd]/50 text-grey-dark hover:border-brand-blue hover:text-brand-blue'
+                                                                    : 'bg-white dark:bg-slate-800 border-[#c6c6cd]/50 dark:border-white/10 text-grey-dark dark:text-white hover:border-brand-blue hover:text-brand-blue'
                                                             }`}
                                                         >
                                                             {step}
@@ -189,7 +189,7 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
 
                     {/* AI Score Card */}
                     <Card
-                        className="rounded-3xl border-slate-800 bg-slate-900 text-white shadow-xl overflow-hidden relative">
+                        className="rounded-3xl border border-[#c6c6cd]/30 dark:border-white/10 bg-white dark:bg-slate-900 shadow-xl overflow-hidden relative">
                         <div
                             className="absolute top-0 right-0 w-64 h-64 bg-match-high/10 blur-[80px] -z-1 pointer-events-none"></div>
                         <CardContent
@@ -209,20 +209,20 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                                         />
                                     </svg>
                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className="text-4xl font-display font-black">{applicant.matchScore}</span>
+                                        <span className="text-4xl font-display font-black text-grey-dark dark:text-white">{applicant.matchScore}</span>
                                         <span
-                                            className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Match</span>
+                                            className="text-[10px] font-bold text-grey-muted dark:text-slate-400 uppercase tracking-widest mt-1">Match</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex-1 space-y-4">
-                                <h3 className="text-xl font-bold flex items-center gap-2">
+                                <h3 className="text-xl font-bold flex items-center gap-2 text-grey-dark dark:text-white">
                                     <BrainCircuit className={isTopMatch ? 'text-match-high' : 'text-brand-blue'}/>
                                     {t('recruiter.aiAnalysis', 'AI Анализ на съвпадението')}
                                 </h3>
 
-                                <p className="text-sm text-slate-300 leading-relaxed bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
+                                <p className="text-sm text-grey-dark dark:text-slate-300 leading-relaxed bg-[#fcf8fa]/50 dark:bg-slate-800/50 p-4 rounded-2xl border border-[#c6c6cd]/30 dark:border-slate-700">
                                     {isTopMatch
                                         ? `Този кандидат е изключително подходящ. Притежава ${applicant.skills.length} от ключовите умения, които търсите, и опитът му съвпада с изискванията на позицията.`
                                         : `Кандидатът покрива базовите изисквания, но липсват някои специфични технически умения. Препоръчваме преглед на CV-то за повече контекст.`
@@ -230,11 +230,11 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                                 </p>
 
                                 <div>
-                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('recruiter.matchedSkills', 'Съвпадащи умения')}</h4>
+                                    <h4 className="text-xs font-bold text-grey-muted dark:text-slate-400 uppercase tracking-wider mb-3">{t('recruiter.matchedSkills', 'Съвпадащи умения')}</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {applicant.skills.map((skill, i) => (
                                             <Badge key={i}
-                                                   className="bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600 font-medium">
+                                                   className="bg-[#f0edef] dark:bg-slate-800 hover:bg-[#e0dce1] dark:hover:bg-slate-700 text-grey-dark dark:text-slate-200 border-transparent dark:border-slate-600 font-medium">
                                                 <CheckCircle2 className="w-3 h-3 mr-1.5 text-professional-emerald"/>
                                                 {skill}
                                             </Badge>
@@ -246,9 +246,9 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                     </Card>
 
                     {/* Документи (CV) */}
-                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/60 backdrop-blur-md">
-                        <CardHeader className="border-b border-[#f0edef] pb-4">
-                            <CardTitle className="text-lg font-bold text-grey-dark flex items-center gap-2">
+                    <Card className="rounded-3xl border border-[#c6c6cd]/50 dark:border-white/10 shadow-sm bg-white/60 dark:bg-slate-900/60 backdrop-blur-md">
+                        <CardHeader className="border-b border-[#f0edef] dark:border-white/10 pb-4">
+                            <CardTitle className="text-lg font-bold text-grey-dark dark:text-white flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-brand-blue"/>
                                 {t('recruiter.applicationDocuments', 'Прикачени документи')}
                             </CardTitle>
@@ -259,7 +259,7 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                                     href={applicant.resumeUrl ? applicant.resumeUrl.replace(/http:\/\/[^/]+\/api/, '/api') : '#'}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex-1 bg-[#fcf8fa] hover:bg-[#f0edef] border border-[#c6c6cd]/40 text-grey-dark rounded-xl h-14 justify-start px-6 shadow-sm flex items-center transition-colors"
+                                    className="flex-1 bg-[#fcf8fa] dark:bg-slate-800 hover:bg-[#f0edef] dark:hover:bg-slate-700 border border-[#c6c6cd]/40 dark:border-white/10 text-grey-dark dark:text-white rounded-xl h-14 justify-start px-6 shadow-sm flex items-center transition-colors"
                                 >
                                     <div className="flex items-center gap-3 w-full">
                                         <div

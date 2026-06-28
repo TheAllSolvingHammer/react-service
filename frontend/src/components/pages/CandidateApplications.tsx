@@ -18,12 +18,12 @@ export default function CandidateApplications({ profile, candidateMode }: Candid
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!profile?.id) return;
+        if (!profile?.userId) return;
 
         const loadApplications = async () => {
             setIsLoading(true);
             try {
-                const appsData = await fetchCandidateApplications(profile.id);
+                const appsData = await fetchCandidateApplications(profile.userId);
                 const mappedApps = appsData.map(mapApplicationActivity);
                 
                 // Filter based on candidateMode. Assuming we can infer from opportunity title/company or mode if it was returned by backend.
@@ -51,7 +51,7 @@ export default function CandidateApplications({ profile, candidateMode }: Candid
                     {t('applications.title', 'Моите Кандидатствания')}
                 </h1>
                 <p className="text-grey-muted mt-2">
-                    Проследете статуса на вашите кандидатури за {candidateMode === 'professional' ? 'работа' : 'университет'}.
+                    {candidateMode === 'professional' ? t('applications.subtitlePro', 'Проследете статуса на вашите кандидатури за работа.') : t('applications.subtitleAcademic', 'Проследете статуса на вашите кандидатури за университет.')}
                 </p>
             </div>
 
@@ -73,8 +73,8 @@ export default function CandidateApplications({ profile, candidateMode }: Candid
                             <div className="w-20 h-20 bg-grey-muted/10 rounded-full flex items-center justify-center mb-4">
                                 <History className="w-10 h-10 text-grey-muted opacity-50"/>
                             </div>
-                            <h3 className="text-lg font-bold text-grey-dark dark:text-white mb-2">Нямате активни кандидатствания</h3>
-                            <p className="text-grey-muted dark:text-slate-400 text-sm max-w-sm">Все още не сте подали кандидатури за наличните възможности. Разгледайте таблото за предложения!</p>
+                            <h3 className="text-lg font-bold text-grey-dark dark:text-white mb-2">{t('applications.noActive', 'Нямате активни кандидатствания')}</h3>
+                            <p className="text-grey-muted dark:text-slate-400 text-sm max-w-sm">{t('applications.noActiveDesc', 'Все още не сте подали кандидатури за наличните възможности. Разгледайте таблото за предложения!')}</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -99,9 +99,9 @@ export default function CandidateApplications({ profile, candidateMode }: Candid
                                             <span className={`w-2.5 h-2.5 rounded-full ${app.status === 'Приет' ? 'bg-professional-emerald' : app.status === 'Отказан' ? 'bg-red-500' : 'bg-brand-blue animate-pulse'}`}></span>
                                             {app.status}
                                         </Badge>
-                                        <div className="flex items-center gap-1.5 text-xs text-grey-muted bg-white px-3 py-1.5 rounded-lg border border-[#f0edef] shadow-sm">
+                                        <div className="flex items-center gap-1.5 text-xs text-grey-muted bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-[#f0edef] dark:border-white/10 shadow-sm">
                                             <Calendar className="w-3.5 h-3.5"/>
-                                            <span>Кандидатствано на: {app.date}</span>
+                                            <span>{t('applications.appliedOn', 'Кандидатствано на: ')}{app.date}</span>
                                         </div>
                                     </div>
                                 </div>

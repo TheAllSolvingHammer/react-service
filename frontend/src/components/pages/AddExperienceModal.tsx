@@ -50,12 +50,38 @@ export default function AddExperienceModal({isOpen, onClose, onSuccess, candidat
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-fade-in">
                 <h2 className="text-xl font-bold mb-4">Добави нов опит</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="mode" value="PROFESSIONAL" checked={formData.mode === 'PROFESSIONAL'} onChange={() => setFormData({...formData, mode: 'PROFESSIONAL'})} />
+                            <span className="text-sm font-medium">Професионален</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="mode" value="ACADEMIC" checked={formData.mode === 'ACADEMIC'} onChange={() => setFormData({...formData, mode: 'ACADEMIC'})} />
+                            <span className="text-sm font-medium">Академичен</span>
+                        </label>
+                    </div>
+
                     <Input placeholder="Позиция (напр. Developer)"
                            onChange={(e) => setFormData({...formData, title: e.target.value})} required/>
                     <Input placeholder="Организация"
                            onChange={(e) => setFormData({...formData, organization: e.target.value})} required/>
-                    <Input type="date" onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                           required/>
+                           
+                    <div className="flex gap-4">
+                        <div className="flex-1">
+                            <label className="text-xs text-grey-muted mb-1 block">Начална дата</label>
+                            <Input type="date" onChange={(e) => setFormData({...formData, startDate: e.target.value})} required/>
+                        </div>
+                        <div className="flex-1">
+                            <label className="text-xs text-grey-muted mb-1 block">Крайна дата</label>
+                            <Input type="date" disabled={formData.currentlyActive} onChange={(e) => setFormData({...formData, endDate: e.target.value})}/>
+                        </div>
+                    </div>
+                    
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={formData.currentlyActive} onChange={(e) => setFormData({...formData, currentlyActive: e.target.checked, endDate: e.target.checked ? '' : formData.endDate})} className="rounded border-gray-300 text-brand-blue shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50" />
+                        <span className="text-sm text-grey-dark">Настояща позиция</span>
+                    </label>
+
                     <Textarea placeholder="Описание"
                               onChange={(e) => setFormData({...formData, description: e.target.value})}/>
 

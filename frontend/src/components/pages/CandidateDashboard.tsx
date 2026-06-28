@@ -40,7 +40,7 @@ export default function CandidateDashboard({
     const profileScore = profile?.isCompleted ? 100 : 40;
 
     useEffect(() => {
-        const candidateId = profile?.id;
+        const candidateId = profile?.userId;
         if (!candidateId) return;
 
         const loadDashboardData = async () => {
@@ -88,14 +88,14 @@ export default function CandidateDashboard({
 
     const handleApplyOneClick = async (opp: any) => {
         const exists = appliedList.some(item => item.id === opp.id);
-        if (exists || !profile?.id) return;
+        if (exists || !profile?.userId) return;
 
         try {
-            await applyToOpportunity(opp.id, profile.id, "Кандидатстване чрез бърз бутон от таблото.");
+            await applyToOpportunity(opp.id, profile.userId, "Кандидатстване чрез бърз бутон от таблото.", profile.resumeUrl || '');
 
             const newApp = mapApplicationActivity({
                 applicationId: Math.random().toString(),
-                candidateId: profile.id,
+                candidateId: profile.userId,
                 opportunityId: opp.id,
                 title: opp.title,
                 company: opp.company,

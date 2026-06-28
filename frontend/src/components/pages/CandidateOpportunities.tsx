@@ -36,11 +36,11 @@ export default function CandidateOpportunities({ profile, candidateMode, selecte
     
     // Зареждане на кандидатури за проследяване на статус
     useEffect(() => {
-        if (!profile?.id) return;
-        fetchCandidateApplications(profile.id)
+        if (!profile?.userId) return;
+        fetchCandidateApplications(profile.userId)
             .then(apps => setAppliedList(apps.map(mapApplicationActivity)))
             .catch(err => console.error("Error loading apps:", err));
-    }, [profile?.id]);
+    }, [profile?.userId]);
 
     // Зареждане на всички обяви с ТЪРСЕНЕ и РЕЖИМ
     useEffect(() => {
@@ -64,6 +64,8 @@ export default function CandidateOpportunities({ profile, candidateMode, selecte
             return;
         }
 
+        const already = appliedList.some(app => app.id === selectedOpportunityId);
+        setHasApplied(already);
         setIsLoadingDetails(true);
         fetchOpportunityById(selectedOpportunityId)
             .then(details => setSelectedOppDetails(details))
@@ -72,14 +74,15 @@ export default function CandidateOpportunities({ profile, candidateMode, selecte
     }, [selectedOpportunityId, t]);
 
     const handleApply = async () => {
-        if (!selectedOppDetails || !profile.id) return;
+        if (!selectedOppDetails || !profile.userId) return;
 
         setIsApplying(true);
         try {
             await applyToOpportunity(
                 selectedOppDetails.id,
-                profile.id,
-                t('opportunities.applyMessage', 'Кандидатстване през детайлен изглед.')
+                profile.userId,
+                t('opportunities.applyMessage', 'Кандидатстване през детайлен изглед.'),
+                profile.resumeUrl || ''
             );
             setHasApplied(true);
         } catch (error) {
@@ -92,13 +95,18 @@ export default function CandidateOpportunities({ profile, candidateMode, selecte
     const handleApplyOneClick = async (e: React.MouseEvent, opp: Opportunity) => {
         e.stopPropagation();
         const exists = appliedList.some(item => item.id === opp.id);
-        if (exists || !profile?.id) return;
+        if (exists || !profile?.userId) return;
 
         try {
-            await applyToOpportunity(opp.id, profile.id, t('opportunities.quickApply', 'Кандидатстване чрез бърз бутон от обяви.'));
+            await applyToOpportunity(
+                opp.id,
+                profile.userId!,
+                t('opportunities.oneClickApplyMessage', 'Кандидатстване чрез бърз бутон от възможности.'),
+                profile.resumeUrl || ''
+            );
             const newApp = mapApplicationActivity({
                 applicationId: Math.random().toString(),
-                candidateId: profile.id,
+                candidateId: profile.userId,
                 opportunityId: opp.id,
                 title: opp.title,
                 company: opp.company,

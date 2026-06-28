@@ -14,7 +14,7 @@ export const Footer: React.FC = () => {
                         RecruitAI<span className="text-purple-600">.</span>
                     </div>
                     <p className="text-grey-muted mb-6 max-w-sm">
-                        Свързваме талантите с най-добрите възможности чрез иновативни AI алгоритми. Открийте своето бъдеще днес.
+                        {t('footer.description', 'Свързваме талантите с най-добрите възможности чрез иновативни AI алгоритми. Открийте своето бъдеще днес.')}
                     </p>
                     <div className="flex gap-4">
                         <a href="#" className="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition-all">
@@ -31,21 +31,21 @@ export const Footer: React.FC = () => {
                 </div>
 
                 <div>
-                    <h4 className="font-bold text-grey-dark mb-4 text-lg">Бързи връзки</h4>
+                    <h4 className="font-bold text-grey-dark mb-4 text-lg">{t('footer.quickLinks', 'Бързи връзки')}</h4>
                     <ul className="space-y-3">
-                        <li><a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">За нас</a></li>
-                        <li><a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">Общи условия</a></li>
-                        <li><a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">Политика за поверителност</a></li>
-                        <li><a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">ЧЗВ (FAQ)</a></li>
+                        <li><a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">{t('footer.aboutUs', 'За нас')}</a></li>
+                        <li><a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">{t('footer.terms', 'Общи условия')}</a></li>
+                        <li><a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">{t('footer.privacy', 'Политика за поверителност')}</a></li>
+                        <li><a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">{t('footer.faq', 'ЧЗВ (FAQ)')}</a></li>
                     </ul>
                 </div>
 
                 <div>
-                    <h4 className="font-bold text-grey-dark mb-4 text-lg">Контакти</h4>
+                    <h4 className="font-bold text-grey-dark mb-4 text-lg">{t('footer.contacts', 'Контакти')}</h4>
                     <ul className="space-y-4">
                         <li className="flex items-start gap-3">
                             <MapPin className="w-5 h-5 text-brand-blue shrink-0 mt-0.5" />
-                            <span className="text-grey-muted">Варна, България<br/>Технически Университет</span>
+                            <span className="text-grey-muted">{t('footer.location', 'Варна, България')}<br/>{t('footer.location2', 'Технически Университет')}</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <Phone className="w-5 h-5 text-brand-blue shrink-0" />
@@ -61,11 +61,11 @@ export const Footer: React.FC = () => {
 
             <div className="max-w-7xl mx-auto pt-8 border-t border-[#c6c6cd]/30 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p className="text-grey-muted text-sm">
-                    &copy; {new Date().getFullYear()} RecruitAI. Всички права запазени.
+                    &copy; {new Date().getFullYear()} RecruitAI. {t('footer.rights', 'Всички права запазени.')}
                 </p>
                 <div className="flex gap-6 text-sm">
-                    <a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">Блог</a>
-                    <a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">Поддръжка</a>
+                    <a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">{t('footer.blog', 'Блог')}</a>
+                    <a href="#" className="text-grey-muted hover:text-brand-blue transition-colors">{t('footer.support', 'Поддръжка')}</a>
                 </div>
             </div>
         </footer>

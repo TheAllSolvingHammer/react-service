@@ -21,6 +21,15 @@
     "activeView": "Active view",
     "toggleHint": "Switch how AI and recruiters see your profile"
   },
+  "applications": {
+    "title": "My Applications",
+    "subtitlePro": "Track the status of your job applications.",
+    "subtitleAcademic": "Track the status of your university applications.",
+    "history": "Application History",
+    "noActive": "No active applications",
+    "noActiveDesc": "You haven't submitted any applications yet. Check out the dashboard for opportunities!",
+    "appliedOn": "Applied on: "
+  },
   "dashboard": {
     "welcome": "Welcome",
     "candidateDefault": "Candidate",
@@ -152,7 +161,38 @@
     "searchPlaceholder": "Filter by name, specialty, or technology...",
     "noCandidatesFound": "No candidates found matching these criteria.",
     "matchSuffix": "% match",
-    "appliedPrefix": "Applied: "
+    "appliedPrefix": "Applied: ",
+    "welcome": "Command Center",
+    "subtitle": "Manage your postings and discover the best talent through AI analysis.",
+    "activeJobs": "Active Jobs",
+    "totalApplicants": "Total Applicants",
+    "newApplicants": "New to Review",
+    "topCandidates": "Top Candidates (AI Recommended)",
+    "noApplicantsYet": "You haven't received any applications yet.",
+    "quickActions": "Quick Actions",
+    "appliedOn": "Applied on",
+    "statusWorkflow": "Hiring Process",
+    "statusRejected": "Application is rejected",
+    "aiAnalysis": "AI Match Analysis",
+    "matchedSkills": "Matched Skills",
+    "applicationDocuments": "Attached Documents"
+  },
+  "recruiterOpps": {
+    "title": "My Opportunities",
+    "subtitle": "Manage your active opportunities and campaigns.",
+    "create": "Create New Opportunity",
+    "search": "Search opportunities...",
+    "noOpps": "No opportunities found",
+    "noOppsDesc": "Try a different search or create a new opportunity.",
+    "colRole": "Role / Title",
+    "colType": "Type",
+    "colLocation": "Location",
+    "colReqs": "Requirements",
+    "colActions": "Actions",
+    "active": "Active",
+    "view": "View",
+    "edit": "Edit",
+    "archive": "Archive"
   },
   "recruiterRanking": {
     "title": "Candidate Pipeline",
@@ -278,5 +318,19 @@
     "passwordMin": "Password must contain at least 6 characters",
     "passwordsMatch": "Passwords dont match",
     "otpLength": "The code must be exactly 6 characters"
+  },
+  "footer": {
+    "description": "Connecting talents with the best opportunities through innovative AI algorithms. Discover your future today.",
+    "quickLinks": "Quick links",
+    "aboutUs": "About us",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "faq": "FAQ",
+    "contacts": "Contacts",
+    "location": "Varna, Bulgaria",
+    "location2": "Technical University",
+    "rights": "All rights reserved.",
+    "blog": "Blog",
+    "support": "Support"
   }
 }

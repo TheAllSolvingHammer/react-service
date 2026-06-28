@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     Calendar, Code2, Edit3, ExternalLink, Mail, MapPin, Save,
-    ShieldCheck, X, PlusCircle, FileText, Download
+    ShieldCheck, X, PlusCircle, FileText, Download, Trash2
 } from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import AddExperienceModal from './AddExperienceModal';
@@ -12,7 +12,7 @@ import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Experience, Profile} from '@/lib/types';
 import {PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer} from 'recharts';
-import { fetchCandidateExperiences } from '@/lib/experiences';
+import { fetchCandidateExperiences, deleteCandidateExperience } from '@/lib/experiences';
 import {uploadCandidateCv} from "@/lib/profileApi.ts";
 
 const ensureUrl = (url: string | undefined): string => {
@@ -63,11 +63,20 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
     });
 
     const loadExperiences = () => {
-        if (profile?.id) {
-            fetchCandidateExperiences(profile.id)
-                .then(setExperiences)
-                .catch(err => console.error("Грешка при зареждане на опит:", err))
-                .finally(() => setLoadingExp(false));
+        if (!profile?.id) return;
+        setLoadingExp(true);
+        fetchCandidateExperiences(profile.id)
+            .then(data => setExperiences(data))
+            .catch(err => console.error(t('profile.errorLoadingExp', 'Грешка при зареждане на опит:'), err))
+            .finally(() => setLoadingExp(false));
+    };
+
+    const handleDeleteExperience = async (expId: string) => {
+        try {
+            await deleteCandidateExperience(expId);
+            setExperiences(prev => prev.filter(e => e.id !== expId));
+        } catch (error) {
+            console.error('Failed to delete experience:', error);
         }
     };
 
@@ -421,15 +430,30 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                     <div key={exp.id} className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-brand-blue transition-colors">
                                         <div className="absolute w-3 h-3 bg-brand-blue rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
                                         <div className="flex justify-between items-start mb-1">
-                                            <h3 className="text-lg font-bold text-grey-dark">{exp.title}</h3>
-                                            <Badge variant="outline" className="text-xs">{exp.mode === 'PROFESSIONAL' || exp.mode === 'Professional' ? 'Професионален' : exp.mode === 'ACADEMIC' || exp.mode === 'Academic' ? 'Академичен' : exp.mode || ''}</Badge>
+                                            <div className="flex flex-col">
+                                                <h3 className="text-lg font-bold text-grey-dark flex items-center gap-2">
+                                                    {exp.title}
+                                                    <Badge variant="outline" className="text-xs">{exp.mode === 'PROFESSIONAL' || exp.mode === 'Professional' ? 'Професионален' : exp.mode === 'ACADEMIC' || exp.mode === 'Academic' ? 'Академичен' : exp.mode || ''}</Badge>
+                                                </h3>
+                                                <p className="text-sm text-grey-dark font-semibold">{exp.organization}</p>
+                                            </div>
+                                            {isEditing && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteExperience(exp.id)}
+                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                    title={t('profile.deleteExperience', 'Изтрий опита')}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
                                             <span className="flex items-center gap-1">
                                                 <Calendar className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-grey-dark">{exp.organization}</p>
                                         <p className="text-sm text-grey-muted italic mt-1">{exp.description}</p>
                                     </div>
                                 ))

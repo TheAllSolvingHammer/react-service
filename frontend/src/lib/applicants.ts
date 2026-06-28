@@ -34,9 +34,17 @@ export async function fetchRecruiterApplicants(): Promise<Applicant[]> {
             let matchScore = 0;
             let skills: string[] = [];
 
+            let email = '';
+            
             try {
-                const profileRes = await apiClient.get(`/api/v1/profiles/candidates/${candidateUserId}`);
+                const [profileRes, identityRes] = await Promise.all([
+                    apiClient.get(`/api/v1/profiles/candidates/${candidateUserId}`).catch(() => ({ data: {} })),
+                    apiClient.get(`/api/v1/identity/users/${candidateUserId}`).catch(() => ({ data: {} }))
+                ]);
+                
                 profile = profileRes.data;
+                email = identityRes.data?.email || profile.email || '';
+                
                 const skillIds = Array.isArray(profile.skillNames)
                     ? profile.skillNames.map(String)
                     : profile.skillNames
@@ -63,7 +71,8 @@ export async function fetchRecruiterApplicants(): Promise<Applicant[]> {
                 id: application.applicationId || candidateUserId,
                 name: `${firstName} ${lastName}`.trim(),
                 role: String(profile.headline ?? application.title ?? 'Кандидат'),
-                email: String(profile.email ?? ''),
+                email: email,
+                location: String(profile.location || ''),
                 matchScore,
                 status: mapApplicantStatus(application.status),
                 appliedDate: application.appliedAtDate || application.appliedAt

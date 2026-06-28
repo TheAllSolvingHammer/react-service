@@ -40,6 +40,7 @@ async function mapOpportunity(opp: Record<string, unknown>): Promise<Opportunity
         company: String(opp.institutionName ?? opp.companyName ?? ''),
         location: opp.location ? String(opp.location) : undefined,
         description: opp.description ? String(opp.description) : undefined,
+        type: opp.type ? String(opp.type) : undefined,
         requirements: requirementList,
         matchScore: 0,
         tags: requirementList.slice(0, 3),
