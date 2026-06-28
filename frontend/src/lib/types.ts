@@ -19,6 +19,10 @@ export interface Profile {
     isCompleted?: boolean;
     isUniversity?: boolean;
     sectorType?: string;
+    resumeUrl?: string;
+    portfolioUrl?: string;
+    linkedinUrl?: string;
+    experience?: Experience[];
 }
 
 export interface Experience {

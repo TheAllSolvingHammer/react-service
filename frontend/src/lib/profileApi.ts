@@ -57,3 +57,17 @@ export async function createInstitutionProfile(data: any) {
     const response = await apiClient.post('/api/v1/profiles/institutions', data);
     return response.data;
 }
+
+export async function uploadCandidateCv(file: File, candidateId: string): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('candidateId', candidateId);
+
+    const response = await apiClient.post('/api/v1/opportunities/files/upload', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+
+    return response.data;
+}

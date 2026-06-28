@@ -323,7 +323,7 @@ export default function App() {
             />
 
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {currentRole === 'candidate' && (
+                {profile && currentRole === 'candidate' && (
                     <>
                         {currentTab === 'dashboard' && candidateMode === 'professional' && (
                             <CandidateDashboard
@@ -343,13 +343,25 @@ export default function App() {
                                 profile={profile}
                                 onSaveProfile={async (updatedData) => {
                                     try {
-                                        // Тук ще извикаме бекенда, когато ендпоинтът е готов
-                                        // await saveCandidateProfile(profile.id, updatedData);
+                                        // 1. Форматираме данните за новото DTO
+                                        const payload = {
+                                            firstName: updatedData.name?.split(' ')[0],
+                                            lastName: updatedData.name?.split(' ').slice(1).join(' '),
+                                            headline: updatedData.role,
+                                            biography: updatedData.bio,
+                                            resumeUrl: updatedData.resumeUrl,
+                                            portfolioUrl: updatedData.portfolioUrl,
+                                            linkedinUrl: updatedData.linkedinUrl,
+                                        };
 
-                                        // Засега обновяваме локалния стейт, за да видим промените веднага
+                                        // 2. Извикваме ендпоинта за ЪПДЕЙТ (когато го направиш в бекенда)
+                                        await apiClient.put('/api/v1/profiles/candidates/update', payload);
+
+                                        // 3. Обновяваме локалния стейт
                                         setProfile(prev => prev ? { ...prev, ...updatedData } : prev);
                                     } catch (error) {
                                         console.error("Грешка при запазване на профила", error);
+                                        throw error;
                                     }
                                 }}
                             />
@@ -372,7 +384,7 @@ export default function App() {
                     </>
                 )}
 
-                {currentRole === 'recruiter' && (
+                {profile && currentRole === 'recruiter' && (
                     <>
                         {currentTab === 'recruiter_dashboard' && <RecruiterDashboard applicants={applicants} opportunityCount={opportunityCount} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
                         {currentTab === 'recruiter_applicants' && <RecruiterRanking applicants={applicants} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
@@ -380,12 +392,12 @@ export default function App() {
                     </>
                 )}
 
-                {currentTab === 'recruiter_create_opportunity' && !error && (
+                {currentTab === 'recruiter_create_opportunity' && !error && profile && (
                     <RecruiterCreateOpportunity onBack={() => setCurrentTab('recruiter_dashboard')} profile={profile} />
                 )}
 
                 {(error || currentTab === 'error') && (
-                    <GenericErrorPage 
+                    <GenericErrorPage
                         message={error || undefined}
                         onHome={() => {
                             setError(null);

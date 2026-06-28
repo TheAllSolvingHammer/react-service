@@ -1,6 +1,9 @@
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Calendar, Code2, Edit3, ExternalLink, Mail, MapPin, Save, ShieldCheck, X, PlusCircle} from 'lucide-react';
+import {
+    Calendar, Code2, Edit3, ExternalLink, Mail, MapPin, Save,
+    ShieldCheck, X, PlusCircle, FileText, Download
+} from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import AddExperienceModal from './AddExperienceModal';
 import {Button} from "@/components/ui/button";
@@ -10,6 +13,8 @@ import {Textarea} from "@/components/ui/textarea";
 import {Experience, Profile} from '@/lib/types';
 import {PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer} from 'recharts';
 import { fetchCandidateExperiences } from '@/lib/experiences';
+import {uploadCandidateCv} from "@/lib/profileApi.ts";
+
 
 interface CandidateProfileProps {
     profile: Profile;
@@ -24,13 +29,15 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
     const [loadingExp, setLoadingExp] = useState(true);
     const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
 
-    // Локален стейт за формата при редакция
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
     const [editForm, setEditForm] = useState({
         name: profile?.name || '',
         role: profile?.role || '',
         bio: profile?.bio || '',
-        githubUrl: '',
-        linkedinUrl: ''
+        portfolioUrl: profile?.portfolioUrl || '',
+        linkedinUrl: profile?.linkedinUrl || '',
+        resumeUrl: profile?.resumeUrl || ''
     });
 
     const loadExperiences = () => {
@@ -46,24 +53,37 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
         loadExperiences();
     }, [profile?.id]);
 
-    // Рестартираме формата, ако профилът се промени отвън
+    // Рестартираме формата, ако профилът се промени отвън или отменим редакцията
     useEffect(() => {
         setEditForm({
             name: profile?.name || '',
             role: profile?.role || '',
-            bio: profile?.bio || t('profile.defaultBio', 'Страстен софтуерен инженер с опит в изграждането на мащабируеми уеб приложения...'),
-            githubUrl: '',
-            linkedinUrl: ''
+            bio: profile?.bio || t('profile.defaultBio', 'Страстен софтуерен инженер...'),
+            portfolioUrl: profile?.portfolioUrl || '',
+            linkedinUrl: profile?.linkedinUrl || '',
+            resumeUrl: profile?.resumeUrl || ''
         });
+        setSelectedFile(null);
     }, [profile, t]);
 
+    // 3. ОБНОВЕНА ЛОГИКА ЗА ЗАПАЗВАНЕ (с качване на CV)
     const handleSave = async () => {
         setIsSaving(true);
         try {
+            let finalResumeUrl = editForm.resumeUrl;
+
+            // Ако има избран нов файл, първо го качваме
+            if (selectedFile && profile?.id) {
+                finalResumeUrl = await uploadCandidateCv(selectedFile, profile.id);
+            }
+
+            const updatedData = { ...editForm, resumeUrl: finalResumeUrl };
+
             if (onSaveProfile) {
-                await onSaveProfile(editForm);
+                await onSaveProfile(updatedData);
             }
             setIsEditing(false);
+            setSelectedFile(null);
         } catch (error) {
             console.error(t('profile.saveError', 'Грешка при запазване:'), error);
         } finally {
@@ -87,11 +107,9 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     };
 
-
     return (
         <div className="space-y-6 animate-fade-in max-w-6xl mx-auto pb-12 relative">
-            <div
-                className="absolute top-0 right-[-10%] w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px] -z-10"></div>
+            <div className="absolute top-0 right-[-10%] w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px] -z-10"></div>
 
             <div className="flex justify-between items-center mb-2">
                 <h1 className="text-3xl font-display font-extrabold text-grey-dark tracking-tight">
@@ -102,7 +120,10 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                     <div className="flex gap-2">
                         <Button
                             variant="ghost"
-                            onClick={() => setIsEditing(false)}
+                            onClick={() => {
+                                setIsEditing(false);
+                                setSelectedFile(null); // Изчиства файла при отказ
+                            }}
                             className="text-grey-muted hover:text-grey-dark"
                         >
                             <X className="w-4 h-4 mr-2"/> {t('profile.cancel', 'Отказ')}
@@ -130,14 +151,11 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* ЛЯВА КОЛОНА */}
                 <div className="lg:col-span-4 space-y-6">
-                    <Card
-                        className="rounded-3xl border-0 shadow-lg bg-white overflow-hidden relative dark:bg-slate-900">
+                    <Card className="rounded-3xl border-0 shadow-lg bg-white overflow-hidden relative dark:bg-slate-900">
                         <div className="h-24 bg-gradient-to-r from-brand-blue to-purple-600"></div>
                         <div className="px-6 pb-6 text-center relative">
-                            <div
-                                className="w-24 h-24 bg-white dark:bg-slate-900 rounded-full p-1 mx-auto -mt-12 mb-3 shadow-md relative z-10">
-                                <div
-                                    className="w-full h-full rounded-full bg-gradient-to-br from-brand-blue to-purple-600 text-white flex items-center justify-center text-3xl font-black shadow-inner">
+                            <div className="w-24 h-24 bg-white dark:bg-slate-900 rounded-full p-1 mx-auto -mt-12 mb-3 shadow-md relative z-10">
+                                <div className="w-full h-full rounded-full bg-gradient-to-br from-brand-blue to-purple-600 text-white flex items-center justify-center text-3xl font-black shadow-inner">
                                     {getInitials(editForm.name)}
                                 </div>
                             </div>
@@ -173,24 +191,22 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                     <Mail className="w-4 h-4 text-brand-blue"/> {profile?.email || 'email@example.com'}
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <MapPin
-                                        className="w-4 h-4 text-brand-blue"/> {profile?.location || t('profile.defaultLocation', 'София, България')}
+                                    <MapPin className="w-4 h-4 text-brand-blue"/> {profile?.location || t('profile.defaultLocation', 'София, България')}
                                 </div>
                             </div>
                         </div>
                     </Card>
 
-                    <Card
-                        className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
+                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
                         <CardContent className="p-5">
                             {isEditing ? (
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-2">
                                         <Code2 className="w-5 h-5 text-grey-muted"/>
                                         <Input
-                                            placeholder="GitHub URL"
-                                            value={editForm.githubUrl}
-                                            onChange={(e) => setEditForm({...editForm, githubUrl: e.target.value})}
+                                            placeholder="GitHub/Portfolio URL"
+                                            value={editForm.portfolioUrl}
+                                            onChange={(e) => setEditForm({...editForm, portfolioUrl: e.target.value})}
                                         />
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -204,11 +220,11 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                 </div>
                             ) : (
                                 <div className="flex gap-4 justify-center">
-                                    <a href="#"
+                                    <a href={profile?.portfolioUrl || '#'} target="_blank" rel="noreferrer"
                                        className="w-12 h-12 rounded-xl bg-[#fcf8fa] dark:bg-slate-800 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black text-grey-dark flex items-center justify-center transition-all shadow-sm border border-[#c6c6cd]/30 group">
                                         <Code2 className="w-6 h-6 group-hover:scale-110 transition-transform"/>
                                     </a>
-                                    <a href="#"
+                                    <a href={profile?.linkedinUrl || '#'} target="_blank" rel="noreferrer"
                                        className="w-12 h-12 rounded-xl bg-[#fcf8fa] dark:bg-slate-800 hover:bg-[#0077b5] hover:text-white text-grey-dark flex items-center justify-center transition-all shadow-sm border border-[#c6c6cd]/30 group">
                                         <ExternalLink className="w-6 h-6 group-hover:scale-110 transition-transform"/>
                                     </a>
@@ -217,25 +233,69 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                         </CardContent>
                     </Card>
 
-                    <Card
-                        className="rounded-3xl border border-[#c6c6cd]/30 shadow-md bg-white dark:bg-slate-900 overflow-hidden relative">
+                    {/* 4. НОВАТА СЕКЦИЯ ЗА CV / РЕЗЮМЕ */}
+                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-lg font-bold text-grey-dark flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-brand-blue" />
+                                {t('profile.resume', 'Резюме / CV')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {isEditing ? (
+                                <div className="space-y-3">
+                                    <Input
+                                        type="file"
+                                        accept=".pdf,.doc,.docx"
+                                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                                        className="file:bg-brand-blue file:text-white file:border-0 file:rounded-lg file:px-3 file:py-1 file:mr-3 file:text-xs file:font-bold hover:file:bg-brand-blue-dark text-sm bg-white dark:bg-slate-800 cursor-pointer"
+                                    />
+                                    {selectedFile && (
+                                        <p className="text-xs text-professional-emerald font-bold flex items-center gap-1">
+                                            Готов за качване: {selectedFile.name}
+                                        </p>
+                                    )}
+                                    {!selectedFile && editForm.resumeUrl && (
+                                        <p className="text-xs text-grey-muted italic">
+                                            Изберете нов файл, ако искате да замените текущото си CV.
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex justify-center">
+                                    {profile?.resumeUrl ? (
+                                        <a
+                                            href={profile.resumeUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 px-4 py-2 bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue font-bold rounded-xl transition-colors w-full justify-center"
+                                        >
+                                            <Download className="w-4 h-4" /> Изтегли CV
+                                        </a>
+                                    ) : (
+                                        <p className="text-sm text-grey-muted bg-slate-50 dark:bg-slate-800 p-3 rounded-xl text-center w-full">
+                                            Все още няма качено CV.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="rounded-3xl border border-[#c6c6cd]/30 shadow-md bg-white dark:bg-slate-900 overflow-hidden relative">
                         <CardHeader className="pb-0 relative z-10">
-                            <CardTitle
-                                className="text-lg font-bold text-grey-dark text-center">{t('profile.skillProfile', 'Профил на Уменията')}</CardTitle>
+                            <CardTitle className="text-lg font-bold text-grey-dark text-center">{t('profile.skillProfile', 'Профил на Уменията')}</CardTitle>
                         </CardHeader>
                         <CardContent className="h-72 flex items-center justify-center relative z-10 pt-4">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RadarChart cx="50%" cy="50%" outerRadius="65%" data={skillsData}>
-                                    <PolarGrid stroke="#e2e8f0" className="dark:stroke-slate-700"
-                                               strokeDasharray="3 3"/>
-
+                                    <PolarGrid stroke="#e2e8f0" className="dark:stroke-slate-700" strokeDasharray="3 3"/>
                                     <PolarAngleAxis
                                         dataKey="subject"
                                         tick={{fill: '#64748b', fontSize: 12, fontWeight: 700}}
                                         className="dark:text-slate-300"
                                     />
                                     <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false}/>
-
                                     <Radar
                                         name="Умения"
                                         dataKey="A"
@@ -254,8 +314,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                 <div className="lg:col-span-8 space-y-6">
                     <Card className="rounded-3xl border-0 shadow-md bg-white dark:bg-slate-900">
                         <CardHeader>
-                            <CardTitle
-                                className="text-xl font-bold text-grey-dark">{t('profile.aboutMe', 'За мен')}</CardTitle>
+                            <CardTitle className="text-xl font-bold text-grey-dark">{t('profile.aboutMe', 'За мен')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {isEditing ? (
@@ -273,16 +332,13 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                         </CardContent>
                     </Card>
 
-                    <Card
-                        className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
+                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
                         <CardHeader className="pb-3">
-                            <CardTitle
-                                className="text-lg font-bold text-grey-dark">{t('profile.keyTech', 'Ключови Технологии')}</CardTitle>
+                            <CardTitle className="text-lg font-bold text-grey-dark">{t('profile.keyTech', 'Ключови Технологии')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
                             {displaySkills.map((skill) => (
-                                <Badge key={skill}
-                                       className="bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20 px-3 py-1.5 rounded-lg border-0 font-bold shadow-sm">
+                                <Badge key={skill} className="bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20 px-3 py-1.5 rounded-lg border-0 font-bold shadow-sm">
                                     {skill}
                                 </Badge>
                             ))}
@@ -320,9 +376,9 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                             <Badge variant="outline" className="text-xs">{exp.mode}</Badge>
                                         </div>
                                         <div className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
-                        <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
-                        </span>
+                                            <span className="flex items-center gap-1">
+                                                <Calendar className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
+                                            </span>
                                         </div>
                                         <p className="text-sm text-grey-dark">{exp.organization}</p>
                                         <p className="text-sm text-grey-muted italic mt-1">{exp.description}</p>
