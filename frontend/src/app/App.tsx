@@ -322,22 +322,35 @@ export default function App() {
     // ==========================================
     // 4. MAIN APPLICATION ROUTING
     // ==========================================
-    return (
-        <div className="min-h-screen flex flex-col bg-transparent relative overflow-x-hidden z-10">
-            {isRestricted && currentRole !== 'admin' && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl p-8 max-w-md text-center shadow-2xl border border-red-200">
-                        <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                        <h2 className="text-2xl font-bold text-grey-dark mb-2">Достъпът е ограничен</h2>
-                        <p className="text-grey-muted mb-6">
-                            Вашият акаунт е ограничен от системен администратор. Моля, свържете се с поддръжката за повече информация.
-                        </p>
-                        <button onClick={handleLogout} className="bg-brand-blue text-white font-bold py-3 px-6 rounded-xl shadow-md hover:bg-brand-blue-dark transition-all">
-                            Изход
+    
+    if (isRestricted && currentRole !== 'admin') {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-[#f0edef] dark:from-slate-900 dark:to-slate-800 p-4 relative overflow-hidden z-10">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-500/10 dark:bg-red-500/5 blur-[120px] rounded-full pointer-events-none"></div>
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-10 max-w-lg w-full text-center shadow-2xl border border-red-200 dark:border-red-900/50 relative z-20">
+                    <div className="w-24 h-24 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <AlertCircle className="w-12 h-12 text-red-500 dark:text-red-400" />
+                    </div>
+                    <h2 className="text-3xl font-display font-extrabold text-grey-dark dark:text-white mb-4">Достъпът е ограничен</h2>
+                    <p className="text-grey-muted dark:text-slate-400 mb-8 text-lg leading-relaxed">
+                        Вашият акаунт е временно ограничен от системен администратор поради нарушение на нашите условия. 
+                        Ако смятате, че това е грешка, моля, свържете се с екипа по поддръжка за съдействие.
+                    </p>
+                    <div className="space-y-4">
+                        <button onClick={handleLogout} className="w-full bg-red-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-red-600/20 hover:bg-red-700 hover:scale-[1.02] transition-all duration-300">
+                            Изход от профила
+                        </button>
+                        <button className="w-full bg-transparent text-grey-muted dark:text-slate-400 font-semibold py-4 px-6 rounded-xl hover:bg-grey-muted/10 dark:hover:bg-white/5 transition-all duration-300">
+                            Свържете се с поддръжка
                         </button>
                     </div>
                 </div>
-            )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen flex flex-col bg-transparent relative overflow-x-hidden z-10">
             
             <Header
                 currentRole={currentRole as any}

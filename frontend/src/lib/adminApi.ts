@@ -4,7 +4,7 @@ export const adminApi = {
     // Users
     async getAllUsers() {
         const response = await apiClient.get('/api/v1/admin/users');
-        return response.data;
+        return Array.isArray(response.data) ? response.data : (response.data?.users || response.data?.content || []);
     },
 
     async toggleUserRestriction(userId: string, isRestricted: boolean) {
@@ -15,7 +15,7 @@ export const adminApi = {
     // Skills
     async getAllSkills() {
         const response = await apiClient.get('/api/v1/admin/skills');
-        return response.data;
+        return Array.isArray(response.data) ? response.data : (response.data?.skills || response.data?.content || []);
     },
 
     async createSkill(name: string) {
@@ -30,7 +30,7 @@ export const adminApi = {
     // Tags
     async getAllTags() {
         const response = await apiClient.get('/api/v1/admin/skills/tags');
-        return response.data;
+        return Array.isArray(response.data) ? response.data : (response.data?.tags || response.data?.content || []);
     },
 
     async createTag(name: string) {

@@ -53,12 +53,13 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
             };
 
             const response = await apiClient.post('/api/v1/auth/login', payload);
-            const { token, isRestricted } = response.data;
+            const token = response.data.token;
+            const isRestrictedUser = response.data.restricted === true || response.data.isRestricted;
             const decodedToken = parseJwt(token);
 
             if (decodedToken) {
                 localStorage.setItem('jwt_token', token);
-                localStorage.setItem('is_restricted', isRestricted ? 'true' : 'false');
+                localStorage.setItem('is_restricted', isRestrictedUser ? 'true' : 'false');
 
                 const backendRole = decodedToken.role.toUpperCase();
                 const frontendRole = backendRole === 'ADMIN'
