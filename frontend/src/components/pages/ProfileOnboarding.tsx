@@ -19,13 +19,13 @@ interface ProfileOnboardingProps {
 
 export default function ProfileOnboarding({ profile, onComplete, onLogout }: ProfileOnboardingProps) {
     // Basic fields
-    const [firstName, setFirstName] = useState(profile.name?.split(' ')[0] || '');
-    const [lastName, setLastName] = useState(profile.name?.split(' ').slice(1).join(' ') || '');
-    const [middleName, setMiddleName] = useState('');
+    const [firstName, setFirstName] = useState(profile.firstName || profile.fullName?.split(' ')[0] || '');
+    const [lastName, setLastName] = useState(profile.lastName || profile.fullName?.split(' ').slice(1).join(' ') || '');
+    const [middleName, setMiddleName] = useState(profile.middleName || '');
 
     const [location, setLocation] = useState(profile.location || '');
-    const [headline, setHeadline] = useState(profile.role || '');
-    const [bio, setBio] = useState(profile.bio || '');
+    const [headline, setHeadline] = useState(profile.headline || '');
+    const [bio, setBio] = useState(profile.biography || '');
 
     // New fields for your updated DTO
     const [expectedSalary, setExpectedSalary] = useState('');
@@ -63,10 +63,17 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
             // Unlock the dashboard in React state!
             onComplete({
                 ...profile,
-                name: `${firstName} ${lastName}`,
+                firstName,
+                middleName: middleName.trim() === '' ? undefined : middleName,
+                lastName,
+                fullName: `${firstName} ${lastName}`.trim(),
                 location,
-                role: headline,
-                bio,
+                headline,
+                biography: bio,
+                birthday,
+                expectedSalary: expectedSalary ? parseFloat(expectedSalary) : undefined,
+                candidateType,
+                educationType,
                 isCompleted: true
             });
         } catch (err: any) {

@@ -4,10 +4,13 @@ import CandidateDashboard from '@/components/pages/CandidateDashboard';
 import CandidateProfile from '@/components/pages/CandidateProfile';
 import CandidateOpportunities from '@/components/pages/CandidateOpportunities';
 import CandidateAiMatches from '@/components/pages/CandidateAiMatches';
+import CandidateApplications from '@/components/pages/CandidateApplications';
 import RecruiterDashboard from '@/components/pages/RecruiterDashboard';
 import RecruiterRanking from '@/components/pages/RecruiterRanking';
 import RecruiterCandidateDetail from '@/components/pages/RecruiterCandidateDetail';
-
+import RecruiterOpportunities from '@/components/pages/RecruiterOpportunities';
+import { AdminDashboard } from '@/components/pages/AdminDashboard';
+import { Footer } from '@/components/shared/Footer';
 // Auth & Onboarding Components
 import Login from '@/components/pages/Login';
 import Register from '@/components/pages/Register';
@@ -16,14 +19,16 @@ import ProfileOnboarding from '@/components/pages/ProfileOnboarding';
 import apiClient from '@/lib/axios';
 import { Profile, Opportunity, Applicant } from '@/lib/types';
 import { parseApiMode, CandidateMode } from '@/lib/mode';
-import { switchCandidateMode } from '@/lib/profileApi';
+import { switchCandidateMode, updateCandidateProfile } from '@/lib/profileApi';
 import {fetchOpportunitiesWithMatches, fetchOpportunityCount, updateApplicationStatus} from '@/lib/opportunities';
 import { fetchRecruiterApplicants } from '@/lib/applicants';
 import { resolveSkillNames } from '@/lib/skills';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, AlertCircle } from 'lucide-react';
 import AcademicDashboard from "@/components/pages/AcademicDashboard.tsx";
 import InstitutionOnboarding from "@/components/pages/InstitutionOnboarding.tsx";
 import ForgotPassword from "@/components/pages/ForgotPassword.tsx";
+import RecruiterCreateOpportunity from "@/components/pages/RecruiterCreateOpportunity.tsx";
+import GenericErrorPage from "@/components/pages/GenericErrorPage.tsx";
 
 
 
@@ -37,8 +42,9 @@ export default function App() {
     const [authView, setAuthView] = useState<'login' | 'register' | 'forgot-password'>('login');
 
     // App Navigation State
-    const [currentRole, setCurrentRole] = useState<'candidate' | 'recruiter'>(savedRole || 'candidate');
+    const [currentRole, setCurrentRole] = useState<'candidate' | 'recruiter' | 'admin'>(savedRole as 'candidate' | 'recruiter' | 'admin' || 'candidate');
     const [currentTab, setCurrentTab] = useState<string>('dashboard');
+    const [isRestricted, setIsRestricted] = useState<boolean>(localStorage.getItem('is_restricted') === 'true');
     const [candidateMode, setCandidateMode] = useState<CandidateMode>('professional');
     const [isSwitchingMode, setIsSwitchingMode] = useState(false);
 
@@ -66,9 +72,26 @@ export default function App() {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('user_role');
         localStorage.removeItem('user_id');
+        localStorage.removeItem('is_restricted');
         setIsAuthenticated(false);
         setProfile(null);
+        setIsRestricted(false);
     };
+
+    // Global Axios Error Interceptor
+    useEffect(() => {
+        const interceptor = apiClient.interceptors.response.use(
+            (response) => response,
+            (err) => {
+                if (err.response && (err.response.status === 403 || err.response.status === 500)) {
+                    setError(`Системна грешка (${err.response.status}). Възникна проблем при обработката на заявката.`);
+                    setCurrentTab('error');
+                }
+                return Promise.reject(err);
+            }
+        );
+        return () => apiClient.interceptors.response.eject(interceptor);
+    }, []);
 
     // Main Data Fetching Hook
     useEffect(() => {
@@ -76,6 +99,12 @@ export default function App() {
 
         setIsLoading(true);
         setError(null);
+
+        if (currentRole === 'admin') {
+            setIsLoading(false);
+            setProfile({ id: savedUserId, userId: savedUserId, name: 'Admin', role: 'ADMIN', isCompleted: true } as any);
+            return;
+        }
 
         const profileEndpoint = currentRole === 'recruiter'
             ? `/api/v1/profiles/institution/${savedUserId}`
@@ -97,7 +126,7 @@ export default function App() {
                     ...p,
                     id: p.id || savedUserId,
                     userId: savedUserId,
-                    name: p.firstName ? `${p.firstName} ${p.lastName}` : (p.displayName || p.fullName || 'Неизвестен Потребител'),
+                    name: p.firstName ? [p.firstName, p.middleName, p.lastName].filter(Boolean).join(' ') : (p.displayName || p.fullName || 'Неизвестен Потребител'),
                     role: p.headline || p.role || 'Специалист',
                     email: p.email || '',
                     location: p.location || '',
@@ -109,7 +138,8 @@ export default function App() {
                     educationType: p.educationType,
                     birthday: p.birthday,
                     currentMode: parseApiMode(p.currentMode),
-                    isCompleted: p.isCompleted !== undefined ? p.isCompleted : false
+                    isCompleted: p.isCompleted !== undefined ? p.isCompleted : false,
+                    isUniversity: p.isUniversity !== undefined ? p.isUniversity : (p.university !== undefined ? p.university : (p.sectorType === 'UNSPECIFIED' || false))
                 });
 
                 if (currentRole === 'candidate') {
@@ -121,9 +151,11 @@ export default function App() {
             .catch(err => {
                 console.error("Failed to load profile:", err);
                 if (err.response?.status === 404) {
+
                     setProfile({
                         id: savedUserId,
                         userId: savedUserId,
+                        // @ts-ignore
                         name: '',
                         role: '',
                         email: '',
@@ -134,7 +166,8 @@ export default function App() {
                         isCompleted: false
                     });
                 } else {
-                    setError("Неуспешна връзка с Profile Service. Моля, проверете конзолата на бекенда.");
+                    setError("Възникна системна грешка. Моля, опитайте по-късно.");
+                    setCurrentTab('error');
                 }
                 setIsLoading(false);
             });
@@ -206,12 +239,14 @@ export default function App() {
             return (
                 <Login
                     onNavigateToRegister={() => setAuthView('register')}
-                    onNavigateToForgotPassword={() => setAuthView('forgot-password')} // ДОБАВИ ТОВА
+                    onNavigateToForgotPassword={() => setAuthView('forgot-password')}
                     onLoginSuccess={() => {
                         setIsAuthenticated(true);
-                        const role = (localStorage.getItem('user_role') as 'candidate' | 'recruiter') || 'candidate';
+                        const role = (localStorage.getItem('user_role') as 'candidate' | 'recruiter' | 'admin') || 'candidate';
                         setCurrentRole(role);
-                        setCurrentTab(role === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
+                        const restricted = localStorage.getItem('is_restricted') === 'true';
+                        setIsRestricted(restricted);
+                        setCurrentTab(role === 'candidate' ? 'dashboard' : (role === 'admin' ? 'admin_dashboard' : 'recruiter_dashboard'));
                     }}
                 />
             );
@@ -247,32 +282,19 @@ export default function App() {
             <div className="min-h-screen flex flex-col items-center justify-center bg-transparent z-10 relative">
                 <Sparkles className="w-12 h-12 text-brand-blue animate-pulse mb-4" />
                 <h2 className="text-xl font-display font-bold text-grey-dark tracking-widest uppercase">Зареждане на данни...</h2>
-                <p className="text-sm text-grey-muted mt-2 font-mono">Connecting to API Gateway</p>
+                <p className="text-sm text-grey-muted mt-2 font-mono">Подготовка на работното пространство...</p>
             </div>
         );
     }
 
-    if (error || !profile) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-transparent z-10 relative text-center px-4">
-                <div className="bg-red-500/10 border border-red-500/20 text-red-600 p-6 rounded-2xl max-w-md backdrop-blur-md">
-                    <h2 className="text-lg font-bold mb-2">Грешка в системата</h2>
-                    <p className="text-sm">{error || "Профилът не беше открит."}</p>
-                    <button
-                        onClick={handleLogout}
-                        className="mt-4 px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-bold shadow-sm hover:bg-red-50"
-                    >
-                        Изход
-                    </button>
-                </div>
-            </div>
-        );
+    if (!profile && !error) {
+        return null;
     }
 
     // ==========================================
     // 3. PROFILE ONBOARDING GATE
     // ==========================================
-    if (profile && profile.isCompleted === false) {
+    if (!error && profile && profile.isCompleted === false && currentRole !== 'admin') {
 
         if (currentRole === 'recruiter') {
             return (
@@ -302,10 +324,25 @@ export default function App() {
     // ==========================================
     return (
         <div className="min-h-screen flex flex-col bg-transparent relative overflow-x-hidden z-10">
+            {isRestricted && currentRole !== 'admin' && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl p-8 max-w-md text-center shadow-2xl border border-red-200">
+                        <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-grey-dark mb-2">Достъпът е ограничен</h2>
+                        <p className="text-grey-muted mb-6">
+                            Вашият акаунт е ограничен от системен администратор. Моля, свържете се с поддръжката за повече информация.
+                        </p>
+                        <button onClick={handleLogout} className="bg-brand-blue text-white font-bold py-3 px-6 rounded-xl shadow-md hover:bg-brand-blue-dark transition-all">
+                            Изход
+                        </button>
+                    </div>
+                </div>
+            )}
+            
             <Header
-                currentRole={currentRole}
+                currentRole={currentRole as any}
                 setCurrentRole={(role) => {
-                    setCurrentRole(role);
+                    setCurrentRole(role as any);
                     setCurrentTab(role === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
                 }}
                 currentTab={currentTab}
@@ -317,7 +354,7 @@ export default function App() {
             />
 
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {currentRole === 'candidate' && (
+                {profile && currentRole === 'candidate' && (
                     <>
                         {currentTab === 'dashboard' && candidateMode === 'professional' && (
                             <CandidateDashboard
@@ -337,13 +374,15 @@ export default function App() {
                                 profile={profile}
                                 onSaveProfile={async (updatedData) => {
                                     try {
-                                        // Тук ще извикаме бекенда, когато ендпоинтът е готов
-                                        // await saveCandidateProfile(profile.id, updatedData);
+                                        const fullProfile = { ...profile, ...updatedData } as Profile;
+                                        await updateCandidateProfile(fullProfile);
 
-                                        // Засега обновяваме локалния стейт, за да видим промените веднага
-                                        setProfile(prev => prev ? { ...prev, ...updatedData } : prev);
+                                        // Update local state
+                                        const fullName = [fullProfile.firstName, fullProfile.middleName, fullProfile.lastName].filter(Boolean).join(' ');
+                                        setProfile(prev => prev ? { ...prev, ...fullProfile, fullName } : prev);
                                     } catch (error) {
                                         console.error("Грешка при запазване на профила", error);
+                                        throw error;
                                     }
                                 }}
                             />
@@ -363,17 +402,45 @@ export default function App() {
                                 opportunities={opportunities}
                             />
                         )}
+                        {currentTab === 'applications' && (
+                            <CandidateApplications
+                                profile={profile}
+                                candidateMode={candidateMode}
+                            />
+                        )}
                     </>
                 )}
 
-                {currentRole === 'recruiter' && (
+                {profile && currentRole === 'recruiter' && (
                     <>
                         {currentTab === 'recruiter_dashboard' && <RecruiterDashboard applicants={applicants} opportunityCount={opportunityCount} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
                         {currentTab === 'recruiter_applicants' && <RecruiterRanking applicants={applicants} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
+                        {currentTab === 'recruiter_my_opportunities' && <RecruiterOpportunities profile={profile} setCurrentTab={setCurrentTab} />}
                         {currentTab === 'recruiter_applicant_detail' && selectedApplicant && <RecruiterCandidateDetail applicant={selectedApplicant} onBack={() => setCurrentTab('recruiter_dashboard')} onUpdateStatus={handleUpdateApplicantStatus} />}
                     </>
                 )}
+
+                {currentTab === 'recruiter_create_opportunity' && !error && profile && (
+                    <RecruiterCreateOpportunity onBack={() => setCurrentTab('recruiter_dashboard')} profile={profile} />
+                )}
+
+                {currentRole === 'admin' && (
+                    <AdminDashboard />
+                )}
+
+                {(error || currentTab === 'error') && (
+                    <GenericErrorPage
+                        message={error || undefined}
+                        onHome={() => {
+                            setError(null);
+                            setCurrentTab(currentRole === 'candidate' ? 'dashboard' : 'recruiter_dashboard');
+                        }}
+                        onRetry={() => window.location.reload()}
+                    />
+                )}
             </main>
+            
+            <Footer />
         </div>
     );
 }

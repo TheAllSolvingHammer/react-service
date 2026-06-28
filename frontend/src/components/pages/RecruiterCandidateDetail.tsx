@@ -92,7 +92,7 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                                 className="w-full space-y-3 mt-2 text-sm text-grey-muted text-left bg-[#fcf8fa]/50 p-4 rounded-2xl border border-[#c6c6cd]/30">
                                 <div className="flex items-center gap-3">
                                     <Mail className="w-4 h-4 text-brand-blue"/>
-                                    <span className="truncate">{applicant.email}</span>
+                                    <span className="truncate">{applicant.email || 'Няма имейл'}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <MapPin className="w-4 h-4 text-brand-blue"/>
@@ -255,8 +255,12 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                         </CardHeader>
                         <CardContent className="p-6">
                             <div className="flex flex-col sm:flex-row gap-4">
-                                <Button
-                                    className="flex-1 bg-[#fcf8fa] hover:bg-[#f0edef] border border-[#c6c6cd]/40 text-grey-dark rounded-xl h-14 justify-start px-6 shadow-sm">
+                                <a
+                                    href={applicant.resumeUrl ? applicant.resumeUrl.replace(/http:\/\/[^/]+\/api/, '/api') : '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 bg-[#fcf8fa] hover:bg-[#f0edef] border border-[#c6c6cd]/40 text-grey-dark rounded-xl h-14 justify-start px-6 shadow-sm flex items-center transition-colors"
+                                >
                                     <div className="flex items-center gap-3 w-full">
                                         <div
                                             className="w-8 h-8 bg-brand-blue/10 text-brand-blue rounded-lg flex items-center justify-center shrink-0">
@@ -264,26 +268,11 @@ export default function RecruiterCandidateDetail({applicant, onBack, onUpdateSta
                                         </div>
                                         <div className="flex-1 text-left">
                                             <div className="text-sm font-bold">Автобиография (CV)</div>
-                                            <div className="text-xs text-grey-muted">PDF • 1.2 MB</div>
+                                            <div className="text-xs text-grey-muted">PDF</div>
                                         </div>
                                         <ExternalLink className="w-4 h-4 text-grey-muted"/>
                                     </div>
-                                </Button>
-
-                                <Button
-                                    className="flex-1 bg-[#fcf8fa] hover:bg-[#f0edef] border border-[#c6c6cd]/40 text-grey-dark rounded-xl h-14 justify-start px-6 shadow-sm">
-                                    <div className="flex items-center gap-3 w-full">
-                                        <div
-                                            className="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center shrink-0">
-                                            <Mail className="w-4 h-4"/>
-                                        </div>
-                                        <div className="flex-1 text-left">
-                                            <div className="text-sm font-bold">Мотивационно писмо</div>
-                                            <div className="text-xs text-grey-muted">Текст</div>
-                                        </div>
-                                        <ExternalLink className="w-4 h-4 text-grey-muted"/>
-                                    </div>
-                                </Button>
+                                </a>
                             </div>
                         </CardContent>
                     </Card>

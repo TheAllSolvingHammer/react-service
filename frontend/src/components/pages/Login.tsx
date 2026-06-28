@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import apiClient from '@/lib/axios';
 import { parseJwt } from "@/lib/utils.ts";
+import AuthToolbar from '@/components/shared/AuthToolbar';
 
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -52,16 +53,19 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
             };
 
             const response = await apiClient.post('/api/v1/auth/login', payload);
-            const { token } = response.data;
+            const { token, isRestricted } = response.data;
             const decodedToken = parseJwt(token);
 
             if (decodedToken) {
                 localStorage.setItem('jwt_token', token);
+                localStorage.setItem('is_restricted', isRestricted ? 'true' : 'false');
 
                 const backendRole = decodedToken.role.toUpperCase();
-                const frontendRole = (backendRole === 'INSTITUTION' || backendRole === 'RECRUITER')
-                    ? 'recruiter'
-                    : 'candidate';
+                const frontendRole = backendRole === 'ADMIN'
+                    ? 'admin'
+                    : (backendRole === 'INSTITUTION' || backendRole === 'RECRUITER')
+                        ? 'recruiter'
+                        : 'candidate';
 
                 localStorage.setItem('user_role', frontendRole);
                 localStorage.setItem('user_id', decodedToken.userId);
@@ -86,6 +90,7 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+            <AuthToolbar />
             <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-blue/20 rounded-full blur-[100px]"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-academic-purple/20 rounded-full blur-[100px]"></div>
 
@@ -124,7 +129,7 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                             <div className="space-y-2 relative">
-                                <Label htmlFor="username" className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.email')}</Label>
+                                <Label htmlFor="username" className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('auth.username', 'Потребителско име')}</Label>
                                 <div className="relative">
                                     <Input
                                         id="username"

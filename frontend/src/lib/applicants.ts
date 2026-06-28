@@ -71,6 +71,7 @@ export async function fetchRecruiterApplicants(): Promise<Applicant[]> {
                     : new Date().toLocaleDateString('bg-BG'),
                 skills,
                 candidateMode: currentMode,
+                resumeUrl: String(profile.resumeUrl ?? ''),
             } satisfies Applicant;
         })
     );

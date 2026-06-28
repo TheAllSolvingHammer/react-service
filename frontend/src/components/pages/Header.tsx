@@ -6,8 +6,8 @@ import ModeToggle from '@/components/shared/ModeToggle';
 import {CandidateMode} from '@/lib/mode';
 
 interface HeaderProps {
-    currentRole: 'candidate' | 'recruiter';
-    setCurrentRole: (role: 'candidate' | 'recruiter') => void;
+    currentRole: 'candidate' | 'recruiter' | 'admin';
+    setCurrentRole: (role: 'candidate' | 'recruiter' | 'admin') => void;
     currentTab: string;
     setCurrentTab: (tab: string) => void;
     candidateMode: CandidateMode;
@@ -45,21 +45,29 @@ export default function Header({
     const navItems = currentRole === 'candidate'
         ? [
             {id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard},
+            {id: 'applications', label: t('nav.applications', 'Кандидатствания'), icon: ListFilter},
             {id: 'profile', label: t('nav.profile'), icon: User},
             {id: 'opportunities', label: t('nav.opportunities'), icon: Search},
             {id: 'aimatches', label: t('nav.aiMatches'), icon: Sparkles},
         ]
         : [
             {id: 'recruiter_dashboard', label: t('nav.recruiterDashboard'), icon: LayoutDashboard},
+            {id: 'recruiter_my_opportunities', label: t('nav.recruiterOpportunities', 'Обяви'), icon: Search},
             {id: 'recruiter_applicants', label: t('nav.pipeline'), icon: ListFilter},
         ];
+
+    if (currentRole === 'admin') {
+        navItems.splice(0, navItems.length, ...[
+            {id: 'admin_dashboard', label: 'Админ Панел', icon: LayoutDashboard}
+        ]);
+    }
 
     return (
         <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-[#c6c6cd]/30 shadow-xs dark:bg-slate-950/70 dark:border-white/10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
 
                 <div className="flex items-center gap-2 cursor-pointer shrink-0"
-                     onClick={() => setCurrentTab(currentRole === 'candidate' ? 'dashboard' : 'recruiter_dashboard')}>
+                     onClick={() => setCurrentTab(currentRole === 'candidate' ? 'dashboard' : (currentRole === 'admin' ? 'admin_dashboard' : 'recruiter_dashboard'))}>
                     <div className="w-8 h-8 bg-gradient-to-br from-brand-blue via-indigo-500 to-academic-purple rounded-xl flex items-center justify-center shadow-inner shadow-blue-900/20">
                         <Sparkles className="w-5 h-5 text-white"/>
                     </div>

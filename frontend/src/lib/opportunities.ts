@@ -37,7 +37,7 @@ async function mapOpportunity(opp: Record<string, unknown>): Promise<Opportunity
     return {
         id: String(opp.id),
         title: String(opp.title ?? ''),
-        company: String(opp.location ?? 'RecruitAI'), // Засега ползваме location
+        company: String(opp.institutionName ?? opp.companyName ?? ''),
         location: opp.location ? String(opp.location) : undefined,
         description: opp.description ? String(opp.description) : undefined,
         requirements: requirementList,
@@ -54,7 +54,7 @@ export async function fetchOpportunities(searchTerm = '', mode: string = 'PROFES
             size: size,
             sortBy: 'createdAt',
             direction: 'DESC',
-            nameFilter: searchTerm || undefined,
+            nameFilter: searchTerm,
             mode: mode.toUpperCase()
         }
     });
@@ -114,5 +114,10 @@ export async function updateApplicationStatus(applicationId: string, status: str
 
 export async function fetchMyApplications(candidateId: string) {
     const response = await apiClient.get(`/api/v1/opportunities/applications/candidate/${candidateId}`);
+    return response.data;
+}
+
+export async function createOpportunity(opportunityData: any): Promise<any> {
+    const response = await apiClient.post('/api/v1/opportunities', opportunityData);
     return response.data;
 }
