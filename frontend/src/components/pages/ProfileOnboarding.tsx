@@ -53,7 +53,7 @@ export default function ProfileOnboarding({ profile, onComplete, onLogout }: Pro
             expectedSalary: expectedSalary ? parseFloat(expectedSalary) : null,
             candidateType,
             educationType,
-            skills: []
+            profileSkills: []
         };
 
         try {
