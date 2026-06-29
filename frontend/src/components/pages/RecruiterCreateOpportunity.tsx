@@ -17,8 +17,6 @@ interface RecruiterCreateOpportunityProps {
 
 export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterCreateOpportunityProps) {
 
-    // @ts-ignore
-    //todo use translation here
     const {t} = useTranslation();
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -87,7 +85,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
             }, 2000);
         } catch (error) {
             console.error("Грешка при създаване на обява:", error);
-            alert("Възникна грешка при запазването.");
+            alert(t('recruiter.createError', 'Възникна грешка при запазването.'));
         } finally {
             setIsLoading(false);
         }
@@ -100,8 +98,8 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                     className="w-20 h-20 bg-professional-emerald/10 rounded-full flex items-center justify-center mb-6">
                     <CheckCircle2 className="w-10 h-10 text-professional-emerald"/>
                 </div>
-                <h2 className="text-3xl font-display font-bold text-grey-dark">Обявата е публикувана!</h2>
-                <p className="text-grey-muted mt-2">Кандидатите вече могат да кандидатстват.</p>
+                <h2 className="text-3xl font-display font-bold text-grey-dark">{t('recruiter.publishedTitle', 'Обявата е публикувана!')}</h2>
+                <p className="text-grey-muted mt-2">{t('recruiter.publishedDesc', 'Кандидатите вече могат да кандидатстват.')}</p>
             </div>
         );
     }
@@ -110,11 +108,11 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
         <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-3xl font-display font-extrabold text-grey-dark">Създай Обява</h1>
-                    <p className="text-grey-muted mt-1">Публикувайте нова позиция или академична програма.</p>
+                    <h1 className="text-3xl font-display font-extrabold text-grey-dark">{t('recruiter.createTitle', 'Създай Обява')}</h1>
+                    <p className="text-grey-muted mt-1">{t('recruiter.createDesc', 'Публикувайте нова позиция или академична програма.')}</p>
                 </div>
                 <Button variant="outline" onClick={onBack} className="rounded-xl border-[#c6c6cd]">
-                    Отказ
+                    {t('recruiter.cancel', 'Отказ')}
                 </Button>
             </div>
 
@@ -124,7 +122,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                     <CardHeader className="bg-brand-blue/5 border-b border-[#c6c6cd]/20 pb-6 rounded-t-3xl">
                         <CardTitle className="text-xl flex items-center gap-2">
                             <Briefcase className="w-5 h-5 text-brand-blue"/>
-                            Основна Информация
+                            {t('recruiter.basicInfo', 'Основна Информация')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
@@ -132,13 +130,12 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Заглавие */}
                             <div className="space-y-2">
-                                <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Заглавие на
-                                    позицията</Label>
+                                <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('recruiter.positionTitle', 'Заглавие на позицията')}</Label>
                                 <Input
                                     required
                                     value={formData.title}
                                     onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                    placeholder="напр. Senior Java Developer"
+                                    placeholder={t('recruiter.positionPlaceholder', 'напр. Senior Java Developer')}
                                     className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                 />
                             </div>
@@ -147,12 +144,12 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                             <div className="space-y-2">
                                 <Label
                                     className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1"><MapPin
-                                    className="w-3 h-3"/> Локация</Label>
+                                    className="w-3 h-3"/> {t('recruiter.location', 'Локация')}</Label>
                                 <Input
                                     required
                                     value={formData.location}
                                     onChange={(e) => setFormData({...formData, location: e.target.value})}
-                                    placeholder="София, България или Remote"
+                                    placeholder={t('recruiter.locationPlaceholder', 'София, България или Remote')}
                                     className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                 />
                             </div>
@@ -161,14 +158,14 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                         {/* Тип на обявата (Professional vs Academic) и Вид заетост */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                             <div className="space-y-3">
-                                <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Модел на обявата</Label>
+                                <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('recruiter.oppModel', 'Модел на обявата')}</Label>
                                 <div className={`grid ${profile?.isUniversity ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                                     <div
                                         onClick={() => setFormData({...formData, mode: 'PROFESSIONAL'})}
                                         className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center gap-2 transition-all ${formData.mode === 'PROFESSIONAL' ? 'border-brand-blue bg-brand-blue/5' : 'border-[#c6c6cd]/30 hover:border-brand-blue/50'}`}
                                     >
                                         <Building2 className={`w-8 h-8 ${formData.mode === 'PROFESSIONAL' ? 'text-brand-blue' : 'text-grey-muted'}`}/>
-                                        <span className="font-bold text-grey-dark">Професионална</span>
+                                        <span className="font-bold text-grey-dark">{t('recruiter.professional', 'Професионална')}</span>
                                     </div>
                                     {profile?.isUniversity && (
                                         <div
@@ -176,23 +173,23 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                             className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center gap-2 transition-all ${formData.mode === 'ACADEMIC' ? 'border-academic-purple bg-academic-purple/5' : 'border-[#c6c6cd]/30 hover:border-academic-purple/50'}`}
                                         >
                                             <Target className={`w-8 h-8 ${formData.mode === 'ACADEMIC' ? 'text-academic-purple' : 'text-grey-muted'}`}/>
-                                            <span className="font-bold text-grey-dark">Академична</span>
+                                            <span className="font-bold text-grey-dark">{t('recruiter.academic', 'Академична')}</span>
                                         </div>
                                     )}
                                 </div>
                             </div>
                                 <div className="space-y-3">
-                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Вид заетост</Label>
+                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('recruiter.employmentType', 'Вид заетост')}</Label>
                                     <select
                                         value={formData.type}
                                         onChange={(e) => setFormData({...formData, type: e.target.value})}
                                         className="h-11 w-full rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] border px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-blue"
                                     >
-                                        <option value="FULL_TIME">Пълно работно време</option>
-                                        <option value="PART_TIME">Непълно работно време</option>
-                                        <option value="CONTRACT">Договор / Хонорар</option>
-                                        <option value="INTERNSHIP">Стаж</option>
-                                        <option value="HYBRID">Хибридно</option>
+                                        <option value="FULL_TIME">{t('recruiter.fullTime', 'Пълно работно време')}</option>
+                                        <option value="PART_TIME">{t('recruiter.partTime', 'Непълно работно време')}</option>
+                                        <option value="CONTRACT">{t('recruiter.contract', 'Договор / Хонорар')}</option>
+                                        <option value="INTERNSHIP">{t('recruiter.internship', 'Стаж')}</option>
+                                        <option value="HYBRID">{t('recruiter.hybrid', 'Хибридно')}</option>
                                     </select>
                                 </div>
                         </div>
@@ -203,25 +200,25 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1">
-                                        <DollarSign className="w-3 h-3"/> Заплата от (лв)
+                                        <DollarSign className="w-3 h-3"/> {t('recruiter.salaryFrom', 'Заплата от (лв)')}
                                     </Label>
                                     <Input
                                         type="number"
                                         value={formData.startingPrice}
                                         onChange={(e) => setFormData({...formData, startingPrice: e.target.value})}
-                                        placeholder="напр. 2000"
+                                        placeholder={t('recruiter.eg2000', 'напр. 2000')}
                                         className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1">
-                                        <DollarSign className="w-3 h-3"/> Заплата до (лв)
+                                        <DollarSign className="w-3 h-3"/> {t('recruiter.salaryTo', 'Заплата до (лв)')}
                                     </Label>
                                     <Input
                                         type="number"
                                         value={formData.endingPrice}
                                         onChange={(e) => setFormData({...formData, endingPrice: e.target.value})}
-                                        placeholder="напр. 5000"
+                                        placeholder={t('recruiter.eg5000', 'напр. 5000')}
                                         className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                     />
                                 </div>
@@ -230,7 +227,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
 
                         {/* Умения и Изисквания - MOVED ABOVE Description */}
                         <div className="space-y-3 pt-2">
-                            <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Изисквани умения</Label>
+                            <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">{t('recruiter.requiredSkills', 'Изисквани умения')}</Label>
                             
                             <div className="relative">
                                 <Input
@@ -240,7 +237,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                         setIsDropdownOpen(true);
                                     }}
                                     onFocus={() => setIsDropdownOpen(true)}
-                                    placeholder="Потърси или добави ново умение..."
+                                    placeholder={t('recruiter.searchOrAddSkill', 'Потърси или добави ново умение...')}
                                     className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                                 />
                                 {isDropdownOpen && skillInput && (
@@ -260,7 +257,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                                                 onClick={() => handleAddSkill(skillInput)}
                                                 className="cursor-pointer rounded-lg px-3 py-2 text-sm text-brand-blue hover:bg-brand-blue/10 transition-colors flex items-center"
                                             >
-                                                <Plus className="w-4 h-4 mr-2" /> Добави "{skillInput}"
+                                                <Plus className="w-4 h-4 mr-2" /> {t('recruiter.addSkillPrefix', 'Добави')} "{skillInput}"
                                             </li>
                                         )}
                                     </ul>
@@ -289,12 +286,12 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                         <div className="space-y-2 pt-2">
                             <Label
                                 className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1"><FileText
-                                className="w-3 h-3"/> Описание</Label>
+                                className="w-3 h-3"/> {t('recruiter.description', 'Описание')}</Label>
                             <Textarea
                                 required
                                 value={formData.description}
                                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                placeholder="Опишете позицията, отговорностите и какво предлагате..."
+                                placeholder={t('recruiter.descriptionPlaceholder', 'Опишете позицията, отговорностите и какво предлагате...')}
                                 className="min-h-[150px] rounded-xl resize-none bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
                             />
                         </div>
@@ -306,7 +303,7 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                     <Button type="submit" disabled={isLoading}
                             className="h-12 px-8 rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white font-bold shadow-md">
                         {isLoading ? <Loader2 className="w-5 h-5 animate-spin"/> : <><Plus
-                            className="w-5 h-5 mr-2"/> Публикувай Обява</>}
+                            className="w-5 h-5 mr-2"/> {t('recruiter.publishJob', 'Публикувай Обява')}</>}
                     </Button>
                 </div>
             </form>

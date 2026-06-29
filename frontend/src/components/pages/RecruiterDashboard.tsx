@@ -4,15 +4,19 @@ import {ArrowRight, Briefcase, Clock, Eye, TrendingUp, UserCheck, Users} from 'l
 import {Applicant} from '@/lib/types';
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
+import { Profile } from '@/lib/types';
 
 interface RecruiterDashboardProps {
+    profile: Profile;
     applicants: Applicant[];
     opportunityCount: number;
     setCurrentTab: (tab: string) => void;
     setSelectedApplicantId: (id: string | null) => void;
 }
 
+//@ts-ignore
 export default function RecruiterDashboard({
+                                               profile,
                                                applicants,
                                                opportunityCount,
                                                setCurrentTab,

@@ -56,7 +56,7 @@ export default function CandidateAiMatches({
             : selectedOpp?.requirements?.slice(0, 4) ?? [];
 
         const oppSkills = oppSkillsRaw.filter(Boolean).map(s => String(s).toLowerCase());
-        const userSkills = (profile?.skills || []).filter(Boolean).map(s => String(s).toLowerCase());
+        const userSkills = (profile?.profileSkills || []).map(ps => ps.skillName).filter(Boolean).map(s => String(s).toLowerCase());
 
         const breakdown = oppSkills.map(skill => {
             const isPerfectMatch = userSkills.includes(skill);
@@ -93,7 +93,7 @@ export default function CandidateAiMatches({
                 ? Math.round(selectedMatch.manualScore)
                 : Math.max(60, finalScore - 8),
         };
-    }, [profile.skills, candidateMode, selectedOpp, selectedMatch]);
+    }, [profile.profileSkills, candidateMode, selectedOpp, selectedMatch]);
 
     if (isLoading) {
         return (
