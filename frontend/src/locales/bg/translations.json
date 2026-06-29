@@ -91,7 +91,19 @@
       "article": "Статия / Блог",
       "recruitAiDesc": "Изграждане на иновативна платформа за подбор на кадри, базирана на микросървисна архитектура. Имплементирани Spring Boot сървиси, React фронтенд и алгоритъм за AI съвпадения (Matching).",
       "wslDesc": "Мащабно изследване и решаване на проблеми с memory leaks (\"vmmem\") при Docker Desktop след хибернация. Създаване на скриптове за автоматично управление на .wslconfig."
-    }
+    },
+    "resume": "Резюме / CV",
+    "readyToUpload": "Готов за качване:",
+    "chooseNewCv": "Изберете нов файл, ако искате да замените текущото си CV.",
+    "downloadCv": "Изтегли CV",
+    "noCvUploaded": "Все още няма качено CV.",
+    "errorLoadingExp": "Грешка при зареждане на опит:",
+    "deleteExperience": "Изтрий опита",
+    "loading": "Зареждане...",
+    "noExperienceAdded": "Все още няма добавен опит.",
+    "professionalExp": "Професионален Опит",
+    "academicExp": "Академичен Опит",
+    "addExperience": "Добави"
   },
   "opportunities": {
     "title": "Отворени Позиции",

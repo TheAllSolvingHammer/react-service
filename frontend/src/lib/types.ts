@@ -55,6 +55,7 @@ export interface Opportunity {
     postedDate?: string;
     aiReasoning?: string;
     jobStatus?: string;
+    mode?: string;
 }
 
 export interface Applicant {
@@ -78,4 +79,5 @@ export interface ApplicationActivity {
     status: string;
     date: string;
     logoColor?: string;
+    mode?: string;
 }

@@ -49,7 +49,10 @@ export default function AcademicDashboard({ profile }: { profile: any }) {
                     }
 
                     const mapped = rawApps
-                        .filter((a: any) => !a.matchingMode || a.matchingMode === 'ACADEMIC' || a.mode === 'ACADEMIC')
+                        .filter((a: any) => {
+                            const oppMode = a.mode?.toUpperCase() || a.matchingMode?.toUpperCase();
+                            return oppMode === 'ACADEMIC';
+                        })
                         .map((a: any) => ({
                             id: a.applicationId || a.id,
                             university: a.company || a.location || a.institutionName || 'Неизвестен университет',

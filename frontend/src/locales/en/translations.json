@@ -96,7 +96,19 @@
       "article": "Article / Blog",
       "recruitAiDesc": "Building an innovative recruitment platform based on microservices architecture. Implemented Spring Boot services, React frontend, and an AI matching algorithm.",
       "wslDesc": "Extensive research and resolution of memory leak issues (\"vmmem\") in Docker Desktop after hibernation. Created scripts for automated management of .wslconfig."
-    }
+    },
+    "resume": "Resume / CV",
+    "readyToUpload": "Ready to upload:",
+    "chooseNewCv": "Choose a new file if you want to replace your current CV.",
+    "downloadCv": "Download CV",
+    "noCvUploaded": "No CV uploaded yet.",
+    "errorLoadingExp": "Error loading experience:",
+    "deleteExperience": "Delete experience",
+    "loading": "Loading...",
+    "noExperienceAdded": "No experience added yet.",
+    "professionalExp": "Professional Experience",
+    "academicExp": "Academic Experience",
+    "addExperience": "Add"
   },
   "opportunities": {
     "title": "Open Positions",

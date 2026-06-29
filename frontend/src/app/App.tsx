@@ -178,10 +178,10 @@ export default function App() {
     useEffect(() => {
         if (!isAuthenticated || currentRole !== 'candidate' || !profile?.isCompleted || !profile.userId) return;
 
-        fetchOpportunitiesWithMatches(profile.userId)
+        fetchOpportunitiesWithMatches(profile.userId, candidateMode === 'academic' ? 'ACADEMIC' : 'PROFESSIONAL')
             .then(setOpportunities)
             .catch((err) => console.error('Failed to load opportunities:', err));
-    }, [isAuthenticated, currentRole, profile?.isCompleted, profile?.userId]);
+    }, [isAuthenticated, currentRole, profile?.isCompleted, profile?.userId, candidateMode]);
 
     // Fetch Recruiter Data
     useEffect(() => {
@@ -292,35 +292,7 @@ export default function App() {
     }
 
     // ==========================================
-    // 3. PROFILE ONBOARDING GATE
-    // ==========================================
-    if (!error && profile && profile.isCompleted === false && currentRole !== 'admin') {
-
-        if (currentRole === 'recruiter') {
-            return (
-                <InstitutionOnboarding
-                    profile={profile}
-                    onComplete={(updatedProfile) => {
-                        setProfile({ ...updatedProfile, isCompleted: true });
-                    }}
-                    onLogout={handleLogout}
-                />
-            );
-        }
-
-        return (
-            <ProfileOnboarding
-                profile={profile}
-                onComplete={(updatedProfile) => {
-                    setProfile({ ...updatedProfile, isCompleted: true });
-                }}
-                onLogout={handleLogout}
-            />
-        );
-    }
-
-    // ==========================================
-    // 4. MAIN APPLICATION ROUTING
+    // 3. RESTRICTED ACCESS GATE
     // ==========================================
     
     if (isRestricted && currentRole !== 'admin') {
@@ -348,6 +320,38 @@ export default function App() {
             </div>
         );
     }
+
+    // ==========================================
+    // 4. PROFILE ONBOARDING GATE
+    // ==========================================
+    if (!error && profile && profile.isCompleted === false && currentRole !== 'admin') {
+
+        if (currentRole === 'recruiter') {
+            return (
+                <InstitutionOnboarding
+                    profile={profile}
+                    onComplete={(updatedProfile) => {
+                        setProfile({ ...updatedProfile, isCompleted: true });
+                    }}
+                    onLogout={handleLogout}
+                />
+            );
+        }
+
+        return (
+            <ProfileOnboarding
+                profile={profile}
+                onComplete={(updatedProfile) => {
+                    setProfile({ ...updatedProfile, isCompleted: true });
+                }}
+                onLogout={handleLogout}
+            />
+        );
+    }
+
+    // ==========================================
+    // 5. MAIN APPLICATION ROUTING
+    // ==========================================
 
     return (
         <div className="min-h-screen flex flex-col bg-transparent relative overflow-x-hidden z-10">

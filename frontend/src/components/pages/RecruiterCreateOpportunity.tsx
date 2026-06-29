@@ -54,7 +54,8 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
     const [formData, setFormData] = useState({
         title: '',
         location: '',
-        mode: 'PROFESSIONAL',
+        mode: profile?.isUniversity ? 'ACADEMIC' : 'PROFESSIONAL',
+        type: 'FULL_TIME',
         startingPrice: '',
         endingPrice: '',
         description: '',
@@ -68,14 +69,13 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
             const skillIds = await resolveSkillIds(selectedSkills);
             const requirements = skillIds.map(id => ({ skillId: id, importance: 'MANDATORY' }));
 
-            // Форматиране за бекенда
             const payload = {
                 title: formData.title,
                 location: formData.location,
-                type: 'FULL_TIME',
+                type: formData.type,
                 mode: formData.mode,
-                startingPrice: formData.startingPrice ? parseFloat(formData.startingPrice) : 0,
-                endingPrice: formData.endingPrice ? parseFloat(formData.endingPrice) : 0,
+                startingPrice: formData.mode === 'ACADEMIC' ? 0 : (formData.startingPrice ? parseFloat(formData.startingPrice) : 0),
+                endingPrice: formData.mode === 'ACADEMIC' ? 0 : (formData.endingPrice ? parseFloat(formData.endingPrice) : 0),
                 description: formData.description,
                 requirements: requirements
             };
@@ -158,61 +158,75 @@ export default function RecruiterCreateOpportunity({onBack, profile}: RecruiterC
                             </div>
                         </div>
 
-                        {/* Тип на обявата (Professional vs Academic) */}
-                        <div className="space-y-3 pt-2">
-                            <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Тип на
-                                обявата</Label>
-                            <div className={`grid ${profile?.isUniversity ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
-                                <div
-                                    onClick={() => setFormData({...formData, mode: 'PROFESSIONAL'})}
-                                    className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center gap-2 transition-all ${formData.mode === 'PROFESSIONAL' ? 'border-brand-blue bg-brand-blue/5' : 'border-[#c6c6cd]/30 hover:border-brand-blue/50'}`}
-                                >
-                                    <Building2
-                                        className={`w-8 h-8 ${formData.mode === 'PROFESSIONAL' ? 'text-brand-blue' : 'text-grey-muted'}`}/>
-                                    <span className="font-bold text-grey-dark">Професионална</span>
-                                    <span className="text-xs text-center text-grey-muted">Работа, Стаж, Корпоративна позиция</span>
-                                </div>
-                                {profile?.isUniversity && (
+                        {/* Тип на обявата (Professional vs Academic) и Вид заетост */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                            <div className="space-y-3">
+                                <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Модел на обявата</Label>
+                                <div className={`grid ${profile?.isUniversity ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                                     <div
-                                        onClick={() => setFormData({...formData, mode: 'ACADEMIC'})}
-                                        className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center gap-2 transition-all ${formData.mode === 'ACADEMIC' ? 'border-academic-purple bg-academic-purple/5' : 'border-[#c6c6cd]/30 hover:border-academic-purple/50'}`}
+                                        onClick={() => setFormData({...formData, mode: 'PROFESSIONAL'})}
+                                        className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center gap-2 transition-all ${formData.mode === 'PROFESSIONAL' ? 'border-brand-blue bg-brand-blue/5' : 'border-[#c6c6cd]/30 hover:border-brand-blue/50'}`}
                                     >
-                                        <Target
-                                            className={`w-8 h-8 ${formData.mode === 'ACADEMIC' ? 'text-academic-purple' : 'text-grey-muted'}`}/>
-                                        <span className="font-bold text-grey-dark">Академична</span>
-                                        <span className="text-xs text-center text-grey-muted">Магистратура, Докторантура, Проект</span>
+                                        <Building2 className={`w-8 h-8 ${formData.mode === 'PROFESSIONAL' ? 'text-brand-blue' : 'text-grey-muted'}`}/>
+                                        <span className="font-bold text-grey-dark">Професионална</span>
                                     </div>
-                                )}
+                                    {profile?.isUniversity && (
+                                        <div
+                                            onClick={() => setFormData({...formData, mode: 'ACADEMIC'})}
+                                            className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center gap-2 transition-all ${formData.mode === 'ACADEMIC' ? 'border-academic-purple bg-academic-purple/5' : 'border-[#c6c6cd]/30 hover:border-academic-purple/50'}`}
+                                        >
+                                            <Target className={`w-8 h-8 ${formData.mode === 'ACADEMIC' ? 'text-academic-purple' : 'text-grey-muted'}`}/>
+                                            <span className="font-bold text-grey-dark">Академична</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+                                <div className="space-y-3">
+                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider">Вид заетост</Label>
+                                    <select
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({...formData, type: e.target.value})}
+                                        className="h-11 w-full rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] border px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-blue"
+                                    >
+                                        <option value="FULL_TIME">Пълно работно време</option>
+                                        <option value="PART_TIME">Непълно работно време</option>
+                                        <option value="CONTRACT">Договор / Хонорар</option>
+                                        <option value="INTERNSHIP">Стаж</option>
+                                        <option value="HYBRID">Хибридно</option>
+                                    </select>
+                                </div>
                         </div>
 
-                        {/* Бюджет / Заплата */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                            <div className="space-y-2">
-                                <Label
-                                    className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1"><DollarSign
-                                    className="w-3 h-3"/> Заплата от (лв)</Label>
-                                <Input
-                                    type="number"
-                                    value={formData.startingPrice}
-                                    onChange={(e) => setFormData({...formData, startingPrice: e.target.value})}
-                                    placeholder="напр. 2000"
-                                    className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
-                                />
+
+                        {/* Бюджет / Заплата (скрито за академични обяви) */}
+                        {formData.mode !== 'ACADEMIC' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1">
+                                        <DollarSign className="w-3 h-3"/> Заплата от (лв)
+                                    </Label>
+                                    <Input
+                                        type="number"
+                                        value={formData.startingPrice}
+                                        onChange={(e) => setFormData({...formData, startingPrice: e.target.value})}
+                                        placeholder="напр. 2000"
+                                        className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1">
+                                        <DollarSign className="w-3 h-3"/> Заплата до (лв)
+                                    </Label>
+                                    <Input
+                                        type="number"
+                                        value={formData.endingPrice}
+                                        onChange={(e) => setFormData({...formData, endingPrice: e.target.value})}
+                                        placeholder="напр. 5000"
+                                        className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label
-                                    className="text-xs font-bold text-grey-dark uppercase tracking-wider flex items-center gap-1"><DollarSign
-                                    className="w-3 h-3"/> Заплата до (лв)</Label>
-                                <Input
-                                    type="number"
-                                    value={formData.endingPrice}
-                                    onChange={(e) => setFormData({...formData, endingPrice: e.target.value})}
-                                    placeholder="напр. 5000"
-                                    className="h-11 rounded-xl bg-white dark:bg-slate-800 border-[#c6c6cd] focus-visible:ring-brand-blue"
-                                />
-                            </div>
-                        </div>
+                        )}
 
                         {/* Умения и Изисквания - MOVED ABOVE Description */}
                         <div className="space-y-3 pt-2">

@@ -45,6 +45,8 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [experiences, setExperiences] = useState<Experience[]>([]);
+    const professionalExperiences = experiences.filter(exp => exp.mode?.toUpperCase() === 'PROFESSIONAL' || !exp.mode || exp.mode?.toUpperCase() === 'UNKNOWN');
+    const academicExperiences = experiences.filter(exp => exp.mode?.toUpperCase() === 'ACADEMIC');
     const [loadingExp, setLoadingExp] = useState(true);
     const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
 
@@ -408,7 +410,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                             <CardTitle className="text-xl font-bold text-grey-dark flex items-center justify-between w-full">
                                 <div className="flex items-center gap-2">
                                     <ShieldCheck className="w-5 h-5 text-professional-emerald"/>
-                                    {t('profile.experience', 'Професионален Опит')}
+                                    {t('profile.experience', 'Опит (Професионален и Академичен)')}
                                 </div>
                                 <Button
                                     variant="ghost"
@@ -426,37 +428,66 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                             ) : experiences.length === 0 ? (
                                 <p className="text-sm text-grey-muted">{t('profile.noExperienceAdded', 'Все още няма добавен опит.')}</p>
                             ) : (
-                                experiences.map((exp) => (
-                                    <div key={exp.id} className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-brand-blue transition-colors">
-                                        <div className="absolute w-3 h-3 bg-brand-blue rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
-                                        <div className="flex justify-between items-start mb-1">
-                                            <div className="flex flex-col">
-                                                <h3 className="text-lg font-bold text-grey-dark flex items-center gap-2">
-                                                    {exp.title}
-                                                    <Badge variant="outline" className="text-xs">{exp.mode?.toUpperCase() === 'PROFESSIONAL' ? t('profile.modeProfessional', 'Професионален') : exp.mode?.toUpperCase() === 'ACADEMIC' ? t('profile.modeAcademic', 'Академичен') : exp.mode || ''}</Badge>
-                                                </h3>
-                                                <p className="text-sm text-grey-dark font-semibold">{exp.organization}</p>
-                                            </div>
-                                            {isEditing && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleDeleteExperience(exp.id)}
-                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                    title={t('profile.deleteExperience', 'Изтрий опита')}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            )}
+                                <div className="space-y-8">
+                                    {professionalExperiences.length > 0 && (
+                                        <div className="space-y-4">
+                                            <h4 className="text-md font-bold text-grey-dark border-b pb-2">{t('profile.professionalExp', 'Професионален Опит')}</h4>
+                                            {professionalExperiences.map((exp) => (
+                                                <div key={exp.id} className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-brand-blue transition-colors">
+                                                    <div className="absolute w-3 h-3 bg-brand-blue rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <div className="flex flex-col">
+                                                            <h3 className="text-lg font-bold text-grey-dark flex items-center gap-2">
+                                                                {exp.title}
+                                                            </h3>
+                                                            <p className="text-sm text-grey-dark font-semibold">{exp.organization}</p>
+                                                        </div>
+                                                        {isEditing && (
+                                                            <Button variant="ghost" size="sm" onClick={() => handleDeleteExperience(exp.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50" title={t('profile.deleteExperience', 'Изтрий опита')}>
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
+                                                        <span className="flex items-center gap-1">
+                                                            <Calendar className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-grey-muted italic mt-1">{exp.description}</p>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
-                                            <span className="flex items-center gap-1">
-                                                <Calendar className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
-                                            </span>
+                                    )}
+                                    {academicExperiences.length > 0 && (
+                                        <div className="space-y-4">
+                                            <h4 className="text-md font-bold text-grey-dark border-b pb-2">{t('profile.academicExp', 'Академичен Опит')}</h4>
+                                            {academicExperiences.map((exp) => (
+                                                <div key={exp.id} className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-purple-500 transition-colors">
+                                                    <div className="absolute w-3 h-3 bg-purple-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <div className="flex flex-col">
+                                                            <h3 className="text-lg font-bold text-grey-dark flex items-center gap-2">
+                                                                {exp.title}
+                                                            </h3>
+                                                            <p className="text-sm text-grey-dark font-semibold">{exp.organization}</p>
+                                                        </div>
+                                                        {isEditing && (
+                                                            <Button variant="ghost" size="sm" onClick={() => handleDeleteExperience(exp.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50" title={t('profile.deleteExperience', 'Изтрий опита')}>
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
+                                                        <span className="flex items-center gap-1">
+                                                            <Calendar className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-grey-muted italic mt-1">{exp.description}</p>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <p className="text-sm text-grey-muted italic mt-1">{exp.description}</p>
-                                    </div>
-                                ))
+                                    )}
+                                </div>
                             )}
                         </CardContent>
                     </Card>

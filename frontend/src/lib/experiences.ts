@@ -24,7 +24,9 @@ export async function fetchCandidateExperiences(
         startDate: item.startDate ? String(item.startDate) : undefined,
         endDate: item.endDate ? String(item.endDate) : undefined,
         currentlyActive: Boolean(item.currentlyActive),
-        mode: String(item.mode ?? ''),
+        mode: typeof item.mode === 'object' && item.mode !== null 
+            ? String((item.mode as any).value ?? (item.mode as any).name ?? '')
+            : String(item.mode ?? ''),
     }));
 }
 

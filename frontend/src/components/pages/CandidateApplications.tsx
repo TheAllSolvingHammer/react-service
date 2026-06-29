@@ -23,15 +23,16 @@ export default function CandidateApplications({ profile, candidateMode }: Candid
         const loadApplications = async () => {
             setIsLoading(true);
             try {
-                const appsData = await fetchCandidateApplications(profile.userId);
+                const appsData = await fetchCandidateApplications(profile.userId as string);
                 const mappedApps = appsData.map(mapApplicationActivity);
                 
-                // Filter based on candidateMode. Assuming we can infer from opportunity title/company or mode if it was returned by backend.
-                // If backend doesn't return mode, we just show all. For now, let's just show all as they belong to the candidate,
-                // but we can try to filter if mode is available in the DTO.
-                // Assuming we want to show all applications, but visual styling can adapt to mode.
+                const targetMode = candidateMode === 'academic' ? 'ACADEMIC' : 'PROFESSIONAL';
+                const filteredApps = mappedApps.filter(app => {
+
+                    return !app.mode || app.mode.toUpperCase() === targetMode;
+                });
                 
-                setApplications(mappedApps);
+                setApplications(filteredApps);
             } catch (error) {
                 console.error("Грешка при зареждане на кандидатствания:", error);
             } finally {

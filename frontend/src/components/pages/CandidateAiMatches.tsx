@@ -167,7 +167,7 @@ export default function CandidateAiMatches({
                             <div>
                                 <div
                                     className="flex justify-between text-xs font-mono font-semibold text-[#c6c6cd] mb-1.5">
-                                    <span>{t('aiMatches.techSkills')}</span>
+                                    <span>{candidateMode === 'academic' ? t('aiMatches.academicReqs', 'Академични изисквания') : t('aiMatches.techSkills')}</span>
                                     <span className="text-white">{matchAnalysis.technicalRequirementsScore}%</span>
                                 </div>
                                 <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -221,7 +221,7 @@ export default function CandidateAiMatches({
                                     <table className="w-full text-left border-collapse min-w-[500px]">
                                         <thead>
                                         <tr className="border-b border-[#c6c6cd]/30 text-[10px] font-bold text-grey-muted uppercase tracking-wider">
-                                            <th className="p-4 text-left">{t('aiMatches.thTechSkill')}</th>
+                                            <th className="p-4 text-left">{candidateMode === 'academic' ? t('aiMatches.thRequirement', 'Изискване') : t('aiMatches.thTechSkill')}</th>
                                             <th className="p-4 text-center">{t('aiMatches.thStatus')}</th>
                                             <th className="p-4 text-left">{t('aiMatches.thCategory')}</th>
                                         </tr>

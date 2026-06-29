@@ -10,6 +10,7 @@ export interface ApplicationRecord {
     status: string;
     appliedAt?: string;
     appliedAtDate?: string;
+    mode?: string;
 }
 
 function mapStatus(status: string): string {
@@ -42,6 +43,7 @@ export function mapApplicationActivity(app: any): ApplicationActivity {
             ? new Date(dateSource).toLocaleDateString('bg-BG')
             : new Date().toLocaleDateString('bg-BG'),
         logoColor: 'bg-gradient-to-br from-brand-blue to-purple-600',
+        mode: app.mode,
     };
 }
 

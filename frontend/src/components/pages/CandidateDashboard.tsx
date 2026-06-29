@@ -1,19 +1,27 @@
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
-    AlertCircle, ArrowRight, BrainCircuit, Briefcase, CheckCircle2, Eye,
-    History, Loader2, Sparkles, Target, TrendingUp
+    AlertCircle,
+    ArrowRight,
+    BrainCircuit,
+    Briefcase,
+    CheckCircle2,
+    Eye,
+    History,
+    Loader2,
+    Sparkles,
+    Target,
+    TrendingUp
 } from 'lucide-react';
 import {Profile} from '@/lib/types';
 import {CandidateMode, toApiMode} from '@/lib/mode';
 import {applyToOpportunity, fetchCandidateApplications, mapApplicationActivity} from '@/lib/applications';
-import {fetchOpportunities} from '@/lib/opportunities'; // ИМПОРТИРАМЕ НОВАТА ФУНКЦИЯ
+import {fetchOpportunities, fetchOpportunityById} from '@/lib/opportunities';
 import ModeToggle from '@/components/shared/ModeToggle';
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import apiClient from '@/lib/axios';
-import { fetchCandidateMatches } from '@/lib/matching';
+import {fetchCandidateMatches} from '@/lib/matching';
 
 interface CandidateDashboardProps {
     profile: Profile;
@@ -47,33 +55,35 @@ export default function CandidateDashboard({
             setIsLoadingData(true);
             try {
                 const appsData = await fetchCandidateApplications(candidateId);
-                setAppliedList(appsData.map(mapApplicationActivity));
+                const professionalApps = appsData.filter((a: any) => {
+                    const oppMode = a.mode?.toUpperCase() || a.matchingMode?.toUpperCase();
+                    return !oppMode || oppMode === 'PROFESSIONAL' || oppMode === 'UNKNOWN';
+                });
+                setAppliedList(professionalApps.map(mapApplicationActivity).slice(0, 5));
 
-                //const matchRes = await apiClient.get(`/api/v1/matching/candidate/${candidateId}?size=3`);
                 const matches = await fetchCandidateMatches(candidateId, 3);
 
                 if (matches.length > 0) {
                     const detailedMatches = await Promise.all(
                         matches.map(async (m) => {
                             try {
-                                const oppRes = await apiClient.get(`/api/v1/opportunities/get/${m.opportunityId}`);
+                                const oppRes = await fetchOpportunityById(m.opportunityId);
                                 return {
-                                    ...oppRes.data,
-                                    matchScore: m.finalScore, // Вече е закръглено в matching.ts
+                                    ...oppRes,
+                                    matchScore: m.finalScore,
                                     aiReasoning: m.aiReasoning,
-                                    company: oppRes.data.location || t('dashboard.unknownCompany', 'Неизвестна Компания')
+                                    company: oppRes.location || t('dashboard.unknownCompany', 'Неизвестна Компания')
                                 };
                             } catch (e) {
                                 return null;
                             }
                         })
                     );
-                    setTopMatches(detailedMatches.filter(m => m !== null));
+                    setTopMatches(detailedMatches.filter(m => m !== null).slice(0, 3));
                     setIsAiMatch(true);
                 } else {
                     const latestOpps = await fetchOpportunities('', toApiMode(candidateMode), 0, 3);
-
-                    setTopMatches(latestOpps);
+                    setTopMatches(latestOpps.slice(0, 3));
                     setIsAiMatch(false);
                 }
             } catch (err) {
@@ -103,7 +113,7 @@ export default function CandidateDashboard({
                 appliedAtDate: new Date().toISOString()
             });
 
-            setAppliedList(prev => [newApp, ...prev]);
+            setAppliedList(prev => [newApp, ...prev].slice(0, 5));
         } catch (error) {
             console.error("Грешка при кандидатстване:", error);
         }
@@ -139,7 +149,6 @@ export default function CandidateDashboard({
                 </div>
             </header>
 
-            {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card
                     className={`md:col-span-2 rounded-2xl border-0 shadow-sm flex flex-col justify-center p-5 relative overflow-hidden ${profileScore === 100 ? 'bg-gradient-to-r from-professional-emerald/10 to-teal-500/10 dark:from-professional-emerald/20 dark:to-teal-500/20' : 'bg-white dark:bg-slate-900'}`}>
@@ -195,12 +204,12 @@ export default function CandidateDashboard({
                         </div>
                     </div>
                     <span className="text-3xl font-black text-grey-dark">0</span>
-                    <span className="text-[10px] text-grey-muted font-medium mt-1">{t('dashboard.fromInstitutions', 'От институции')}</span>
+                    <span
+                        className="text-[10px] text-grey-muted font-medium mt-1">{t('dashboard.fromInstitutions', 'От институции')}</span>
                 </Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Recent Applications Summary */}
                 <div className="lg:col-span-8 flex flex-col gap-6">
                     <Card
                         className="flex-1 rounded-3xl border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex flex-col overflow-hidden relative">
@@ -227,7 +236,7 @@ export default function CandidateDashboard({
                                     <p className="text-grey-muted text-sm font-medium">{t('dashboard.noApplications', 'Все още не сте кандидатствали по обяви.')}</p>
                                 </div>
                             ) : (
-                                appliedList.slice(0, 5).map((app, index) => (
+                                appliedList.map((app, index) => (
                                     <div key={index}
                                          onClick={() => setCurrentTab('applications')}
                                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-[#fcf8fa]/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all duration-300 border border-transparent hover:border-[#c6c6cd]/40 dark:hover:border-white/10 group cursor-pointer gap-4">
@@ -260,11 +269,11 @@ export default function CandidateDashboard({
                     </Card>
                 </div>
 
-                {/* Sidebar matches */}
                 <aside className="lg:col-span-4 flex flex-col">
                     <Card
                         className="flex-1 rounded-3xl border border-[#c6c6cd]/50 dark:border-white/10 shadow-lg bg-gradient-to-b from-[#fcf8fa] to-white dark:from-slate-900 dark:to-slate-900 flex flex-col overflow-hidden">
-                        <CardHeader className="pb-4 border-b border-[#f0edef] dark:border-white/10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
+                        <CardHeader
+                            className="pb-4 border-b border-[#f0edef] dark:border-white/10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
                             <CardTitle
                                 className="text-lg font-display font-bold text-grey-dark dark:text-white flex items-center gap-2">
                                 {isAiMatch ? (
@@ -342,10 +351,12 @@ export default function CandidateDashboard({
                                 </>
                             )}
                         </CardContent>
-                        <CardFooter className="pt-4 border-t border-[#f0edef] dark:border-white/10 bg-white/50 dark:bg-slate-800/50 pb-4">
+                        <CardFooter
+                            className="pt-4 border-t border-[#f0edef] dark:border-white/10 bg-white/50 dark:bg-slate-800/50 pb-4">
                             <Button variant="ghost" onClick={() => setCurrentTab('opportunities')}
                                     className="w-full text-xs font-bold text-brand-blue hover:bg-brand-blue/5 h-10 rounded-xl">
-                                {t('dashboard.viewAllOpps', 'Разгледай всички обяви')} <ArrowRight className="w-4 h-4 ml-2"/>
+                                {t('dashboard.viewAllOpps', 'Разгледай всички обяви')} <ArrowRight
+                                className="w-4 h-4 ml-2"/>
                             </Button>
                         </CardFooter>
                     </Card>

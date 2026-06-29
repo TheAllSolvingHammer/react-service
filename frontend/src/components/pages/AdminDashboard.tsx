@@ -123,7 +123,7 @@ export const AdminDashboard: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map(user => (
+                                {Array.isArray(users) && users.map(user => (
                                     <tr key={user.id} className="border-b border-grey-muted/10 dark:border-white/5 hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-colors">
                                         <td className="p-4 font-medium text-grey-dark dark:text-slate-200">{user.username}</td>
                                         <td className="p-4 text-grey-dark dark:text-slate-300">{user.email}</td>
@@ -178,7 +178,7 @@ export const AdminDashboard: React.FC = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-wrap gap-3">
-                                {skills.map(skill => (
+                                {Array.isArray(skills) && skills.map(skill => (
                                     <div key={skill.id} className="flex items-center gap-2 bg-brand-blue/10 text-brand-blue px-4 py-2 rounded-xl font-medium">
                                         {skill.name}
                                         <button onClick={() => handleDeleteSkill(skill.id)} className="text-red-400 hover:text-red-600">
@@ -211,7 +211,7 @@ export const AdminDashboard: React.FC = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-wrap gap-3">
-                                {tags.map(tag => (
+                                {Array.isArray(tags) && tags.map(tag => (
                                     <div key={tag.id} className="flex items-center gap-2 bg-purple-500/10 text-purple-600 px-4 py-2 rounded-xl font-medium">
                                         {tag.name}
                                         <button onClick={() => handleDeleteTag(tag.id)} className="text-red-400 hover:text-red-600">

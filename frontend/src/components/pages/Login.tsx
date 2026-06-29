@@ -54,7 +54,9 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
 
             const response = await apiClient.post('/api/v1/auth/login', payload);
             const token = response.data.token;
-            const isRestrictedUser = response.data.restricted === true || response.data.isRestricted;
+            // Jackson could serialize it as 'restricted' or 'isRestricted' depending on the exact Jackson version/config.
+            // Also explicitly check boolean true
+            const isRestrictedUser = response.data.restricted === true || response.data.isRestricted === true;
             const decodedToken = parseJwt(token);
 
             if (decodedToken) {
