@@ -11,6 +11,7 @@ import AuthToolbar from '@/components/shared/AuthToolbar';
 import {z} from 'zod';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
+import {parseJwt} from "@/lib/utils.ts";
 
 export default function Register({onNavigateToLogin, onRegisterSuccess}: {
     onNavigateToLogin: () => void,
@@ -63,9 +64,27 @@ export default function Register({onNavigateToLogin, onRegisterSuccess}: {
                 role: selectedRole
             };
 
-            await apiClient.post('/api/v1/auth/register', payload);
+            const response = await apiClient.post('/api/v1/auth/register', payload);
+            const token = response.data.token;
+            const email = response.data.email;
+            const isRestrictedUser = response.data.restricted === true || response.data.isRestricted === true;
+
+            if (token) {
+                localStorage.setItem('jwt_token', token);
+                localStorage.setItem('is_restricted', isRestrictedUser ? 'true' : 'false');
+                if (email) {
+                    localStorage.setItem('user_email', email);
+                }
+            }
 
             const frontendRole = selectedRole === 'INSTITUTION' ? 'recruiter' : 'candidate';
+            if (token) {
+                localStorage.setItem('user_role', frontendRole);
+                const decodedToken = parseJwt(token);
+                if (decodedToken) {
+                    localStorage.setItem('user_id', decodedToken.userId);
+                }
+            }
             setGlobalSuccess(t('auth.registerSuccess', 'Успешна регистрация! Пренасочване...'));
 
             setTimeout(() => {

@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ArrowRight, Briefcase, Clock, Eye, TrendingUp, UserCheck, Users} from 'lucide-react';
 import {Applicant} from '@/lib/types';
@@ -20,11 +21,21 @@ export default function RecruiterDashboard({
     const {t} = useTranslation();
 
     const newApplicants = applicants.filter(a => a.status === 'Ново').length;
-    // @ts-ignore
+    //@ts-ignore
     const reviewingApplicants = applicants.filter(a => a.status === 'Преглед').length;
-    // Сортираме най-новите/най-силните кандидати (вземаме топ 5)
+
+    const [selectedOppId, setSelectedOppId] = useState('all');
+
+    const uniqueOpportunities = Array.from(new Set(applicants.map(a => a.opportunityId))).map(id => {
+        return {
+            id,
+            title: applicants.find(a => a.opportunityId === id)?.role || 'Неизвестна обява'
+        };
+    }).filter(opp => opp.id);
+
     const recentApplicants = [...applicants]
-        .sort((a, b) => b.matchScore - a.matchScore) // За демото ги сортираме по AI Score
+        .filter(a => selectedOppId === 'all' || a.opportunityId === selectedOppId)
+        .sort((a, b) => b.matchScore - a.matchScore)
         .slice(0, 5);
 
     const handleViewApplicant = (id: string) => {
@@ -105,9 +116,21 @@ export default function RecruiterDashboard({
                         <CardHeader
                             className="flex flex-row justify-between items-center pb-4 border-b border-[#f0edef]/80">
                             <CardTitle
-                                className="text-xl font-display font-bold text-grey-dark flex items-center gap-2.5">
-                                <UserCheck className="w-6 h-6 text-brand-blue"/>
-                                {t('recruiter.topCandidates', 'Топ Кандидати (AI Препоръчани)')}
+                                className="text-xl font-display font-bold text-grey-dark flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2.5">
+                                    <UserCheck className="w-6 h-6 text-brand-blue"/>
+                                    {t('recruiter.topCandidates', 'Топ Кандидати (AI Препоръчани)')}
+                                </div>
+                                <select
+                                    className="h-10 px-4 rounded-xl border border-[#c6c6cd]/50 bg-white dark:bg-slate-900 text-sm font-normal focus:ring-2 focus:ring-brand-blue/20 outline-none max-w-[250px]"
+                                    value={selectedOppId}
+                                    onChange={(e) => setSelectedOppId(e.target.value)}
+                                >
+                                    <option value="all">{t('recruiter.allOpportunities', 'Всички обяви')}</option>
+                                    {uniqueOpportunities.map(opp => (
+                                        <option key={opp.id} value={opp.id}>{opp.title}</option>
+                                    ))}
+                                </select>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
@@ -160,7 +183,8 @@ export default function RecruiterDashboard({
                             )}
                         </CardContent>
                         {recentApplicants.length > 0 && (
-                            <CardFooter className="pt-2 pb-4 bg-[#fcf8fa]/30 dark:bg-slate-900/30 border-t border-[#f0edef]/80 dark:border-white/10">
+                            <CardFooter
+                                className="pt-2 pb-4 bg-[#fcf8fa]/30 dark:bg-slate-900/30 border-t border-[#f0edef]/80 dark:border-white/10">
                                 <Button
                                     variant="ghost"
                                     onClick={() => setCurrentTab('recruiter_applicants')}
@@ -177,7 +201,8 @@ export default function RecruiterDashboard({
                 <aside className="lg:col-span-4 flex flex-col">
                     <Card
                         className="flex-1 rounded-3xl border border-[#c6c6cd]/50 dark:border-white/10 shadow-lg bg-gradient-to-b from-[#fcf8fa] to-white dark:from-slate-800 dark:to-slate-900 flex flex-col overflow-hidden">
-                        <CardHeader className="pb-4 border-b border-[#f0edef] dark:border-white/10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+                        <CardHeader
+                            className="pb-4 border-b border-[#f0edef] dark:border-white/10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
                             <CardTitle
                                 className="text-lg font-display font-bold text-grey-dark flex items-center gap-2">
                                 <TrendingUp className="w-5 h-5 text-brand-blue"/>

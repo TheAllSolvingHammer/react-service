@@ -55,9 +55,10 @@ export default function CandidateDashboard({
             setIsLoadingData(true);
             try {
                 const appsData = await fetchCandidateApplications(candidateId);
+                const targetMode = candidateMode === 'academic' ? 'ACADEMIC' : 'PROFESSIONAL';
                 const professionalApps = appsData.filter((a: any) => {
                     const oppMode = a.mode?.toUpperCase() || a.matchingMode?.toUpperCase();
-                    return !oppMode || oppMode === 'PROFESSIONAL' || oppMode === 'UNKNOWN';
+                    return !oppMode || oppMode === targetMode;
                 });
                 setAppliedList(professionalApps.map(mapApplicationActivity).slice(0, 5));
 

@@ -17,6 +17,7 @@ export const AdminDashboard: React.FC = () => {
     // Input state
     const [newSkillName, setNewSkillName] = useState('');
     const [newTagName, setNewTagName] = useState('');
+    const [newSkillTags, setNewSkillTags] = useState<number[]>([]);
 
     useEffect(() => {
         loadData();
@@ -50,8 +51,9 @@ export const AdminDashboard: React.FC = () => {
     const handleCreateSkill = async () => {
         if (!newSkillName.trim()) return;
         try {
-            await adminApi.createSkill(newSkillName);
+            await adminApi.createSkill(newSkillName, newSkillTags);
             setNewSkillName('');
+            setNewSkillTags([]);
             await loadData();
         } catch (error) {
             console.error(error);
@@ -162,28 +164,60 @@ export const AdminDashboard: React.FC = () => {
                         <CardHeader>
                             <CardTitle className="text-xl flex items-center justify-between dark:text-white">
                                 {t('admin.skills', 'Умения')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-col gap-4 mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-grey-muted/20">
+                                <h3 className="text-sm font-semibold text-grey-dark dark:text-white">{t('admin.createNewSkill', 'Добави ново умение')}</h3>
                                 <div className="flex gap-2">
                                     <input 
                                         type="text" 
                                         value={newSkillName}
                                         onChange={e => setNewSkillName(e.target.value)}
-                                        className="text-sm px-4 py-2 rounded-xl border border-grey-muted/30 dark:border-white/10 dark:bg-slate-800 dark:text-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none"
+                                        className="flex-1 text-sm px-4 py-2 rounded-xl border border-grey-muted/30 dark:border-white/10 dark:bg-slate-800 dark:text-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none"
                                         placeholder={t('admin.newSkill', 'Ново умение...')}
                                     />
-                                    <button onClick={handleCreateSkill} className="bg-brand-blue text-white p-2 rounded-xl hover:bg-blue-600 transition-colors">
-                                        <PlusCircle className="w-5 h-5" />
+                                    <button onClick={handleCreateSkill} className="bg-brand-blue text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-colors flex items-center gap-2">
+                                        <PlusCircle className="w-4 h-4" /> {t('admin.add', 'Добави')}
                                     </button>
                                 </div>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                    <span className="text-xs font-semibold text-grey-muted w-full">{t('admin.linkWithTags', 'Свържи с тагове:')}</span>
+                                    {Array.isArray(tags) && tags.map(tag => (
+                                        <label key={tag.id} className="flex items-center gap-1.5 text-xs bg-white dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-grey-muted/20 cursor-pointer hover:border-brand-blue/50">
+                                            <input 
+                                                type="checkbox" 
+                                                className="rounded text-brand-blue focus:ring-brand-blue"
+                                                checked={newSkillTags.includes(tag.id)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) setNewSkillTags([...newSkillTags, tag.id]);
+                                                    else setNewSkillTags(newSkillTags.filter(id => id !== tag.id));
+                                                }}
+                                            />
+                                            {tag.name}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            
                             <div className="flex flex-wrap gap-3">
                                 {Array.isArray(skills) && skills.map(skill => (
-                                    <div key={skill.id} className="flex items-center gap-2 bg-brand-blue/10 text-brand-blue px-4 py-2 rounded-xl font-medium">
-                                        {skill.name}
-                                        <button onClick={() => handleDeleteSkill(skill.id)} className="text-red-400 hover:text-red-600">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                    <div key={skill.id} className="flex flex-col gap-1 bg-brand-blue/5 border border-brand-blue/20 p-3 rounded-xl">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <span className="font-bold text-brand-blue">{skill.name}</span>
+                                            <button onClick={() => handleDeleteSkill(skill.id)} className="text-red-400 hover:text-red-600">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        {skill.tags && skill.tags.length > 0 && (
+                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                {skill.tags.map((t: any) => (
+                                                    <span key={t.name} className="text-[10px] bg-white dark:bg-slate-800 text-grey-muted px-2 py-0.5 rounded-md border border-grey-muted/20">
+                                                        {t.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

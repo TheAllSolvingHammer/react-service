@@ -57,11 +57,15 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
             // Jackson could serialize it as 'restricted' or 'isRestricted' depending on the exact Jackson version/config.
             // Also explicitly check boolean true
             const isRestrictedUser = response.data.restricted === true || response.data.isRestricted === true;
+            const email = response.data.email;
             const decodedToken = parseJwt(token);
 
             if (decodedToken) {
                 localStorage.setItem('jwt_token', token);
                 localStorage.setItem('is_restricted', isRestrictedUser ? 'true' : 'false');
+                if (email) {
+                    localStorage.setItem('user_email', email);
+                }
 
                 const backendRole = decodedToken.role.toUpperCase();
                 const frontendRole = backendRole === 'ADMIN'

@@ -1,8 +1,19 @@
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
-    Calendar, Code2, Edit3, ExternalLink, Mail, MapPin, Save,
-    ShieldCheck, X, PlusCircle, FileText, Download, Trash2
+    Calendar,
+    Code2,
+    Download,
+    Edit3,
+    ExternalLink,
+    FileText,
+    Mail,
+    MapPin,
+    PlusCircle,
+    Save,
+    ShieldCheck,
+    Trash2,
+    X
 } from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import AddExperienceModal from './AddExperienceModal';
@@ -10,10 +21,11 @@ import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
-import {Experience, Profile} from '@/lib/types';
-import {PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer} from 'recharts';
-import { fetchCandidateExperiences, deleteCandidateExperience } from '@/lib/experiences';
+import {Experience, Profile, ProfileSkill} from '@/lib/types';
+import {deleteCandidateExperience, fetchCandidateExperiences} from '@/lib/experiences';
 import {uploadCandidateCv} from "@/lib/profileApi.ts";
+import {adminApi} from "@/lib/adminApi";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 const ensureUrl = (url: string | undefined): string => {
     if (!url || url === '#') return '#';
@@ -49,6 +61,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
     const academicExperiences = experiences.filter(exp => exp.mode?.toUpperCase() === 'ACADEMIC');
     const [loadingExp, setLoadingExp] = useState(true);
     const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
+    const [availableSkills, setAvailableSkills] = useState<{ id: string, name: string }[]>([]);
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -61,7 +74,8 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
         location: profile?.location || '',
         portfolioUrl: profile?.portfolioUrl || '',
         linkedinUrl: profile?.linkedinUrl || '',
-        resumeUrl: profile?.resumeUrl || ''
+        resumeUrl: profile?.resumeUrl || '',
+        profileSkills: profile?.profileSkills || [] as ProfileSkill[]
     });
 
     const loadExperiences = () => {
@@ -84,6 +98,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
 
     useEffect(() => {
         loadExperiences();
+        adminApi.getAllSkills().then(res => setAvailableSkills(res)).catch(console.error);
     }, [profile?.id]);
 
     // Рестартираме формата, ако профилът се промени отвън или отменим редакцията
@@ -97,7 +112,8 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
             location: profile?.location || '',
             portfolioUrl: profile?.portfolioUrl || '',
             linkedinUrl: profile?.linkedinUrl || '',
-            resumeUrl: profile?.resumeUrl || ''
+            resumeUrl: profile?.resumeUrl || '',
+            profileSkills: profile?.profileSkills || [] as ProfileSkill[]
         });
         setSelectedFile(null);
     }, [profile, t]);
@@ -113,7 +129,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                 finalResumeUrl = await uploadCandidateCv(selectedFile, profile.id);
             }
 
-            const updatedData = { ...editForm, resumeUrl: finalResumeUrl };
+            const updatedData = {...editForm, resumeUrl: finalResumeUrl};
 
             if (onSaveProfile) {
                 await onSaveProfile(updatedData);
@@ -127,16 +143,9 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
         }
     };
 
-    const displaySkills = profile?.skills && profile.skills.length > 0
-        ? profile.skills
-        : ['Java', 'Spring Boot', 'React', 'TypeScript', 'PostgreSQL', 'Docker', 'AWS', 'Machine Learning'];
-
-    // @ts-ignore
-    const skillsData = displaySkills.slice(0, 6).map((skill, index) => ({
-        subject: skill,
-        A: 60 + (Math.random() * 40),
-        fullMark: 100
-    }));
+    const displaySkills = profile?.profileSkills && profile.profileSkills.length > 0
+        ? profile.profileSkills
+        : [];
 
     const getInitials = (firstName?: string, lastName?: string) => {
         if (!firstName && !lastName) return 'JD';
@@ -147,7 +156,8 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
 
     return (
         <div className="space-y-6 animate-fade-in max-w-6xl mx-auto pb-12 relative">
-            <div className="absolute top-0 right-[-10%] w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px] -z-10"></div>
+            <div
+                className="absolute top-0 right-[-10%] w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px] -z-10"></div>
 
             <div className="flex justify-between items-center mb-2">
                 <h1 className="text-3xl font-display font-extrabold text-grey-dark tracking-tight">
@@ -189,11 +199,14 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* ЛЯВА КОЛОНА */}
                 <div className="lg:col-span-4 space-y-6">
-                    <Card className="rounded-3xl border-0 shadow-lg bg-white overflow-hidden relative dark:bg-slate-900">
+                    <Card
+                        className="rounded-3xl border-0 shadow-lg bg-white overflow-hidden relative dark:bg-slate-900">
                         <div className="h-24 bg-gradient-to-r from-brand-blue to-purple-600"></div>
                         <div className="px-6 pb-6 text-center relative">
-                            <div className="w-24 h-24 bg-white dark:bg-slate-900 rounded-full p-1 mx-auto -mt-12 mb-3 shadow-md relative z-10">
-                                <div className="w-full h-full rounded-full bg-gradient-to-br from-brand-blue to-purple-600 text-white flex items-center justify-center text-3xl font-black shadow-inner">
+                            <div
+                                className="w-24 h-24 bg-white dark:bg-slate-900 rounded-full p-1 mx-auto -mt-12 mb-3 shadow-md relative z-10">
+                                <div
+                                    className="w-full h-full rounded-full bg-gradient-to-br from-brand-blue to-purple-600 text-white flex items-center justify-center text-3xl font-black shadow-inner">
                                     {profile?.initials || getInitials(editForm.firstName, editForm.lastName)}
                                 </div>
                             </div>
@@ -250,14 +263,16 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                 </div>
                                 {!isEditing && (
                                     <div className="flex items-center gap-3">
-                                        <MapPin className="w-4 h-4 text-brand-blue"/> {profile?.location || t('profile.defaultLocation', 'Непосочена локация')}
+                                        <MapPin
+                                            className="w-4 h-4 text-brand-blue"/> {profile?.location || t('profile.defaultLocation', 'Непосочена локация')}
                                     </div>
                                 )}
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
+                    <Card
+                        className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
                         <CardContent className="p-5">
                             {isEditing ? (
                                 <div className="space-y-3">
@@ -293,11 +308,113 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                         </CardContent>
                     </Card>
 
+                    {/* СЕКЦИЯ ЗА УМЕНИЯ */}
+                    <Card
+                        className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
+                        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                            <CardTitle className="text-lg font-bold text-grey-dark flex items-center gap-2">
+                                <Code2 className="w-5 h-5 text-brand-blue"/>
+                                {t('profile.skillsTitle', 'Умения')}
+                            </CardTitle>
+                            {isEditing && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setEditForm({
+                                        ...editForm,
+                                        profileSkills: [...editForm.profileSkills, {skillId: '', strength: 'BEGINNER'}]
+                                    })}
+                                    className="text-brand-blue hover:bg-brand-blue/10"
+                                >
+                                    <PlusCircle className="w-4 h-4 mr-1"/> Добави
+                                </Button>
+                            )}
+                        </CardHeader>
+                        <CardContent>
+                            {isEditing ? (
+                                <div className="space-y-3">
+                                    {editForm.profileSkills.map((ps, idx) => (
+                                        <div key={idx} className="flex items-center gap-2">
+                                            <Select
+                                                value={ps.skillId}
+                                                onValueChange={(val) => {
+                                                    const newSkills = [...editForm.profileSkills];
+                                                    newSkills[idx].skillId = val;
+                                                    setEditForm({...editForm, profileSkills: newSkills});
+                                                }}
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Избери умение"/>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {availableSkills.map(s => (
+                                                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+
+                                            <Select
+                                                value={ps.strength}
+                                                onValueChange={(val: any) => {
+                                                    const newSkills = [...editForm.profileSkills];
+                                                    newSkills[idx].strength = val;
+                                                    setEditForm({...editForm, profileSkills: newSkills});
+                                                }}
+                                            >
+                                                <SelectTrigger className="w-[160px]">
+                                                    <SelectValue placeholder="Ниво"/>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="BEGINNER">Начинаещ</SelectItem>
+                                                    <SelectItem value="INTERMEDIATE">Средно</SelectItem>
+                                                    <SelectItem value="EXPERT">Експерт</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    const newSkills = [...editForm.profileSkills];
+                                                    newSkills.splice(idx, 1);
+                                                    setEditForm({...editForm, profileSkills: newSkills});
+                                                }}
+                                                className="text-red-500 hover:bg-red-50"
+                                            >
+                                                <Trash2 className="w-4 h-4"/>
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    {editForm.profileSkills.length === 0 && (
+                                        <p className="text-sm text-grey-muted text-center italic">Нямате добавени
+                                            умения.</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex flex-wrap gap-2">
+                                    {displaySkills.length > 0 ? displaySkills.map((ps, idx) => (
+                                        <Badge key={idx} variant="secondary"
+                                               className="px-3 py-1 bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20 rounded-xl flex items-center gap-1.5 border-0">
+                                            {ps.skillName || availableSkills.find(s => s.id === ps.skillId)?.name || 'Unknown'}
+                                            <span className="opacity-60 text-xs">
+                                                • {ps.strength === 'BEGINNER' ? 'Начинаещ' : ps.strength === 'INTERMEDIATE' ? 'Средно' : ps.strength === 'EXPERT' ? 'Експерт' : 'Неизвестно'}
+                                            </span>
+                                        </Badge>
+                                    )) : (
+                                        <p className="text-sm text-grey-muted w-full text-center py-2">Все още няма
+                                            добавени умения.</p>
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
                     {/* 4. НОВАТА СЕКЦИЯ ЗА CV / РЕЗЮМЕ */}
-                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
+                    <Card
+                        className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
                         <CardHeader className="pb-3">
                             <CardTitle className="text-lg font-bold text-grey-dark flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-brand-blue" />
+                                <FileText className="w-5 h-5 text-brand-blue"/>
                                 {t('profile.resume', 'Резюме / CV')}
                             </CardTitle>
                         </CardHeader>
@@ -330,7 +447,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                             rel="noopener noreferrer"
                                             className="flex items-center gap-2 px-4 py-2 bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue font-bold rounded-xl transition-colors w-full justify-center"
                                         >
-                                            <Download className="w-4 h-4" /> {t('profile.downloadCv', 'Изтегли CV')}
+                                            <Download className="w-4 h-4"/> {t('profile.downloadCv', 'Изтегли CV')}
                                         </a>
                                     ) : (
                                         <p className="text-sm text-grey-muted bg-slate-50 dark:bg-slate-800 p-3 rounded-xl text-center w-full">
@@ -342,39 +459,15 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                         </CardContent>
                     </Card>
 
-                    <Card className="rounded-3xl border border-[#c6c6cd]/30 shadow-md bg-white dark:bg-slate-900 overflow-hidden relative">
-                        <CardHeader className="pb-0 relative z-10">
-                            <CardTitle className="text-lg font-bold text-grey-dark text-center">{t('profile.skillProfile', 'Профил на Уменията')}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-72 flex items-center justify-center relative z-10 pt-4">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RadarChart cx="50%" cy="50%" outerRadius="65%" data={skillsData}>
-                                    <PolarGrid stroke="#e2e8f0" className="dark:stroke-slate-700" strokeDasharray="3 3"/>
-                                    <PolarAngleAxis
-                                        dataKey="subject"
-                                        tick={{fill: '#64748b', fontSize: 12, fontWeight: 700}}
-                                        className="dark:text-slate-300"
-                                    />
-                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false}/>
-                                    <Radar
-                                        name="Умения"
-                                        dataKey="A"
-                                        stroke="#2563eb"
-                                        strokeWidth={2}
-                                        fill="#3b82f6"
-                                        fillOpacity={0.4}
-                                    />
-                                </RadarChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
+
                 </div>
 
                 {/* ДЯСНА КОЛОНА */}
                 <div className="lg:col-span-8 space-y-6">
                     <Card className="rounded-3xl border-0 shadow-md bg-white dark:bg-slate-900">
                         <CardHeader>
-                            <CardTitle className="text-xl font-bold text-grey-dark">{t('profile.aboutMe', 'За мен')}</CardTitle>
+                            <CardTitle
+                                className="text-xl font-bold text-grey-dark">{t('profile.aboutMe', 'За мен')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {isEditing ? (
@@ -392,22 +485,10 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                         </CardContent>
                     </Card>
 
-                    <Card className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-lg font-bold text-grey-dark">{t('profile.keyTech', 'Ключови Технологии')}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-wrap gap-2">
-                            {displaySkills.map((skill) => (
-                                <Badge key={skill} className="bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20 px-3 py-1.5 rounded-lg border-0 font-bold shadow-sm">
-                                    {skill}
-                                </Badge>
-                            ))}
-                        </CardContent>
-                    </Card>
-
                     <Card className="rounded-3xl border-0 shadow-md bg-white dark:bg-slate-900">
                         <CardHeader>
-                            <CardTitle className="text-xl font-bold text-grey-dark flex items-center justify-between w-full">
+                            <CardTitle
+                                className="text-xl font-bold text-grey-dark flex items-center justify-between w-full">
                                 <div className="flex items-center gap-2">
                                     <ShieldCheck className="w-5 h-5 text-professional-emerald"/>
                                     {t('profile.experience', 'Опит (Професионален и Академичен)')}
@@ -418,7 +499,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                     onClick={() => setIsExperienceModalOpen(true)}
                                     className="text-brand-blue hover:text-brand-blue-dark hover:bg-brand-blue/10"
                                 >
-                                    <PlusCircle className="w-4 h-4 mr-1" /> {t('profile.addExperience', 'Добави')}
+                                    <PlusCircle className="w-4 h-4 mr-1"/> {t('profile.addExperience', 'Добави')}
                                 </Button>
                             </CardTitle>
                         </CardHeader>
@@ -433,8 +514,10 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                         <div className="space-y-4">
                                             <h4 className="text-md font-bold text-grey-dark border-b pb-2">{t('profile.professionalExp', 'Професионален Опит')}</h4>
                                             {professionalExperiences.map((exp) => (
-                                                <div key={exp.id} className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-brand-blue transition-colors">
-                                                    <div className="absolute w-3 h-3 bg-brand-blue rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
+                                                <div key={exp.id}
+                                                     className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-brand-blue transition-colors">
+                                                    <div
+                                                        className="absolute w-3 h-3 bg-brand-blue rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
                                                     <div className="flex justify-between items-start mb-1">
                                                         <div className="flex flex-col">
                                                             <h3 className="text-lg font-bold text-grey-dark flex items-center gap-2">
@@ -443,14 +526,19 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                                             <p className="text-sm text-grey-dark font-semibold">{exp.organization}</p>
                                                         </div>
                                                         {isEditing && (
-                                                            <Button variant="ghost" size="sm" onClick={() => handleDeleteExperience(exp.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50" title={t('profile.deleteExperience', 'Изтрий опита')}>
-                                                                <Trash2 className="w-4 h-4" />
+                                                            <Button variant="ghost" size="sm"
+                                                                    onClick={() => handleDeleteExperience(exp.id)}
+                                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                    title={t('profile.deleteExperience', 'Изтрий опита')}>
+                                                                <Trash2 className="w-4 h-4"/>
                                                             </Button>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
+                                                    <div
+                                                        className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
                                                         <span className="flex items-center gap-1">
-                                                            <Calendar className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
+                                                            <Calendar
+                                                                className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
                                                         </span>
                                                     </div>
                                                     <p className="text-sm text-grey-muted italic mt-1">{exp.description}</p>
@@ -462,8 +550,10 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                         <div className="space-y-4">
                                             <h4 className="text-md font-bold text-grey-dark border-b pb-2">{t('profile.academicExp', 'Академичен Опит')}</h4>
                                             {academicExperiences.map((exp) => (
-                                                <div key={exp.id} className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-purple-500 transition-colors">
-                                                    <div className="absolute w-3 h-3 bg-purple-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
+                                                <div key={exp.id}
+                                                     className="group relative pl-6 border-l-2 border-[#f0edef] hover:border-purple-500 transition-colors">
+                                                    <div
+                                                        className="absolute w-3 h-3 bg-purple-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_0_4px_white]"></div>
                                                     <div className="flex justify-between items-start mb-1">
                                                         <div className="flex flex-col">
                                                             <h3 className="text-lg font-bold text-grey-dark flex items-center gap-2">
@@ -472,14 +562,19 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                                             <p className="text-sm text-grey-dark font-semibold">{exp.organization}</p>
                                                         </div>
                                                         {isEditing && (
-                                                            <Button variant="ghost" size="sm" onClick={() => handleDeleteExperience(exp.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50" title={t('profile.deleteExperience', 'Изтрий опита')}>
-                                                                <Trash2 className="w-4 h-4" />
+                                                            <Button variant="ghost" size="sm"
+                                                                    onClick={() => handleDeleteExperience(exp.id)}
+                                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                    title={t('profile.deleteExperience', 'Изтрий опита')}>
+                                                                <Trash2 className="w-4 h-4"/>
                                                             </Button>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
+                                                    <div
+                                                        className="flex items-center gap-3 text-xs text-grey-muted mb-2 font-medium">
                                                         <span className="flex items-center gap-1">
-                                                            <Calendar className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
+                                                            <Calendar
+                                                                className="w-3 h-3"/> {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : '- Настояще'}
                                                         </span>
                                                     </div>
                                                     <p className="text-sm text-grey-muted italic mt-1">{exp.description}</p>

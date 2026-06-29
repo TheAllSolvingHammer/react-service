@@ -81,6 +81,7 @@ export async function fetchRecruiterApplicants(): Promise<Applicant[]> {
                 skills,
                 candidateMode: currentMode,
                 resumeUrl: String(profile.resumeUrl ?? ''),
+                opportunityId: String(application.opportunityId ?? ''),
             } satisfies Applicant;
         })
     );

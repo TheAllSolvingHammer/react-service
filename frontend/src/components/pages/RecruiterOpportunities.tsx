@@ -21,6 +21,7 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+    const [filterMode, setFilterMode] = useState<'ACTIVE' | 'ARCHIVED'>('ACTIVE');
 
     useEffect(() => {
         const loadOpps = async () => {
@@ -38,10 +39,14 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
         loadOpps();
     }, [profile]);
 
-    const filteredOpps = opportunities.filter(opp =>
-        opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        opp.company?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredOpps = opportunities.filter(opp => {
+        const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            opp.company?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = filterMode === 'ARCHIVED'
+            ? opp.jobStatus === 'ARCHIVED'
+            : opp.jobStatus !== 'ARCHIVED';
+        return matchesSearch && matchesStatus;
+    });
 
     const handleArchive = async (id: string) => {
         if (!confirm(t('recruiterOpps.confirmArchive', 'Сигурни ли сте, че искате да архивирате тази обява?'))) {
@@ -97,7 +102,26 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                                 className="pl-9 bg-white dark:bg-slate-900 border-[#c6c6cd]/50 dark:border-white/10 rounded-xl focus-visible:ring-brand-blue/20"
                             />
                         </div>
-                        <div className="flex gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                        <div className="flex gap-2">
+                            <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setFilterMode('ACTIVE')}
+                                    className={`rounded-lg px-3 ${filterMode === 'ACTIVE' ? 'bg-white dark:bg-slate-700 shadow-sm text-brand-blue' : 'text-grey-muted dark:text-slate-400'}`}
+                                >
+                                    {t('recruiterOpps.active', 'Активни')}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setFilterMode('ARCHIVED')}
+                                    className={`rounded-lg px-3 ${filterMode === 'ARCHIVED' ? 'bg-white dark:bg-slate-700 shadow-sm text-brand-blue' : 'text-grey-muted dark:text-slate-400'}`}
+                                >
+                                    {t('recruiterOpps.archived', 'Архивирани')}
+                                </Button>
+                            </div>
+                            <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -114,6 +138,7 @@ export default function RecruiterOpportunities({profile, setCurrentTab}: Recruit
                             >
                                 <LayoutGrid className="w-4 h-4"/>
                             </Button>
+                        </div>
                         </div>
                     </div>
                 </CardHeader>

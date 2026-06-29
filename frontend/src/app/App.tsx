@@ -128,7 +128,7 @@ export default function App() {
                     userId: savedUserId,
                     name: p.firstName ? [p.firstName, p.middleName, p.lastName].filter(Boolean).join(' ') : (p.displayName || p.fullName || 'Неизвестен Потребител'),
                     role: p.headline || p.role || 'Специалист',
-                    email: p.email || '',
+                    email: p.email || localStorage.getItem('user_email') || '',
                     location: p.location || '',
                     bio: p.biography || p.bio || '',
                     skills: skillNames,
@@ -430,8 +430,8 @@ export default function App() {
 
                 {profile && currentRole === 'recruiter' && (
                     <>
-                        {currentTab === 'recruiter_dashboard' && <RecruiterDashboard applicants={applicants} opportunityCount={opportunityCount} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
-                        {currentTab === 'recruiter_applicants' && <RecruiterRanking applicants={applicants} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
+                        {currentTab === 'recruiter_dashboard' && <RecruiterDashboard profile={profile} applicants={applicants} opportunityCount={opportunityCount} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
+                        {currentTab === 'recruiter_applicants' && <RecruiterRanking profile={profile} applicants={applicants} setCurrentTab={setCurrentTab} setSelectedApplicantId={setSelectedApplicantId} />}
                         {currentTab === 'recruiter_my_opportunities' && <RecruiterOpportunities profile={profile} setCurrentTab={setCurrentTab} />}
                         {currentTab === 'recruiter_applicant_detail' && selectedApplicant && <RecruiterCandidateDetail applicant={selectedApplicant} onBack={() => setCurrentTab('recruiter_dashboard')} onUpdateStatus={handleUpdateApplicantStatus} />}
                     </>

@@ -1,7 +1,6 @@
 import apiClient from '@/lib/axios';
-import { CandidateMode, parseApiMode, toApiMode } from '@/lib/mode';
-import { Profile } from '@/lib/types';
-import { resolveSkillIds } from '@/lib/skills';
+import {CandidateMode, parseApiMode, toApiMode} from '@/lib/mode';
+import {Profile} from '@/lib/types';
 
 export async function switchCandidateMode(
     profileId: string,
@@ -10,13 +9,13 @@ export async function switchCandidateMode(
     const response = await apiClient.patch(
         `/api/v1/profiles/candidates/${profileId}/mode`,
         null,
-        { params: { mode: toApiMode(mode) } }
+        {params: {mode: toApiMode(mode)}}
     );
     return parseApiMode(response.data?.currentMode);
 }
 
 export async function saveCandidateProfile(profile: Profile): Promise<Profile> {
-    const skillIds = await resolveSkillIds(profile.skills ?? []);
+    const profileSkills = profile.profileSkills ?? [];
 
     const payload = {
         firstName: profile.firstName,
@@ -30,7 +29,7 @@ export async function saveCandidateProfile(profile: Profile): Promise<Profile> {
         educationType: profile.educationType || 'Bachelor',
         currentMode: toApiMode(profile.currentMode ?? 'professional'),
         expectedSalary: profile.expectedSalary,
-        skills: skillIds,
+        profileSkills: profileSkills,
     };
 
     const response = await apiClient.put('/api/v1/profiles/candidate/complete', payload);
@@ -51,13 +50,13 @@ export async function saveCandidateProfile(profile: Profile): Promise<Profile> {
         educationType: saved.educationType ?? profile.educationType,
         expectedSalary: saved.expectedSalary ?? profile.expectedSalary,
         currentMode: parseApiMode(saved.currentMode ?? profile.currentMode),
-        skillIds,
+        profileSkills: profileSkills,
         isCompleted: saved.isCompleted ?? true,
     };
 }
 
 export async function updateCandidateProfile(profile: Profile): Promise<Profile> {
-    const skillIds = await resolveSkillIds(profile.skills ?? []);
+    const profileSkills = profile.profileSkills ?? [];
 
     // Convert empty strings to null so backend validation doesn't reject them
     const clean = (v?: string) => v?.trim() || null;
@@ -72,12 +71,13 @@ export async function updateCandidateProfile(profile: Profile): Promise<Profile>
         resumeUrl: clean(profile.resumeUrl),
         portfolioUrl: clean(profile.portfolioUrl),
         linkedinUrl: clean(profile.linkedinUrl),
-        skills: skillIds,
+        profileSkills: profileSkills,
     };
 
+    //@ts-ignore
     const response = await apiClient.put('/api/v1/profiles/candidates/update', payload);
 
-    return { ...profile, skillIds };
+    return {...profile, profileSkills};
 }
 
 export async function createInstitutionProfile(data: any) {

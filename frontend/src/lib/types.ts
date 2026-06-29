@@ -12,8 +12,7 @@ export interface Profile {
     biography?: string;
     email: string;
     location?: string;
-    skills: string[];
-    skillIds?: string[];
+    profileSkills?: ProfileSkill[];
     type?: 'academic' | 'professional' | 'institution';
     candidateType?: string;
     educationType?: string;
@@ -28,6 +27,13 @@ export interface Profile {
     portfolioUrl?: string;
     linkedinUrl?: string;
     experience?: Experience[];
+}
+
+export interface ProfileSkill {
+    id?: string;
+    skillId: string;
+    skillName?: string;
+    strength: 'BEGINNER' | 'INTERMEDIATE' | 'EXPERT' | 'UNKNOWN';
 }
 
 export interface Experience {
@@ -70,6 +76,7 @@ export interface Applicant {
     skills: string[];
     candidateMode: 'academic' | 'professional';
     resumeUrl?: string;
+    opportunityId?: string;
 }
 
 export interface ApplicationActivity {

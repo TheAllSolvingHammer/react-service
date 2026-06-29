@@ -37,6 +37,15 @@ export default function RecruiterRanking({applicants, setCurrentTab, setSelected
     const {t} = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('Всички');
+    //@ts-ignore
+    const [selectedOppId, setSelectedOppId] = useState('all');
+    //@ts-ignore
+    const uniqueOpportunities = Array.from(new Set(applicants.map(a => a.opportunityId))).map(id => {
+        return {
+            id,
+            title: applicants.find(a => a.opportunityId === id)?.role || 'Неизвестна обява'
+        };
+    }).filter(opp => opp.id);
 
     // Филтриране и сортиране на кандидатите
     const filteredAndSortedApplicants = applicants
@@ -47,8 +56,9 @@ export default function RecruiterRanking({applicants, setCurrentTab, setSelected
                 app.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
 
             const matchesStatus = statusFilter === 'Всички' || app.status === statusFilter;
+            const matchesOpportunity = selectedOppId === 'all' || app.opportunityId === selectedOppId;
 
-            return matchesSearch && matchesStatus;
+            return matchesSearch && matchesStatus && matchesOpportunity;
         })
         .sort((a, b) => b.matchScore - a.matchScore); // Винаги сортираме по AI Score (низходящо)
 
