@@ -24,7 +24,7 @@ const mockApplications = [
     {id: '3', university: 'УНСС', faculty: 'Бизнес Информатика', status: 'NEW', date: '2026-06-24'},
 ];
 
-const MAX_APPLICATIONS = 5;
+
 
 export default function AcademicDashboard({ profile }: { profile: any }) {
     const { t } = useTranslation();
@@ -74,7 +74,6 @@ export default function AcademicDashboard({ profile }: { profile: any }) {
     const safeApplications = Array.isArray(applications) ? applications : [];
 
     const activeCount = safeApplications.filter(a => a.status !== 'ARCHIVED' && a.status !== 'REJECTED').length;
-    const progressPercentage = (activeCount / MAX_APPLICATIONS) * 100;
 
     const handleEnroll = async (appId: string) => {
         setIsEnrolling(appId);
@@ -156,25 +155,6 @@ export default function AcademicDashboard({ profile }: { profile: any }) {
                     <p className="text-purple-200">{t('academic.campaignSubtitle', 'Управлявай своите кандидатури и избери най-доброто бъдеще.')}</p>
                 </div>
 
-                {/* Quota Tracker */}
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 min-w-[250px] border border-white/20">
-                    <div className="flex justify-between items-center mb-2">
-                        <span
-                            className="text-sm font-bold uppercase tracking-wider text-purple-200">{t('academic.applicationLimit', 'Лимит кандидатури')}</span>
-                        <span className="text-lg font-black">{activeCount} / {MAX_APPLICATIONS}</span>
-                    </div>
-                    <div className="w-full h-2 bg-black/20 rounded-full overflow-hidden">
-                        <div
-                            className={`h-full rounded-full transition-all duration-500 ${activeCount === MAX_APPLICATIONS ? 'bg-red-400' : 'bg-purple-400'}`}
-                            style={{width: `${progressPercentage}%`}}
-                        ></div>
-                    </div>
-                    {activeCount === MAX_APPLICATIONS && (
-                        <p className="text-xs text-red-300 mt-2 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3"/> {t('academic.maxReached', 'Достигнат максимален брой')}
-                        </p>
-                    )}
-                </div>
             </div>
 
             {/* Applications List */}

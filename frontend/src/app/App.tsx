@@ -15,6 +15,7 @@ import { Footer } from '@/components/shared/Footer';
 import Login from '@/components/pages/Login';
 import Register from '@/components/pages/Register';
 import ProfileOnboarding from '@/components/pages/ProfileOnboarding';
+import LandingPage from '@/components/pages/LandingPage';
 
 import apiClient from '@/lib/axios';
 import { Profile, Opportunity, Applicant } from '@/lib/types';
@@ -39,7 +40,7 @@ export default function App() {
 
     // Auth State
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!savedToken);
-    const [authView, setAuthView] = useState<'login' | 'register' | 'forgot-password'>('login');
+    const [authView, setAuthView] = useState<'login' | 'register' | 'forgot-password' | 'landing'>('landing');
 
     // App Navigation State
     const [currentRole, setCurrentRole] = useState<'candidate' | 'recruiter' | 'admin'>(savedRole as 'candidate' | 'recruiter' | 'admin' || 'candidate');
@@ -235,6 +236,15 @@ export default function App() {
     // 1. AUTHENTICATION GATE
     // ==========================================
     if (!isAuthenticated) {
+        if (authView === 'landing') {
+            return (
+                <LandingPage 
+                    onNavigateToLogin={() => setAuthView('login')}
+                    onNavigateToRegister={() => setAuthView('register')}
+                />
+            );
+        }
+
         if (authView === 'login') {
             return (
                 <Login

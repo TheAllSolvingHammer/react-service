@@ -308,106 +308,7 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                         </CardContent>
                     </Card>
 
-                    {/* СЕКЦИЯ ЗА УМЕНИЯ */}
-                    <Card
-                        className="rounded-3xl border border-[#c6c6cd]/50 shadow-sm bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
-                        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                            <CardTitle className="text-lg font-bold text-grey-dark flex items-center gap-2">
-                                <Code2 className="w-5 h-5 text-brand-blue"/>
-                                {t('profile.skillsTitle', 'Умения')}
-                            </CardTitle>
-                            {isEditing && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setEditForm({
-                                        ...editForm,
-                                        profileSkills: [...editForm.profileSkills, {skillId: '', strength: 'BEGINNER'}]
-                                    })}
-                                    className="text-brand-blue hover:bg-brand-blue/10"
-                                >
-                                    <PlusCircle className="w-4 h-4 mr-1"/> Добави
-                                </Button>
-                            )}
-                        </CardHeader>
-                        <CardContent>
-                            {isEditing ? (
-                                <div className="space-y-3">
-                                    {editForm.profileSkills.map((ps, idx) => (
-                                        <div key={idx} className="flex items-center gap-2">
-                                            <Select
-                                                value={ps.skillId}
-                                                onValueChange={(val) => {
-                                                    const newSkills = [...editForm.profileSkills];
-                                                    newSkills[idx].skillId = val;
-                                                    setEditForm({...editForm, profileSkills: newSkills});
-                                                }}
-                                            >
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Избери умение"/>
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {availableSkills.map(s => (
-                                                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
 
-                                            <Select
-                                                value={ps.strength}
-                                                onValueChange={(val: any) => {
-                                                    const newSkills = [...editForm.profileSkills];
-                                                    newSkills[idx].strength = val;
-                                                    setEditForm({...editForm, profileSkills: newSkills});
-                                                }}
-                                            >
-                                                <SelectTrigger className="w-[160px]">
-                                                    <SelectValue placeholder="Ниво"/>
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="BEGINNER">Начинаещ</SelectItem>
-                                                    <SelectItem value="INTERMEDIATE">Средно</SelectItem>
-                                                    <SelectItem value="EXPERT">Експерт</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => {
-                                                    const newSkills = [...editForm.profileSkills];
-                                                    newSkills.splice(idx, 1);
-                                                    setEditForm({...editForm, profileSkills: newSkills});
-                                                }}
-                                                className="text-red-500 hover:bg-red-50"
-                                            >
-                                                <Trash2 className="w-4 h-4"/>
-                                            </Button>
-                                        </div>
-                                    ))}
-                                    {editForm.profileSkills.length === 0 && (
-                                        <p className="text-sm text-grey-muted text-center italic">Нямате добавени
-                                            умения.</p>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="flex flex-wrap gap-2">
-                                    {displaySkills.length > 0 ? displaySkills.map((ps, idx) => (
-                                        <Badge key={idx} variant="secondary"
-                                               className="px-3 py-1 bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20 rounded-xl flex items-center gap-1.5 border-0">
-                                            {ps.skillName || availableSkills.find(s => s.id === ps.skillId)?.name || 'Unknown'}
-                                            <span className="opacity-60 text-xs">
-                                                • {ps.strength === 'BEGINNER' ? 'Начинаещ' : ps.strength === 'INTERMEDIATE' ? 'Средно' : ps.strength === 'EXPERT' ? 'Експерт' : 'Неизвестно'}
-                                            </span>
-                                        </Badge>
-                                    )) : (
-                                        <p className="text-sm text-grey-muted w-full text-center py-2">Все още няма
-                                            добавени умения.</p>
-                                    )}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
 
                     {/* 4. НОВАТА СЕКЦИЯ ЗА CV / РЕЗЮМЕ */}
                     <Card
@@ -581,6 +482,117 @@ export default function CandidateProfile({profile, onSaveProfile}: CandidateProf
                                                 </div>
                                             ))}
                                         </div>
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* СЕКЦИЯ ЗА УМЕНИЯ (ПРЕМЕСТЕНА ОТ ЛЯВО) */}
+                    <Card
+                        className="rounded-3xl border-0 shadow-md bg-white dark:bg-slate-900">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-xl font-bold text-grey-dark flex items-center gap-2">
+                                <Code2 className="w-5 h-5 text-brand-blue"/>
+                                {t('profile.skillsTitle', 'Умения')}
+                            </CardTitle>
+                            {isEditing && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setEditForm({
+                                        ...editForm,
+                                        profileSkills: [...editForm.profileSkills, {skillId: '', strength: 'BEGINNER'}]
+                                    })}
+                                    className="text-brand-blue hover:text-brand-blue-dark hover:bg-brand-blue/10"
+                                >
+                                    <PlusCircle className="w-4 h-4 mr-1"/> {t('profile.addSkill', 'Добави')}
+                                </Button>
+                            )}
+                        </CardHeader>
+                        <CardContent>
+                            {isEditing ? (
+                                <div className="space-y-4">
+                                    {editForm.profileSkills.map((ps, idx) => (
+                                        <div key={idx} className="flex flex-col sm:flex-row items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-transparent hover:border-[#c6c6cd]/30 transition-colors">
+                                            <div className="w-full sm:flex-1">
+                                                <Select
+                                                    value={ps.skillId}
+                                                    onValueChange={(val) => {
+                                                        const newSkills = [...editForm.profileSkills];
+                                                        newSkills[idx].skillId = val;
+                                                        setEditForm({...editForm, profileSkills: newSkills});
+                                                    }}
+                                                >
+                                                    <SelectTrigger className="w-full bg-white dark:bg-slate-900 rounded-xl h-11 border-[#c6c6cd]">
+                                                        <SelectValue placeholder={t('profile.selectSkill', 'Избери умение')}/>
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableSkills.map(s => (
+                                                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            <div className="w-full sm:w-[200px] flex items-center gap-2">
+                                                <Select
+                                                    value={ps.strength}
+                                                    onValueChange={(val: any) => {
+                                                        const newSkills = [...editForm.profileSkills];
+                                                        newSkills[idx].strength = val;
+                                                        setEditForm({...editForm, profileSkills: newSkills});
+                                                    }}
+                                                >
+                                                    <SelectTrigger className="w-full bg-white dark:bg-slate-900 rounded-xl h-11 border-[#c6c6cd]">
+                                                        <SelectValue placeholder={t('profile.selectLevel', 'Ниво')}/>
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="BEGINNER">{t('profile.levelBeginner', 'Начинаещ')}</SelectItem>
+                                                        <SelectItem value="INTERMEDIATE">{t('profile.levelIntermediate', 'Средно')}</SelectItem>
+                                                        <SelectItem value="EXPERT">{t('profile.levelExpert', 'Експерт')}</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => {
+                                                        const newSkills = [...editForm.profileSkills];
+                                                        newSkills.splice(idx, 1);
+                                                        setEditForm({...editForm, profileSkills: newSkills});
+                                                    }}
+                                                    className="shrink-0 w-11 h-11 rounded-xl text-red-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30"
+                                                >
+                                                    <Trash2 className="w-4 h-4"/>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {editForm.profileSkills.length === 0 && (
+                                        <p className="text-sm text-grey-muted text-center italic py-4">
+                                            {t('profile.noSkillsAdded', 'Нямате добавени умения.')}
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex flex-wrap gap-2 pt-2">
+                                    {displaySkills.length > 0 ? displaySkills.map((ps, idx) => (
+                                        <Badge key={idx} variant="secondary"
+                                               className="px-4 py-2 bg-brand-blue/5 text-brand-blue hover:bg-brand-blue/10 border border-brand-blue/20 rounded-xl flex items-center gap-2 shadow-sm">
+                                            <span className="font-bold text-sm">
+                                                {ps.skillName || availableSkills.find(s => s.id === ps.skillId)?.name || 'Unknown'}
+                                            </span>
+                                            <span className="opacity-60 text-xs font-mono bg-brand-blue/10 px-1.5 py-0.5 rounded-md">
+                                                {ps.strength === 'BEGINNER' ? t('profile.levelBeginner', 'Начинаещ') : 
+                                                 ps.strength === 'INTERMEDIATE' ? t('profile.levelIntermediate', 'Средно') : 
+                                                 ps.strength === 'EXPERT' ? t('profile.levelExpert', 'Експерт') : 'Неизвестно'}
+                                            </span>
+                                        </Badge>
+                                    )) : (
+                                        <p className="text-sm text-grey-muted w-full py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-center">
+                                            {t('profile.noSkillsYet', 'Все още няма добавени умения.')}
+                                        </p>
                                     )}
                                 </div>
                             )}

@@ -344,5 +344,23 @@
     "rights": "All rights reserved.",
     "blog": "Blog",
     "support": "Support"
+  },
+  "landing": {
+    "login": "Login",
+    "register": "Register",
+    "badge": "Platform for the future",
+    "title1": "Connecting",
+    "titleHighlight": "Talents",
+    "title2": "with Opportunities",
+    "subtitle": "Find the ideal university program or your dream career. We bring candidates, universities, and companies together in one place.",
+    "getStarted": "Get Started",
+    "loginExisting": "Already have an account?",
+    "statCandidates": "Candidates",
+    "statCompanies": "Companies",
+    "statUniversities": "Universities",
+    "float1Title": "Accepted!",
+    "float1Sub": "Technical University",
+    "float2Title": "New Position",
+    "float2Sub": "Senior Developer"
   }
 }
